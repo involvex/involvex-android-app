@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:window_manager/window_manager.dart';
 
 /// A utility class for initializing the Flutter application.
@@ -17,6 +18,7 @@ class AppInitializer {
   /// and configures device orientation settings.
   static initialize() async {
     _ensureInitialized();
+    await _loadDotEnvVariables();
     await _setupWindowDimensions();
     await _setupDeviceOrientation();
   }
@@ -24,6 +26,11 @@ class AppInitializer {
   /// Ensures that Flutter bindings are initialized.
   static _ensureInitialized() {
     WidgetsFlutterBinding.ensureInitialized();
+  }
+
+  /// Ensures that Flutter bindings are initialized.
+  static _loadDotEnvVariables() async {
+    await dotenv.load(fileName: ".env");
   }
 
   /// Configures the window dimensions for desktop applications.

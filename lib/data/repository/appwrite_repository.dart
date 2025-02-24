@@ -1,17 +1,18 @@
+import 'package:intl/intl.dart';
 import 'package:appwrite/appwrite.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:appwrite_flutter_starter_kit/data/models/log.dart';
 import 'package:appwrite_flutter_starter_kit/data/models/project_info.dart';
-import 'package:intl/intl.dart';
 
 /// A repository responsible for handling network interactions with the Appwrite server.
 ///
 /// It provides a helper method to ping the server.
 class AppwriteRepository {
   static const String pingPath = "/ping";
-  static const String appwriteVersion = "1.6.1";
-  static const String appwriteProjectId = "project-id";
-  static const String appwriteProjectName = "My project";
-  static const String appwritePublicEndpoint = "https://cloud.appwrite.io/v1";
+  static final String appwriteVersion = dotenv.env['APPWRITE_VERSION']!;
+  static final String appwriteProjectId = dotenv.env['APPWRITE_PROJECT_ID']!;
+  static final String appwriteProjectName = dotenv.env['APPWRITE_PROJECT_NAME']!;
+  static final String appwritePublicEndpoint = dotenv.env['APPWRITE_PUBLIC_ENDPOINT']!;
 
   final Client _client = Client()
       .setProject(appwriteProjectId)
