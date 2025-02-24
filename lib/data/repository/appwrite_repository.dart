@@ -1,6 +1,5 @@
 import 'package:intl/intl.dart';
 import 'package:appwrite/appwrite.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:appwrite_flutter_starter_kit/data/models/log.dart';
 import 'package:appwrite_flutter_starter_kit/data/models/project_info.dart';
 
@@ -9,10 +8,10 @@ import 'package:appwrite_flutter_starter_kit/data/models/project_info.dart';
 /// It provides a helper method to ping the server.
 class AppwriteRepository {
   static const String pingPath = "/ping";
-  static final String appwriteVersion = dotenv.env['APPWRITE_VERSION']!;
-  static final String appwriteProjectId = dotenv.env['APPWRITE_PROJECT_ID']!;
-  static final String appwriteProjectName = dotenv.env['APPWRITE_PROJECT_NAME']!;
-  static final String appwritePublicEndpoint = dotenv.env['APPWRITE_PUBLIC_ENDPOINT']!;
+  static const String appwriteVersion = String.fromEnvironment('APPWRITE_VERSION');
+  static const String appwriteProjectId = String.fromEnvironment('APPWRITE_PROJECT_ID');
+  static const String appwriteProjectName = String.fromEnvironment('APPWRITE_PROJECT_NAME');
+  static const String appwritePublicEndpoint = String.fromEnvironment('APPWRITE_PUBLIC_ENDPOINT');
 
   final Client _client = Client()
       .setProject(appwriteProjectId)
