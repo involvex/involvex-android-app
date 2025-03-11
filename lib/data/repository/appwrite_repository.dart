@@ -8,7 +8,6 @@ import 'package:appwrite_flutter_starter_kit/data/models/project_info.dart';
 /// It provides a helper method to ping the server.
 class AppwriteRepository {
   static const String pingPath = "/ping";
-  static const String appwriteVersion = String.fromEnvironment('APPWRITE_VERSION');
   static const String appwriteProjectId = String.fromEnvironment('APPWRITE_PROJECT_ID');
   static const String appwriteProjectName = String.fromEnvironment('APPWRITE_PROJECT_NAME');
   static const String appwritePublicEndpoint = String.fromEnvironment('APPWRITE_PUBLIC_ENDPOINT');
@@ -35,7 +34,6 @@ class AppwriteRepository {
       endpoint: appwritePublicEndpoint,
       projectId: appwriteProjectId,
       projectName: appwriteProjectName,
-      version: appwriteVersion,
     );
   }
 
