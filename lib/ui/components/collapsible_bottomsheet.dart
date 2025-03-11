@@ -242,15 +242,6 @@ class ProjectSection extends StatelessWidget {
                   ProjectRow(title: "Project ID", value: projectInfo.projectId),
                 ],
               ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  ProjectRow(
-                      title: "Project Name", value: projectInfo.projectName),
-                  ProjectRow(title: "Version", value: projectInfo.version),
-                ],
-              ),
             ],
           ),
         ),
