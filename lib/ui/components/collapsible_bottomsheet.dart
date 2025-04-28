@@ -491,7 +491,7 @@ class LogsTableRow extends StatelessWidget {
           child: MouseRegion(
             cursor: SystemMouseCursors.click,
             child: Text(
-              response.substring(0, 50),
+              response.length >= 50 ? response.substring(0, 50) : response,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(

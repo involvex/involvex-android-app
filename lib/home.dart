@@ -26,7 +26,12 @@ class _AppwriteStarterKit extends State<AppwriteStarterKit> {
     return Scaffold(
       body: CheckeredBackground(
         child: SafeArea(
-          minimum: EdgeInsets.only(top: context.isLargeScreen ? 24 : 16),
+          minimum: EdgeInsets.only(
+              top: context.isExtraWideScreen
+                  ? 156
+                  : context.isLargeScreen
+                      ? 24
+                      : 32),
           child: Stack(
             children: [
               SingleChildScrollView(

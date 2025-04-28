@@ -1,3 +1,4 @@
+import 'package:appwrite_flutter_starter_kit/ui/components/responsive_layout.dart';
 import 'package:appwrite_flutter_starter_kit/utils/extensions/build_context.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -8,39 +9,85 @@ class GettingStartedCards extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          GeneralInfoCard(
-            title: "Edit your app",
-            link: null,
-            subtitle: const HighlightedText(),
-          ),
-          GeneralInfoCard(
-            title: "Head to Appwrite Cloud",
-            link: "https://cloud.appwrite.io",
-            subtitle: const Text(
-              "Start managing your project from the Appwrite console",
-              style: TextStyle(
-                fontSize: 14,
-                color: Color(0xFF56565C),
+    return ResponsiveLayout(
+      smallDeviceLayout: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            GeneralInfoCard(
+              title: "Edit your app",
+              link: null,
+              subtitle: const HighlightedText(),
+            ),
+            GeneralInfoCard(
+              title: "Head to Appwrite Cloud",
+              link: "https://cloud.appwrite.io",
+              subtitle: const Text(
+                "Start managing your project from the Appwrite console",
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF56565C),
+                ),
               ),
             ),
-          ),
-          GeneralInfoCard(
-            title: "Explore docs",
-            link: "https://appwrite.io/docs",
-            subtitle: const Text(
-              "Discover the full power of Appwrite by diving into our documentation",
-              style: TextStyle(
-                fontSize: 14,
-                color: Color(0xFF56565C),
+            GeneralInfoCard(
+              title: "Explore docs",
+              link: "https://appwrite.io/docs",
+              subtitle: const Text(
+                "Discover the full power of Appwrite by diving into our documentation",
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF56565C),
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
+      ),
+      largeDeviceLayout: Padding(
+        padding: EdgeInsets.symmetric(
+            horizontal: context.isExtraWideScreen ? 64 : 16.0, vertical: 16.0),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          spacing: 16,
+          children: [
+            Flexible(
+              child: GeneralInfoCard(
+                title: "Edit your app",
+                link: null,
+                subtitle: const HighlightedText(),
+              ),
+            ),
+            Flexible(
+              child: GeneralInfoCard(
+                title: "Head to Appwrite Cloud",
+                link: "https://cloud.appwrite.io",
+                subtitle: const Text(
+                  "Start managing your project from the Appwrite console",
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF56565C),
+                  ),
+                ),
+              ),
+            ),
+            Flexible(
+              child: GeneralInfoCard(
+                title: "Explore docs",
+                link: "https://appwrite.io/docs",
+                subtitle: const Text(
+                  "Discover the full power of Appwrite by diving into our documentation",
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF56565C),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -68,9 +115,12 @@ class GeneralInfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
+      final double cardWidth = context.isExtraWideScreen
+          ? constraints.maxWidth.clamp(0, 350)
+          : constraints.maxWidth;
+
       return SizedBox(
-        // `1` because we already have padding on sides.
-        width: constraints.maxWidth * (context.isExtraWideScreen ? 0.55 : 1),
+        width: cardWidth,
         child: Card(
           elevation: 0,
           shape: RoundedRectangleBorder(

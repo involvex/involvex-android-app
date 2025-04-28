@@ -1,5 +1,6 @@
 import 'package:appwrite_flutter_starter_kit/data/models/status.dart';
 import 'package:appwrite_flutter_starter_kit/ui/icons/appwrite.dart';
+import 'package:appwrite_flutter_starter_kit/utils/extensions/build_context.dart';
 import 'package:flutter/material.dart';
 
 import 'connection_line.dart';
@@ -21,9 +22,15 @@ class TopPlatformView extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-        PlatformIcon(child: FlutterLogo(size: 40)),
+        PlatformIcon(
+          size: context.isExtraWideScreen ? 142 : 100,
+          child: FlutterLogo(size: context.isExtraWideScreen ? 56 : 40),
+        ),
         ConnectionLine(show: status == Status.success),
-        PlatformIcon(child: AppwriteIcon(size: 40)),
+        PlatformIcon(
+          size: context.isExtraWideScreen ? 142 : 100,
+          child: AppwriteIcon(size: context.isExtraWideScreen ? 56 : 40),
+        ),
       ],
     );
   }
@@ -51,7 +58,7 @@ class PlatformIcon extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         color: const Color(0xFFFAFAFD),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(context.isExtraWideScreen ? size * 0.2 : 24),
         border: Border.all(color: const Color(0x0A19191C), width: 1),
         boxShadow: [
           BoxShadow(
@@ -65,9 +72,10 @@ class PlatformIcon extends StatelessWidget {
         child: Container(
           width: size * 0.86,
           height: size * 0.86,
+          margin: context.isExtraWideScreen ? EdgeInsets.all(8) : null,
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(context.isExtraWideScreen ? size * 0.2: 16),
             border: Border.all(color: const Color(0xFFFAFAFB), width: 1),
             boxShadow: [
               BoxShadow(
