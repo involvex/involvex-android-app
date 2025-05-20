@@ -2,8 +2,11 @@
 
 # Check if .env file exists
 if [ ! -f .env ]; then
-  echo "Error: .env file not found!"
-  exit 1
+  {
+    echo "APPWRITE_PROJECT_ID=$APPWRITE_PROJECT_ID"
+    echo "APPWRITE_PROJECT_NAME=$APPWRITE_PROJECT_NAME"
+    echo "APPWRITE_PUBLIC_ENDPOINT=$APPWRITE_PUBLIC_ENDPOINT"
+  } >> .env
 fi
 
 # Read .env file and convert it to --dart-define arguments
