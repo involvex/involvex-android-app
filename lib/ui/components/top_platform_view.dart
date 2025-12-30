@@ -1,6 +1,6 @@
-import 'package:appwrite_flutter_starter_kit/data/models/status.dart';
-import 'package:appwrite_flutter_starter_kit/ui/icons/appwrite.dart';
-import 'package:appwrite_flutter_starter_kit/utils/extensions/build_context.dart';
+import 'package:involvex_app/data/models/status.dart';
+import 'package:involvex_app/ui/icons/appwrite.dart';
+import 'package:involvex_app/utils/extensions/build_context.dart';
 import 'package:flutter/material.dart';
 
 import 'connection_line.dart';
@@ -57,7 +57,7 @@ class PlatformIcon extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: const Color(0xFFFAFAFD),
+        color: const Color.fromARGB(255, 8, 255, 29),
         borderRadius: BorderRadius.circular(context.isExtraWideScreen ? size * 0.2 : 24),
         border: Border.all(color: const Color(0x0A19191C), width: 1),
         boxShadow: [
@@ -74,7 +74,7 @@ class PlatformIcon extends StatelessWidget {
           height: size * 0.86,
           margin: context.isExtraWideScreen ? EdgeInsets.all(8) : null,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: const Color.fromARGB(255, 3, 238, 3),
             borderRadius: BorderRadius.circular(context.isExtraWideScreen ? size * 0.2: 16),
             border: Border.all(color: const Color(0xFFFAFAFB), width: 1),
             boxShadow: [

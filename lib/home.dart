@@ -1,12 +1,12 @@
-import 'package:appwrite_flutter_starter_kit/data/models/log.dart';
-import 'package:appwrite_flutter_starter_kit/data/models/status.dart';
-import 'package:appwrite_flutter_starter_kit/data/repository/appwrite_repository.dart';
-import 'package:appwrite_flutter_starter_kit/ui/components/checkered_background.dart';
-import 'package:appwrite_flutter_starter_kit/ui/components/collapsible_bottomsheet.dart';
-import 'package:appwrite_flutter_starter_kit/ui/components/connection_status_view.dart';
-import 'package:appwrite_flutter_starter_kit/ui/components/getting_started_cards.dart';
-import 'package:appwrite_flutter_starter_kit/ui/components/top_platform_view.dart';
-import 'package:appwrite_flutter_starter_kit/utils/extensions/build_context.dart';
+import 'package:involvex_app/data/models/log.dart';
+import 'package:involvex_app/data/models/status.dart';
+import 'package:involvex_app/data/repository/appwrite_repository.dart';
+import 'package:involvex_app/ui/components/checkered_background.dart';
+import 'package:involvex_app/ui/components/collapsible_bottomsheet.dart';
+import 'package:involvex_app/ui/components/connection_status_view.dart';
+import 'package:involvex_app/ui/components/getting_started_cards.dart';
+import 'package:involvex_app/ui/components/top_platform_view.dart';
+import 'package:involvex_app/utils/extensions/build_context.dart';
 import 'package:flutter/material.dart';
 
 class AppwriteStarterKit extends StatefulWidget {

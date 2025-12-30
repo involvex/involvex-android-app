@@ -4,8 +4,8 @@ flutter_native_splash:
   image: assets/splash-logo.png
 
   # branding
-  branding: assets/branding-light.png
-  branding_dark: assets/branding-dark.png
+  branding: assets/app-icon.png
+  branding_dark: assets/app-icon.png
   branding_bottom_padding: 24 # doesn't work on web atm.
 
   android_12:

@@ -1,5 +1,9 @@
-import 'package:appwrite_flutter_starter_kit/home.dart';
+import 'package:involvex_app/theme/hacker_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:involvex_app/ui/pages/home_page.dart';
+import 'package:involvex_app/ui/pages/subscriptions_page.dart';
+import 'package:involvex_app/ui/pages/search_page.dart';
+import 'package:involvex_app/ui/pages/settings_page.dart';
 
 class AppwriteApp extends StatelessWidget {
   const AppwriteApp({super.key});
@@ -7,13 +11,71 @@ class AppwriteApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Appwrite StarterKit',
+      title: 'Trending Hub',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const AppwriteStarterKit(),
+      theme: HackerTheme.darkTheme,
+      home: const MainNavigationShell(),
     );
   }
 }
+
+class MainNavigationShell extends StatefulWidget {
+  const MainNavigationShell({super.key});
+
+  @override
+  State<MainNavigationShell> createState() => _MainNavigationShellState();
+}
+
+class _MainNavigationShellState extends State<MainNavigationShell> {
+  int _currentIndex = 0;
+
+  final List<Widget> _pages = [
+    const HomePage(),
+    const SubscriptionsPage(),
+    const SearchPage(),
+    const SettingsPage(),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: _pages[_currentIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: HackerTheme.primaryGreen,
+        unselectedItemColor: HackerTheme.textGrey,
+        backgroundColor: HackerTheme.darkerGreen,
+        elevation: 8,
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.trending_up),
+            activeIcon: Icon(Icons.trending_up),
+            label: 'Trending',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.bookmark),
+            activeIcon: Icon(Icons.bookmark),
+            label: 'Subscriptions',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.search),
+            activeIcon: Icon(Icons.search),
+            label: 'Search',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            activeIcon: Icon(Icons.settings),
+            label: 'Settings',
+          ),
+        ],
+      ),
+    );
+  }
+}
+

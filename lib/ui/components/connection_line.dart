@@ -1,4 +1,4 @@
-import 'package:appwrite_flutter_starter_kit/utils/extensions/build_context.dart';
+import 'package:involvex_app/utils/extensions/build_context.dart';
 import 'package:flutter/material.dart';
 
 /// A widget that animates a connection line with a checkmark in the middle.

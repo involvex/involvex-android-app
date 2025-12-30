@@ -1,10 +1,10 @@
 import 'dart:math';
 
-import 'package:appwrite_flutter_starter_kit/utils/extensions/colors.dart';
+import 'package:involvex_app/utils/extensions/colors.dart';
 import 'package:flutter/material.dart';
 
 /// Background color for gradients, blur, etc.
-const Color checkeredBackgroundColor = Color(0xFFFAFAFB);
+const Color checkeredBackgroundColor = Color.fromARGB(255, 35, 35, 36);
 
 /// Max height factor for background.
 const double heightConstraintFactor = 0.5;

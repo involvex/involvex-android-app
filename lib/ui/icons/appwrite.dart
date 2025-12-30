@@ -7,7 +7,7 @@ class AppwriteIcon extends StatelessWidget {
   const AppwriteIcon({
     super.key,
     this.size = 40,
-    this.color = const Color(0xFFFD366E),
+    this.color = const Color.fromARGB(255, 76, 255, 5),
   });
 
   @override

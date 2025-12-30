@@ -1,4 +1,4 @@
-import 'package:appwrite_flutter_starter_kit/data/models/status.dart';
+import 'package:involvex_app/data/models/status.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 

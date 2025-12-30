@@ -1,5 +1,5 @@
-import 'package:appwrite_flutter_starter_kit/ui/components/responsive_layout.dart';
-import 'package:appwrite_flutter_starter_kit/utils/extensions/build_context.dart';
+import 'package:involvex_app/ui/components/responsive_layout.dart';
+import 'package:involvex_app/utils/extensions/build_context.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
