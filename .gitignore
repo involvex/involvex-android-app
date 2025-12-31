@@ -83,3 +83,5 @@ fastlane/sign&cert
 *.save
 ._*
 *.bak
+/lib/config/environment.dart
+lib/config/environment.dart
