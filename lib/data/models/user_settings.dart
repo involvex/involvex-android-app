@@ -1,17 +1,16 @@
-
 class UserSettings {
   // Theme Settings
   final bool isDarkMode;
   final bool useHackerTheme;
   final String themeColor;
-  
+
   // Trending Settings
   final String trendingTimeframe; // 'daily', 'weekly', 'monthly'
   final bool autoRefresh;
   final int refreshInterval; // minutes
   final bool showGitHubTrending;
   final bool showNpmTrending;
-  
+
   // Notification Settings
   final bool enablePushNotifications;
   final bool enableDailyDigest;
@@ -21,7 +20,7 @@ class UserSettings {
   final String notificationTime; // HH:MM format
   final bool enableVibration;
   final bool enableSound;
-  
+
   // Display Settings
   final int itemsPerPage;
   final bool compactView;
@@ -31,7 +30,7 @@ class UserSettings {
   final bool showLastUpdated;
   final bool showLicense;
   final bool showTopics;
-  
+
   // Filter & Sort Settings
   final List<String> excludedLanguages;
   final List<String> excludedKeywords;
@@ -40,18 +39,18 @@ class UserSettings {
   final int minStars;
   final bool includeForks;
   final bool includeArchived;
-  
+
   // Privacy Settings
   final bool shareUsageData;
   final bool enableAnalytics;
   final bool showPublicProfile;
-  
+
   // Data Management
   final bool enableOfflineMode;
   final int cacheExpiryHours;
   final bool autoDeleteOldData;
   final int maxCacheSize; // MB
-  
+
   // Account Settings
   final String? discordUserId;
   final String? discordUsername;
@@ -59,12 +58,12 @@ class UserSettings {
   final String? discordEmail;
   final bool isDiscordConnected;
   final DateTime? lastSync;
-  
+
   // Export Settings
   final bool enableDataExport;
   final String preferredExportFormat; // 'json', 'csv', 'txt'
   final bool includeMetadata;
-  
+
   // Advanced Settings
   final bool enableDebugMode;
   final bool enableBetaFeatures;
@@ -139,7 +138,8 @@ class UserSettings {
       enablePushNotifications: json['enablePushNotifications'] ?? true,
       enableDailyDigest: json['enableDailyDigest'] ?? true,
       enableWeeklySummary: json['enableWeeklySummary'] ?? true,
-      enableNewReleaseNotifications: json['enableNewReleaseNotifications'] ?? true,
+      enableNewReleaseNotifications:
+          json['enableNewReleaseNotifications'] ?? true,
       enableTrendingNotifications: json['enableTrendingNotifications'] ?? true,
       notificationTime: json['notificationTime'] ?? '09:00',
       enableVibration: json['enableVibration'] ?? true,
@@ -171,7 +171,8 @@ class UserSettings {
       discordAvatarUrl: json['discordAvatarUrl'],
       discordEmail: json['discordEmail'],
       isDiscordConnected: json['isDiscordConnected'] ?? false,
-      lastSync: json['lastSync'] != null ? DateTime.parse(json['lastSync']) : null,
+      lastSync:
+          json['lastSync'] != null ? DateTime.parse(json['lastSync']) : null,
       enableDataExport: json['enableDataExport'] ?? true,
       preferredExportFormat: json['preferredExportFormat'] ?? 'json',
       includeMetadata: json['includeMetadata'] ?? true,
@@ -245,11 +246,14 @@ class UserSettings {
       refreshInterval: refreshInterval ?? this.refreshInterval,
       showGitHubTrending: showGitHubTrending ?? this.showGitHubTrending,
       showNpmTrending: showNpmTrending ?? this.showNpmTrending,
-      enablePushNotifications: enablePushNotifications ?? this.enablePushNotifications,
+      enablePushNotifications:
+          enablePushNotifications ?? this.enablePushNotifications,
       enableDailyDigest: enableDailyDigest ?? this.enableDailyDigest,
       enableWeeklySummary: enableWeeklySummary ?? this.enableWeeklySummary,
-      enableNewReleaseNotifications: enableNewReleaseNotifications ?? this.enableNewReleaseNotifications,
-      enableTrendingNotifications: enableTrendingNotifications ?? this.enableTrendingNotifications,
+      enableNewReleaseNotifications:
+          enableNewReleaseNotifications ?? this.enableNewReleaseNotifications,
+      enableTrendingNotifications:
+          enableTrendingNotifications ?? this.enableTrendingNotifications,
       notificationTime: notificationTime ?? this.notificationTime,
       enableVibration: enableVibration ?? this.enableVibration,
       enableSound: enableSound ?? this.enableSound,
@@ -282,7 +286,8 @@ class UserSettings {
       isDiscordConnected: isDiscordConnected ?? this.isDiscordConnected,
       lastSync: lastSync ?? this.lastSync,
       enableDataExport: enableDataExport ?? this.enableDataExport,
-      preferredExportFormat: preferredExportFormat ?? this.preferredExportFormat,
+      preferredExportFormat:
+          preferredExportFormat ?? this.preferredExportFormat,
       includeMetadata: includeMetadata ?? this.includeMetadata,
       enableDebugMode: enableDebugMode ?? this.enableDebugMode,
       enableBetaFeatures: enableBetaFeatures ?? this.enableBetaFeatures,
@@ -351,11 +356,11 @@ class UserSettings {
   // Validate settings
   bool get isValid {
     return refreshInterval > 0 &&
-           itemsPerPage > 0 &&
-           cacheExpiryHours > 0 &&
-           maxCacheSize > 0 &&
-           requestTimeout > 0 &&
-           notificationTime.split(':').length == 2;
+        itemsPerPage > 0 &&
+        cacheExpiryHours > 0 &&
+        maxCacheSize > 0 &&
+        requestTimeout > 0 &&
+        notificationTime.split(':').length == 2;
   }
 
   // Get notification time components

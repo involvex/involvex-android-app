@@ -77,7 +77,7 @@ class AppStateManager extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       final settingsJson = prefs.getString('user_settings');
-      
+
       if (settingsJson != null) {
         // In a real app, you'd parse the JSON here
         // For now, we'll keep the default settings
@@ -123,7 +123,7 @@ class AppStateManager extends ChangeNotifier {
   }
 
   void removeSubscription(String id) {
-    _subscriptions.removeWhere((item) => 
+    _subscriptions.removeWhere((item) =>
         (item is GitHubRepository && item.id == id) ||
         (item is NpmPackage && item.name == id));
     notifyListeners();
@@ -142,7 +142,7 @@ class AppStateManager extends ChangeNotifier {
 
   // Utility Methods
   bool isSubscribed(String id) {
-    return _subscriptions.any((item) => 
+    return _subscriptions.any((item) =>
         (item is GitHubRepository && item.id == id) ||
         (item is NpmPackage && item.name == id));
   }
@@ -160,7 +160,8 @@ class AppStateManager extends ChangeNotifier {
         id: 'repo_$index',
         name: 'awesome-project-$index',
         fullName: 'user/awesome-project-$index',
-        description: 'A fantastic project that does amazing things with technology.',
+        description:
+            'A fantastic project that does amazing things with technology.',
         htmlUrl: 'https://github.com/user/awesome-project-$index',
         cloneUrl: 'https://github.com/user/awesome-project-$index.git',
         sshUrl: 'git@github.com:user/awesome-project-$index.git',
@@ -168,10 +169,18 @@ class AppStateManager extends ChangeNotifier {
         forks: 100 + index * 5,
         issues: index % 10,
         watchers: 50 + index * 2,
-        language: index % 5 == 0 ? 'JavaScript' : 
-                 index % 4 == 0 ? 'Python' :
-                 index % 3 == 0 ? 'TypeScript' : 'Java',
-        license: index % 3 == 0 ? 'MIT' : index % 2 == 0 ? 'Apache-2.0' : null,
+        language: index % 5 == 0
+            ? 'JavaScript'
+            : index % 4 == 0
+                ? 'Python'
+                : index % 3 == 0
+                    ? 'TypeScript'
+                    : 'Java',
+        license: index % 3 == 0
+            ? 'MIT'
+            : index % 2 == 0
+                ? 'Apache-2.0'
+                : null,
         createdAt: DateTime.now().subtract(Duration(days: index * 30)),
         updatedAt: DateTime.now().subtract(Duration(days: index % 7)),
         pushedAt: DateTime.now().subtract(Duration(days: index % 3)),
@@ -199,7 +208,8 @@ class AppStateManager extends ChangeNotifier {
       return NpmPackage(
         name: 'awesome-package-$index',
         version: '1.${index % 10}.${index % 5}',
-        description: 'An amazing npm package that provides incredible functionality for developers.',
+        description:
+            'An amazing npm package that provides incredible functionality for developers.',
         npmUrl: 'https://www.npmjs.com/package/awesome-package-$index',
         homepage: 'https://awesome-package-$index.com',
         repositoryUrl: 'https://github.com/user/awesome-package-$index',

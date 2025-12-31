@@ -1,17 +1,23 @@
 import 'package:involvex_app/data/models/user_settings.dart';
 import 'package:involvex_app/theme/hacker_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:involvex_app/providers/auth_provider.dart';
 
-class SettingsPage extends StatefulWidget {
+class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
 
   @override
-  State<SettingsPage> createState() => _SettingsPageState();
+  ConsumerState<SettingsPage> createState() => _SettingsPageState();
 }
 
-class _SettingsPageState extends State<SettingsPage> {
+class _SettingsPageState extends ConsumerState<SettingsPage>
+    with AutomaticKeepAliveClientMixin {
   late UserSettings _settings;
   bool _hasChanges = false;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -37,6 +43,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
     return Scaffold(
       backgroundColor: HackerTheme.darkerGreen,
       appBar: AppBar(
@@ -66,29 +73,30 @@ class _SettingsPageState extends State<SettingsPage> {
                 _buildSectionHeader('Account'),
                 _buildDiscordAuthCard(),
                 _buildAccountInfoCard(),
-                
+
                 _buildSectionHeader('Appearance'),
                 _buildThemeSettingsCard(),
-                
+
                 _buildSectionHeader('Trending'),
                 _buildTrendingSettingsCard(),
-                
+
                 _buildSectionHeader('Notifications'),
                 _buildNotificationSettingsCard(),
-                
+
                 _buildSectionHeader('Display'),
                 _buildDisplaySettingsCard(),
-                
+
                 _buildSectionHeader('Filters & Sorting'),
                 _buildFilterSettingsCard(),
-                
+
                 _buildSectionHeader('Data Management'),
                 _buildDataManagementCard(),
-                
+
                 _buildSectionHeader('Advanced'),
                 _buildAdvancedSettingsCard(),
-                
-                const SizedBox(height: 100), // Extra space for bottom navigation
+
+                const SizedBox(
+                    height: 100), // Extra space for bottom navigation
               ],
             ),
           ),
@@ -167,7 +175,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 if (_settings.isDiscordConnected)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: HackerTheme.accentGreen.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(4),
@@ -193,7 +202,8 @@ class _SettingsPageState extends State<SettingsPage> {
               children: [
                 if (_settings.isDiscordConnected) ...[
                   CircleAvatar(
-                    backgroundImage: NetworkImage(_settings.discordAvatarUrl ?? ''),
+                    backgroundImage:
+                        NetworkImage(_settings.discordAvatarUrl ?? ''),
                     radius: 16,
                   ),
                   const SizedBox(width: 12),
@@ -258,7 +268,8 @@ class _SettingsPageState extends State<SettingsPage> {
               contentPadding: EdgeInsets.zero,
               leading: Icon(Icons.person, color: HackerTheme.primaryGreen),
               title: Text('User Profile', style: HackerTheme.bodyText()),
-              subtitle: Text('Manage your profile and preferences', style: HackerTheme.captionText()),
+              subtitle: Text('Manage your profile and preferences',
+                  style: HackerTheme.captionText()),
               trailing: Icon(Icons.chevron_right, color: HackerTheme.textGrey),
               onTap: _manageProfile,
             ),
@@ -266,7 +277,8 @@ class _SettingsPageState extends State<SettingsPage> {
               contentPadding: EdgeInsets.zero,
               leading: Icon(Icons.security, color: HackerTheme.primaryGreen),
               title: Text('Privacy Settings', style: HackerTheme.bodyText()),
-              subtitle: Text('Control your data and privacy', style: HackerTheme.captionText()),
+              subtitle: Text('Control your data and privacy',
+                  style: HackerTheme.captionText()),
               trailing: Icon(Icons.chevron_right, color: HackerTheme.textGrey),
               onTap: _managePrivacy,
             ),
@@ -288,7 +300,8 @@ class _SettingsPageState extends State<SettingsPage> {
             const SizedBox(height: 16),
             SwitchListTile(
               title: Text('Dark Mode', style: HackerTheme.bodyText()),
-              subtitle: Text('Use dark theme throughout the app', style: HackerTheme.captionText()),
+              subtitle: Text('Use dark theme throughout the app',
+                  style: HackerTheme.captionText()),
               value: _settings.isDarkMode,
               onChanged: (value) {
                 _updateSettings(_settings.copyWith(isDarkMode: value));
@@ -298,7 +311,8 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             SwitchListTile(
               title: Text('Hacker Theme', style: HackerTheme.bodyText()),
-              subtitle: Text('Use the signature green hacker aesthetic', style: HackerTheme.captionText()),
+              subtitle: Text('Use the signature green hacker aesthetic',
+                  style: HackerTheme.captionText()),
               value: _settings.useHackerTheme,
               onChanged: (value) {
                 _updateSettings(_settings.copyWith(useHackerTheme: value));
@@ -309,7 +323,8 @@ class _SettingsPageState extends State<SettingsPage> {
             ListTile(
               contentPadding: EdgeInsets.zero,
               title: Text('Theme Color', style: HackerTheme.bodyText()),
-              subtitle: Text('Primary color scheme', style: HackerTheme.captionText()),
+              subtitle: Text('Primary color scheme',
+                  style: HackerTheme.captionText()),
               trailing: DropdownButton<String>(
                 value: _settings.themeColor,
                 items: [
@@ -345,7 +360,8 @@ class _SettingsPageState extends State<SettingsPage> {
             ListTile(
               contentPadding: EdgeInsets.zero,
               title: Text('Default Timeframe', style: HackerTheme.bodyText()),
-              subtitle: Text('Choose default trending period', style: HackerTheme.captionText()),
+              subtitle: Text('Choose default trending period',
+                  style: HackerTheme.captionText()),
               trailing: DropdownButton<String>(
                 value: _settings.trendingTimeframe,
                 items: [
@@ -355,15 +371,18 @@ class _SettingsPageState extends State<SettingsPage> {
                 ],
                 onChanged: (value) {
                   if (value != null) {
-                    _updateSettings(_settings.copyWith(trendingTimeframe: value));
+                    _updateSettings(
+                        _settings.copyWith(trendingTimeframe: value));
                   }
                 },
                 underline: SizedBox.shrink(),
               ),
             ),
             SwitchListTile(
-              title: Text('Show GitHub Trending', style: HackerTheme.bodyText()),
-              subtitle: Text('Display GitHub repositories in trending', style: HackerTheme.captionText()),
+              title:
+                  Text('Show GitHub Trending', style: HackerTheme.bodyText()),
+              subtitle: Text('Display GitHub repositories in trending',
+                  style: HackerTheme.captionText()),
               value: _settings.showGitHubTrending,
               onChanged: (value) {
                 _updateSettings(_settings.copyWith(showGitHubTrending: value));
@@ -373,7 +392,8 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             SwitchListTile(
               title: Text('Show npm Trending', style: HackerTheme.bodyText()),
-              subtitle: Text('Display npm packages in trending', style: HackerTheme.captionText()),
+              subtitle: Text('Display npm packages in trending',
+                  style: HackerTheme.captionText()),
               value: _settings.showNpmTrending,
               onChanged: (value) {
                 _updateSettings(_settings.copyWith(showNpmTrending: value));
@@ -383,7 +403,8 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             SwitchListTile(
               title: Text('Auto Refresh', style: HackerTheme.bodyText()),
-              subtitle: Text('Automatically refresh trending data', style: HackerTheme.captionText()),
+              subtitle: Text('Automatically refresh trending data',
+                  style: HackerTheme.captionText()),
               value: _settings.autoRefresh,
               onChanged: (value) {
                 _updateSettings(_settings.copyWith(autoRefresh: value));
@@ -395,16 +416,21 @@ class _SettingsPageState extends State<SettingsPage> {
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 title: Text('Refresh Interval', style: HackerTheme.bodyText()),
-                subtitle: Text('${_settings.refreshInterval} minutes', style: HackerTheme.captionText()),
-                trailing: Slider(
-                  value: _settings.refreshInterval.toDouble(),
-                  min: 15,
-                  max: 240,
-                  divisions: 45,
-                  activeColor: HackerTheme.primaryGreen,
-                  onChanged: (value) {
-                    _updateSettings(_settings.copyWith(refreshInterval: value.round()));
-                  },
+                subtitle: Text('${_settings.refreshInterval} minutes',
+                    style: HackerTheme.captionText()),
+                trailing: SizedBox(
+                  width: 120,
+                  child: Slider(
+                    value: _settings.refreshInterval.toDouble(),
+                    min: 15,
+                    max: 240,
+                    divisions: 45,
+                    activeColor: HackerTheme.primaryGreen,
+                    onChanged: (value) {
+                      _updateSettings(
+                          _settings.copyWith(refreshInterval: value.round()));
+                    },
+                  ),
                 ),
               ),
           ],
@@ -425,38 +451,48 @@ class _SettingsPageState extends State<SettingsPage> {
             const SizedBox(height: 16),
             SwitchListTile(
               title: Text('Push Notifications', style: HackerTheme.bodyText()),
-              subtitle: Text('Enable push notifications', style: HackerTheme.captionText()),
+              subtitle: Text('Enable push notifications',
+                  style: HackerTheme.captionText()),
               value: _settings.enablePushNotifications,
               onChanged: (value) {
-                _updateSettings(_settings.copyWith(enablePushNotifications: value));
+                _updateSettings(
+                    _settings.copyWith(enablePushNotifications: value));
               },
               activeThumbColor: HackerTheme.primaryGreen,
               contentPadding: EdgeInsets.zero,
             ),
             if (_settings.enablePushNotifications) ...[
               SwitchListTile(
-                title: Text('New Release Notifications', style: HackerTheme.bodyText()),
-                subtitle: Text('Notify about new releases for subscribed items', style: HackerTheme.captionText()),
+                title: Text('New Release Notifications',
+                    style: HackerTheme.bodyText()),
+                subtitle: Text('Notify about new releases for subscribed items',
+                    style: HackerTheme.captionText()),
                 value: _settings.enableNewReleaseNotifications,
                 onChanged: (value) {
-                  _updateSettings(_settings.copyWith(enableNewReleaseNotifications: value));
+                  _updateSettings(
+                      _settings.copyWith(enableNewReleaseNotifications: value));
                 },
                 activeThumbColor: HackerTheme.primaryGreen,
                 contentPadding: EdgeInsets.zero,
               ),
               SwitchListTile(
-                title: Text('Trending Notifications', style: HackerTheme.bodyText()),
-                subtitle: Text('Notify about trending repositories and packages', style: HackerTheme.captionText()),
+                title: Text('Trending Notifications',
+                    style: HackerTheme.bodyText()),
+                subtitle: Text(
+                    'Notify about trending repositories and packages',
+                    style: HackerTheme.captionText()),
                 value: _settings.enableTrendingNotifications,
                 onChanged: (value) {
-                  _updateSettings(_settings.copyWith(enableTrendingNotifications: value));
+                  _updateSettings(
+                      _settings.copyWith(enableTrendingNotifications: value));
                 },
                 activeThumbColor: HackerTheme.primaryGreen,
                 contentPadding: EdgeInsets.zero,
               ),
               SwitchListTile(
                 title: Text('Daily Digest', style: HackerTheme.bodyText()),
-                subtitle: Text('Daily summary of trending items', style: HackerTheme.captionText()),
+                subtitle: Text('Daily summary of trending items',
+                    style: HackerTheme.captionText()),
                 value: _settings.enableDailyDigest,
                 onChanged: (value) {
                   _updateSettings(_settings.copyWith(enableDailyDigest: value));
@@ -466,10 +502,12 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               SwitchListTile(
                 title: Text('Weekly Summary', style: HackerTheme.bodyText()),
-                subtitle: Text('Weekly summary of your activity', style: HackerTheme.captionText()),
+                subtitle: Text('Weekly summary of your activity',
+                    style: HackerTheme.captionText()),
                 value: _settings.enableWeeklySummary,
                 onChanged: (value) {
-                  _updateSettings(_settings.copyWith(enableWeeklySummary: value));
+                  _updateSettings(
+                      _settings.copyWith(enableWeeklySummary: value));
                 },
                 activeThumbColor: HackerTheme.primaryGreen,
                 contentPadding: EdgeInsets.zero,
@@ -477,7 +515,8 @@ class _SettingsPageState extends State<SettingsPage> {
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 title: Text('Notification Time', style: HackerTheme.bodyText()),
-                subtitle: Text('Daily digest delivery time', style: HackerTheme.captionText()),
+                subtitle: Text('Daily digest delivery time',
+                    style: HackerTheme.captionText()),
                 trailing: TextButton(
                   onPressed: _pickNotificationTime,
                   child: Text(_settings.notificationTime),
@@ -485,7 +524,8 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               SwitchListTile(
                 title: Text('Vibration', style: HackerTheme.bodyText()),
-                subtitle: Text('Vibrate for notifications', style: HackerTheme.captionText()),
+                subtitle: Text('Vibrate for notifications',
+                    style: HackerTheme.captionText()),
                 value: _settings.enableVibration,
                 onChanged: (value) {
                   _updateSettings(_settings.copyWith(enableVibration: value));
@@ -495,7 +535,8 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               SwitchListTile(
                 title: Text('Sound', style: HackerTheme.bodyText()),
-                subtitle: Text('Play sound for notifications', style: HackerTheme.captionText()),
+                subtitle: Text('Play sound for notifications',
+                    style: HackerTheme.captionText()),
                 value: _settings.enableSound,
                 onChanged: (value) {
                   _updateSettings(_settings.copyWith(enableSound: value));
@@ -523,21 +564,27 @@ class _SettingsPageState extends State<SettingsPage> {
             ListTile(
               contentPadding: EdgeInsets.zero,
               title: Text('Items Per Page', style: HackerTheme.bodyText()),
-              subtitle: Text('${_settings.itemsPerPage} items', style: HackerTheme.captionText()),
-              trailing: Slider(
-                value: _settings.itemsPerPage.toDouble(),
-                min: 10,
-                max: 100,
-                divisions: 9,
-                activeColor: HackerTheme.primaryGreen,
-                onChanged: (value) {
-                  _updateSettings(_settings.copyWith(itemsPerPage: value.round()));
-                },
+              subtitle: Text('${_settings.itemsPerPage} items',
+                  style: HackerTheme.captionText()),
+              trailing: SizedBox(
+                width: 120,
+                child: Slider(
+                  value: _settings.itemsPerPage.toDouble(),
+                  min: 10,
+                  max: 100,
+                  divisions: 9,
+                  activeColor: HackerTheme.primaryGreen,
+                  onChanged: (value) {
+                    _updateSettings(
+                        _settings.copyWith(itemsPerPage: value.round()));
+                  },
+                ),
               ),
             ),
             SwitchListTile(
               title: Text('Compact View', style: HackerTheme.bodyText()),
-              subtitle: Text('Show more items in less space', style: HackerTheme.captionText()),
+              subtitle: Text('Show more items in less space',
+                  style: HackerTheme.captionText()),
               value: _settings.compactView,
               onChanged: (value) {
                 _updateSettings(_settings.copyWith(compactView: value));
@@ -547,7 +594,8 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             SwitchListTile(
               title: Text('Show Descriptions', style: HackerTheme.bodyText()),
-              subtitle: Text('Display item descriptions', style: HackerTheme.captionText()),
+              subtitle: Text('Display item descriptions',
+                  style: HackerTheme.captionText()),
               value: _settings.showDescriptions,
               onChanged: (value) {
                 _updateSettings(_settings.copyWith(showDescriptions: value));
@@ -557,7 +605,8 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             SwitchListTile(
               title: Text('Show Stars/Forks', style: HackerTheme.bodyText()),
-              subtitle: Text('Display star and fork counts', style: HackerTheme.captionText()),
+              subtitle: Text('Display star and fork counts',
+                  style: HackerTheme.captionText()),
               value: _settings.showStars && _settings.showForks,
               onChanged: (value) {
                 _updateSettings(_settings.copyWith(
@@ -570,7 +619,8 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             SwitchListTile(
               title: Text('Show Last Updated', style: HackerTheme.bodyText()),
-              subtitle: Text('Display last update timestamps', style: HackerTheme.captionText()),
+              subtitle: Text('Display last update timestamps',
+                  style: HackerTheme.captionText()),
               value: _settings.showLastUpdated,
               onChanged: (value) {
                 _updateSettings(_settings.copyWith(showLastUpdated: value));
@@ -580,7 +630,8 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             SwitchListTile(
               title: Text('Show License', style: HackerTheme.bodyText()),
-              subtitle: Text('Display license information', style: HackerTheme.captionText()),
+              subtitle: Text('Display license information',
+                  style: HackerTheme.captionText()),
               value: _settings.showLicense,
               onChanged: (value) {
                 _updateSettings(_settings.copyWith(showLicense: value));
@@ -590,7 +641,8 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             SwitchListTile(
               title: Text('Show Topics', style: HackerTheme.bodyText()),
-              subtitle: Text('Display repository/package topics', style: HackerTheme.captionText()),
+              subtitle: Text('Display repository/package topics',
+                  style: HackerTheme.captionText()),
               value: _settings.showTopics,
               onChanged: (value) {
                 _updateSettings(_settings.copyWith(showTopics: value));
@@ -617,11 +669,13 @@ class _SettingsPageState extends State<SettingsPage> {
             ListTile(
               contentPadding: EdgeInsets.zero,
               title: Text('Sort By', style: HackerTheme.bodyText()),
-              subtitle: Text(_formatSortOption(_settings.sortBy), style: HackerTheme.captionText()),
+              subtitle: Text(_formatSortOption(_settings.sortBy),
+                  style: HackerTheme.captionText()),
               trailing: DropdownButton<String>(
                 value: _settings.sortBy,
                 items: [
-                  DropdownMenuItem(value: 'trending_score', child: Text('Trending Score')),
+                  DropdownMenuItem(
+                      value: 'trending_score', child: Text('Trending Score')),
                   DropdownMenuItem(value: 'stars', child: Text('Stars')),
                   DropdownMenuItem(value: 'date', child: Text('Date')),
                   DropdownMenuItem(value: 'name', child: Text('Name')),
@@ -636,7 +690,8 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             SwitchListTile(
               title: Text('Sort Ascending', style: HackerTheme.bodyText()),
-              subtitle: Text('Sort in ascending order', style: HackerTheme.captionText()),
+              subtitle: Text('Sort in ascending order',
+                  style: HackerTheme.captionText()),
               value: _settings.sortAscending,
               onChanged: (value) {
                 _updateSettings(_settings.copyWith(sortAscending: value));
@@ -647,21 +702,27 @@ class _SettingsPageState extends State<SettingsPage> {
             ListTile(
               contentPadding: EdgeInsets.zero,
               title: Text('Minimum Stars', style: HackerTheme.bodyText()),
-              subtitle: Text('${_settings.minStars}+ stars', style: HackerTheme.captionText()),
-              trailing: Slider(
-                value: _settings.minStars.toDouble(),
-                min: 0,
-                max: 10000,
-                divisions: 20,
-                activeColor: HackerTheme.primaryGreen,
-                onChanged: (value) {
-                  _updateSettings(_settings.copyWith(minStars: value.round()));
-                },
+              subtitle: Text('${_settings.minStars}+ stars',
+                  style: HackerTheme.captionText()),
+              trailing: SizedBox(
+                width: 120,
+                child: Slider(
+                  value: _settings.minStars.toDouble(),
+                  min: 0,
+                  max: 10000,
+                  divisions: 20,
+                  activeColor: HackerTheme.primaryGreen,
+                  onChanged: (value) {
+                    _updateSettings(
+                        _settings.copyWith(minStars: value.round()));
+                  },
+                ),
               ),
             ),
             SwitchListTile(
               title: Text('Include Forks', style: HackerTheme.bodyText()),
-              subtitle: Text('Include forked repositories', style: HackerTheme.captionText()),
+              subtitle: Text('Include forked repositories',
+                  style: HackerTheme.captionText()),
               value: _settings.includeForks,
               onChanged: (value) {
                 _updateSettings(_settings.copyWith(includeForks: value));
@@ -671,7 +732,8 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             SwitchListTile(
               title: Text('Include Archived', style: HackerTheme.bodyText()),
-              subtitle: Text('Include archived repositories', style: HackerTheme.captionText()),
+              subtitle: Text('Include archived repositories',
+                  style: HackerTheme.captionText()),
               value: _settings.includeArchived,
               onChanged: (value) {
                 _updateSettings(_settings.copyWith(includeArchived: value));
@@ -697,7 +759,8 @@ class _SettingsPageState extends State<SettingsPage> {
             const SizedBox(height: 16),
             SwitchListTile(
               title: Text('Offline Mode', style: HackerTheme.bodyText()),
-              subtitle: Text('Enable offline caching', style: HackerTheme.captionText()),
+              subtitle: Text('Enable offline caching',
+                  style: HackerTheme.captionText()),
               value: _settings.enableOfflineMode,
               onChanged: (value) {
                 _updateSettings(_settings.copyWith(enableOfflineMode: value));
@@ -708,21 +771,28 @@ class _SettingsPageState extends State<SettingsPage> {
             ListTile(
               contentPadding: EdgeInsets.zero,
               title: Text('Cache Expiry', style: HackerTheme.bodyText()),
-              subtitle: Text('${_settings.cacheExpiryHours} hours', style: HackerTheme.captionText()),
-              trailing: Slider(
-                value: _settings.cacheExpiryHours.toDouble(),
-                min: 1,
-                max: 168,
-                divisions: 167,
-                activeColor: HackerTheme.primaryGreen,
-                onChanged: (value) {
-                  _updateSettings(_settings.copyWith(cacheExpiryHours: value.round()));
-                },
+              subtitle: Text('${_settings.cacheExpiryHours} hours',
+                  style: HackerTheme.captionText()),
+              trailing: SizedBox(
+                width: 120,
+                child: Slider(
+                  value: _settings.cacheExpiryHours.toDouble(),
+                  min: 1,
+                  max: 168,
+                  divisions: 167,
+                  activeColor: HackerTheme.primaryGreen,
+                  onChanged: (value) {
+                    _updateSettings(
+                        _settings.copyWith(cacheExpiryHours: value.round()));
+                  },
+                ),
               ),
             ),
             SwitchListTile(
-              title: Text('Auto Delete Old Data', style: HackerTheme.bodyText()),
-              subtitle: Text('Automatically clean old cached data', style: HackerTheme.captionText()),
+              title:
+                  Text('Auto Delete Old Data', style: HackerTheme.bodyText()),
+              subtitle: Text('Automatically clean old cached data',
+                  style: HackerTheme.captionText()),
               value: _settings.autoDeleteOldData,
               onChanged: (value) {
                 _updateSettings(_settings.copyWith(autoDeleteOldData: value));
@@ -733,16 +803,21 @@ class _SettingsPageState extends State<SettingsPage> {
             ListTile(
               contentPadding: EdgeInsets.zero,
               title: Text('Max Cache Size', style: HackerTheme.bodyText()),
-              subtitle: Text('${_settings.maxCacheSize} MB', style: HackerTheme.captionText()),
-              trailing: Slider(
-                value: _settings.maxCacheSize.toDouble(),
-                min: 50,
-                max: 1000,
-                divisions: 19,
-                activeColor: HackerTheme.primaryGreen,
-                onChanged: (value) {
-                  _updateSettings(_settings.copyWith(maxCacheSize: value.round()));
-                },
+              subtitle: Text('${_settings.maxCacheSize} MB',
+                  style: HackerTheme.captionText()),
+              trailing: SizedBox(
+                width: 120,
+                child: Slider(
+                  value: _settings.maxCacheSize.toDouble(),
+                  min: 50,
+                  max: 1000,
+                  divisions: 19,
+                  activeColor: HackerTheme.primaryGreen,
+                  onChanged: (value) {
+                    _updateSettings(
+                        _settings.copyWith(maxCacheSize: value.round()));
+                  },
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -791,7 +866,8 @@ class _SettingsPageState extends State<SettingsPage> {
             const SizedBox(height: 16),
             SwitchListTile(
               title: Text('Debug Mode', style: HackerTheme.bodyText()),
-              subtitle: Text('Enable debug logging and information', style: HackerTheme.captionText()),
+              subtitle: Text('Enable debug logging and information',
+                  style: HackerTheme.captionText()),
               value: _settings.enableDebugMode,
               onChanged: (value) {
                 _updateSettings(_settings.copyWith(enableDebugMode: value));
@@ -801,7 +877,8 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             SwitchListTile(
               title: Text('Beta Features', style: HackerTheme.bodyText()),
-              subtitle: Text('Enable experimental features', style: HackerTheme.captionText()),
+              subtitle: Text('Enable experimental features',
+                  style: HackerTheme.captionText()),
               value: _settings.enableBetaFeatures,
               onChanged: (value) {
                 _updateSettings(_settings.copyWith(enableBetaFeatures: value));
@@ -811,7 +888,8 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             SwitchListTile(
               title: Text('Share Usage Data', style: HackerTheme.bodyText()),
-              subtitle: Text('Help improve the app with anonymous usage data', style: HackerTheme.captionText()),
+              subtitle: Text('Help improve the app with anonymous usage data',
+                  style: HackerTheme.captionText()),
               value: _settings.shareUsageData,
               onChanged: (value) {
                 _updateSettings(_settings.copyWith(shareUsageData: value));
@@ -821,7 +899,8 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             SwitchListTile(
               title: Text('Analytics', style: HackerTheme.bodyText()),
-              subtitle: Text('Enable analytics tracking', style: HackerTheme.captionText()),
+              subtitle: Text('Enable analytics tracking',
+                  style: HackerTheme.captionText()),
               value: _settings.enableAnalytics,
               onChanged: (value) {
                 _updateSettings(_settings.copyWith(enableAnalytics: value));
@@ -834,7 +913,8 @@ class _SettingsPageState extends State<SettingsPage> {
               contentPadding: EdgeInsets.zero,
               leading: Icon(Icons.info, color: HackerTheme.primaryGreen),
               title: Text('About', style: HackerTheme.bodyText()),
-              subtitle: Text('App version and information', style: HackerTheme.captionText()),
+              subtitle: Text('App version and information',
+                  style: HackerTheme.captionText()),
               trailing: Icon(Icons.chevron_right, color: HackerTheme.textGrey),
               onTap: _showAboutDialog,
             ),
@@ -842,7 +922,8 @@ class _SettingsPageState extends State<SettingsPage> {
               contentPadding: EdgeInsets.zero,
               leading: Icon(Icons.help, color: HackerTheme.primaryGreen),
               title: Text('Help & Support', style: HackerTheme.bodyText()),
-              subtitle: Text('Get help and contact support', style: HackerTheme.captionText()),
+              subtitle: Text('Get help and contact support',
+                  style: HackerTheme.captionText()),
               trailing: Icon(Icons.chevron_right, color: HackerTheme.textGrey),
               onTap: _showHelpDialog,
             ),
@@ -875,9 +956,34 @@ class _SettingsPageState extends State<SettingsPage> {
     });
   }
 
-  void _connectDiscord() {
-    // Implement Discord OAuth2 flow
-    _showSnackBar('Discord OAuth2 integration - Coming soon!');
+  Future<void> _connectDiscord() async {
+    try {
+      // Trigger Discord OAuth2 flow
+      await ref.read(authNotifierProvider.notifier).signInWithDiscord();
+
+      // Check if authentication was successful
+      final authState = ref.read(authNotifierProvider);
+      authState.when(
+        data: (user) {
+          if (user != null) {
+            _showSnackBar('Successfully connected to Discord!');
+            _updateSettings(_settings.copyWith(
+              discordUserId: user.$id,
+              discordUsername: user.name,
+              discordEmail: user.email,
+              isDiscordConnected: true,
+            ));
+          } else {
+            _showSnackBar('Failed to connect Discord. Please try again.');
+          }
+        },
+        loading: () => _showSnackBar('Connecting to Discord...'),
+        error: (error, _) =>
+            _showSnackBar('Error connecting Discord: ${error.toString()}'),
+      );
+    } catch (e) {
+      _showSnackBar('Error: ${e.toString()}');
+    }
   }
 
   void _disconnectDiscord() {
@@ -893,7 +999,8 @@ class _SettingsPageState extends State<SettingsPage> {
   void _pickNotificationTime() async {
     final time = await showTimePicker(
       context: context,
-      initialTime: TimeOfDay.fromDateTime(DateTime.parse('2023-01-01 ${_settings.notificationTime}:00')),
+      initialTime: TimeOfDay.fromDateTime(
+          DateTime.parse('2023-01-01 ${_settings.notificationTime}:00')),
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
@@ -909,7 +1016,8 @@ class _SettingsPageState extends State<SettingsPage> {
     );
 
     if (time != null) {
-      final timeString = '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+      final timeString =
+          '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
       _updateSettings(_settings.copyWith(notificationTime: timeString));
     }
   }
@@ -949,9 +1057,11 @@ class _SettingsPageState extends State<SettingsPage> {
             const SizedBox(height: 16),
             Text('Features:', style: HackerTheme.heading3()),
             const SizedBox(height: 8),
-            Text('• Trending repositories and packages', style: HackerTheme.bodyText()),
+            Text('• Trending repositories and packages',
+                style: HackerTheme.bodyText()),
             Text('• Subscription management', style: HackerTheme.bodyText()),
-            Text('• Advanced search and filters', style: HackerTheme.bodyText()),
+            Text('• Advanced search and filters',
+                style: HackerTheme.bodyText()),
             Text('• Discord OAuth2 integration', style: HackerTheme.bodyText()),
             Text('• Push notifications', style: HackerTheme.bodyText()),
             Text('• Dark hacker theme', style: HackerTheme.bodyText()),
@@ -986,10 +1096,15 @@ class _SettingsPageState extends State<SettingsPage> {
             const SizedBox(height: 16),
             Text('Quick Tips:', style: HackerTheme.heading3()),
             const SizedBox(height: 8),
-            Text('• Tap the bookmark icon to subscribe to repositories/packages', style: HackerTheme.bodyText()),
-            Text('• Use the search bar to find specific items', style: HackerTheme.bodyText()),
-            Text('• Configure notifications in Settings', style: HackerTheme.bodyText()),
-            Text('• Connect Discord for enhanced features', style: HackerTheme.bodyText()),
+            Text(
+                '• Tap the bookmark icon to subscribe to repositories/packages',
+                style: HackerTheme.bodyText()),
+            Text('• Use the search bar to find specific items',
+                style: HackerTheme.bodyText()),
+            Text('• Configure notifications in Settings',
+                style: HackerTheme.bodyText()),
+            Text('• Connect Discord for enhanced features',
+                style: HackerTheme.bodyText()),
           ],
         ),
         actions: [

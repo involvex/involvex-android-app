@@ -75,18 +75,24 @@ class NpmPackage {
       homepage: json['homepage'] ?? '',
       repositoryUrl: json['repository']?['url'] ?? '',
       readme: json['readme'],
-      modified: DateTime.parse(json['modified'] ?? DateTime.now().toIso8601String()),
+      modified: json['modified'] != null
+          ? DateTime.tryParse(json['modified']) ?? DateTime.now()
+          : DateTime.now(),
       keywords: List<String>.from(json['keywords'] ?? []),
-      downloads: json['dist']['unpackedSize'] ?? 0,
+      downloads: json['dist']?['unpackedSize'] ?? 0,
       stars: json['githubStars'] ?? 0,
       publisher: json['publisher']?['username'] ?? '',
       publisherAvatarUrl: json['publisher']?['email'],
       maintainers: _formatMaintainers(json['maintainers'] ?? []),
-      versions: List<String>.from(json['versions']?.keys ?? []),
-      latestVersion: json['versions']?['latest']?['version'],
+      versions: json['versions'] != null && json['versions'] is Map
+          ? List<String>.from((json['versions'] as Map<String, dynamic>).keys)
+          : [],
+      latestVersion: json['dist-tags']?['latest'] ?? json['version'],
       license: json['license'],
-      dependencies: _extractDependencies(json['versions']?['latest']?['dependencies']),
-      devDependencies: _extractDependencies(json['versions']?['latest']?['devDependencies']),
+      dependencies:
+          _extractDependencies(json['versions']?['latest']?['dependencies']),
+      devDependencies:
+          _extractDependencies(json['versions']?['latest']?['devDependencies']),
       openIssues: _extractOpenIssues(json),
       openPullRequests: _extractOpenPullRequests(json),
       hasSecurityVulnerabilities: json['hasSecurityVulnerabilities'] ?? false,
@@ -94,8 +100,8 @@ class NpmPackage {
       trendingScore: _calculateTrendingScore(json),
       trendingPeriod: 'daily',
       lastReleaseDate: _extractLatestReleaseDate(json),
-      latestReleaseTag: json['versions']?['latest']?['version'],
-      latestReleaseName: json['versions']?['latest']?['name'],
+      latestReleaseTag: json['dist-tags']?['latest'] ?? json['version'],
+      latestReleaseName: json['name'],
       metrics: json['metrics'],
     );
   }
@@ -103,7 +109,9 @@ class NpmPackage {
   // Extract maintainers as formatted string
   static String _formatMaintainers(List<dynamic> maintainers) {
     if (maintainers.isEmpty) return 'No maintainers';
-    return maintainers.map((m) => m['username'] ?? m['email'] ?? 'Unknown').join(', ');
+    return maintainers
+        .map((m) => m['username'] ?? m['email'] ?? 'Unknown')
+        .join(', ');
   }
 
   // Extract dependencies
@@ -143,10 +151,14 @@ class NpmPackage {
 
   // Calculate trending score
   static double _calculateTrendingScore(Map<String, dynamic> json) {
-    final downloads = json['dist']['unpackedSize'] ?? 0;
+    final downloads = json['dist']?['unpackedSize'] ?? 0;
     final stars = json['githubStars'] ?? 0;
-    final recentActivity = _calculateRecentActivity(json['modified']);
-    
+
+    final modifiedDate = json['modified'] != null
+        ? DateTime.tryParse(json['modified']) ?? DateTime.now()
+        : DateTime.now();
+    final recentActivity = _calculateRecentActivity(modifiedDate);
+
     // Weighted scoring algorithm for npm packages
     return (downloads * 0.4) + (stars * 0.4) + (recentActivity * 0.2);
   }
@@ -155,7 +167,7 @@ class NpmPackage {
   static double _calculateRecentActivity(DateTime modified) {
     final now = DateTime.now();
     final daysSinceModified = now.difference(modified).inDays;
-    
+
     if (daysSinceModified <= 1) return 10.0;
     if (daysSinceModified <= 7) return 8.0;
     if (daysSinceModified <= 30) return 6.0;
@@ -219,7 +231,8 @@ class NpmPackage {
       devDependencies: devDependencies ?? this.devDependencies,
       openIssues: openIssues ?? this.openIssues,
       openPullRequests: openPullRequests ?? this.openPullRequests,
-      hasSecurityVulnerabilities: hasSecurityVulnerabilities ?? this.hasSecurityVulnerabilities,
+      hasSecurityVulnerabilities:
+          hasSecurityVulnerabilities ?? this.hasSecurityVulnerabilities,
       securityPolicyUrl: securityPolicyUrl ?? this.securityPolicyUrl,
       trendingScore: trendingScore ?? this.trendingScore,
       trendingPeriod: trendingPeriod ?? this.trendingPeriod,
@@ -243,7 +256,7 @@ class NpmPackage {
   String get timeAgo {
     final now = DateTime.now();
     final difference = now.difference(modified);
-    
+
     if (difference.inDays > 365) {
       return '${difference.inDays ~/ 365} years ago';
     } else if (difference.inDays > 30) {
@@ -296,9 +309,8 @@ class NpmPackage {
   // Check if has high impact dependencies
   bool get hasHighImpactDependencies {
     final highImpact = ['react', 'angular', 'vue', 'webpack', 'typescript'];
-    return dependencies.any((dep) => 
-      highImpact.any((impact) => dep.toLowerCase().contains(impact))
-    );
+    return dependencies.any((dep) =>
+        highImpact.any((impact) => dep.toLowerCase().contains(impact)));
   }
 
   // Get package size in bytes
@@ -307,7 +319,9 @@ class NpmPackage {
   // Get formatted package size
   String get formattedSize {
     if (downloads < 1024) return '${downloads}B';
-    if (downloads < 1024 * 1024) return '${(downloads / 1024).toStringAsFixed(1)}KB';
+    if (downloads < 1024 * 1024) {
+      return '${(downloads / 1024).toStringAsFixed(1)}KB';
+    }
     return '${(downloads / (1024 * 1024)).toStringAsFixed(1)}MB';
   }
 

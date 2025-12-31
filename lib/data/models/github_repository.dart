@@ -91,9 +91,12 @@ class GitHubRepository {
       watchers: json['watchers_count'] ?? 0,
       language: json['language'] ?? 'Unknown',
       license: json['license']?['name'],
-      createdAt: DateTime.parse(json['created_at'] ?? DateTime.now().toIso8601String()),
-      updatedAt: DateTime.parse(json['updated_at'] ?? DateTime.now().toIso8601String()),
-      pushedAt: DateTime.parse(json['pushed_at'] ?? DateTime.now().toIso8601String()),
+      createdAt: DateTime.parse(
+          json['created_at'] ?? DateTime.now().toIso8601String()),
+      updatedAt: DateTime.parse(
+          json['updated_at'] ?? DateTime.now().toIso8601String()),
+      pushedAt:
+          DateTime.parse(json['pushed_at'] ?? DateTime.now().toIso8601String()),
       size: json['size'] ?? 0,
       isPrivate: json['private'] ?? false,
       isFork: json['fork'] ?? false,
@@ -117,7 +120,7 @@ class GitHubRepository {
     final stars = json['stargazers_count'] ?? 0;
     final forks = json['forks_count'] ?? 0;
     final recentActivity = _calculateRecentActivity(json['pushed_at']);
-    
+
     // Weighted scoring algorithm
     return (stars * 0.6) + (forks * 0.3) + (recentActivity * 0.1);
   }
@@ -125,11 +128,11 @@ class GitHubRepository {
   // Calculate recent activity score based on last push
   static double _calculateRecentActivity(String? pushedAt) {
     if (pushedAt == null) return 0.0;
-    
+
     final lastPush = DateTime.parse(pushedAt);
     final now = DateTime.now();
     final daysSincePush = now.difference(lastPush).inDays;
-    
+
     // More recent activity gets higher score
     if (daysSincePush <= 1) return 10.0;
     if (daysSincePush <= 7) return 8.0;
@@ -228,7 +231,7 @@ class GitHubRepository {
   String get timeAgo {
     final now = DateTime.now();
     final difference = now.difference(updatedAt);
-    
+
     if (difference.inDays > 365) {
       return '${difference.inDays ~/ 365} years ago';
     } else if (difference.inDays > 30) {
@@ -271,7 +274,7 @@ class GitHubRepository {
       'YAML': '#cb171e',
       'JSON': '#292929',
     };
-    
+
     return colors[language] ?? '#cccccc';
   }
 

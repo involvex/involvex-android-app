@@ -7,7 +7,7 @@ class HackerTheme {
   static const Color darkGreen = Color(0xFF0A3D0A); // Dark background green
   static const Color darkerGreen = Color(0xFF051A05); // Very dark green
   static const Color accentGreen = Color(0xFF1AFF66); // Accent green
-  
+
   // Neutral Colors
   static const Color pureBlack = Color(0xFF000000);
   static const Color darkGrey = Color(0xFF1A1A1A);
@@ -17,20 +17,20 @@ class HackerTheme {
   static const Color errorRed = Color(0xFFFF4444);
   static const Color warningOrange = Color(0xFFFF8800);
   static const Color successGreen = Color(0xFF00FF41);
-  
+
   // Gradients
   static const LinearGradient primaryGradient = LinearGradient(
     colors: [darkerGreen, darkGreen, mediumGrey],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
-  
+
   static const LinearGradient accentGradient = LinearGradient(
     colors: [primaryGreen, accentGreen],
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
   );
-  
+
   // Glow Effects
   static BoxDecoration glowEffect({Color? color, double blurRadius = 10.0}) {
     return BoxDecoration(
@@ -45,7 +45,7 @@ class HackerTheme {
       ],
     );
   }
-  
+
   // Terminal/Console Text Style
   static TextStyle terminalText({
     double? fontSize,
@@ -62,7 +62,7 @@ class HackerTheme {
       height: 1.4,
     );
   }
-  
+
   // Heading Styles
   static TextStyle heading1() {
     return terminalText(
@@ -72,7 +72,7 @@ class HackerTheme {
       letterSpacing: 1.0,
     );
   }
-  
+
   static TextStyle heading2() {
     return terminalText(
       fontSize: 24,
@@ -81,7 +81,7 @@ class HackerTheme {
       letterSpacing: 0.8,
     );
   }
-  
+
   static TextStyle heading3() {
     return terminalText(
       fontSize: 18,
@@ -90,7 +90,7 @@ class HackerTheme {
       letterSpacing: 0.5,
     );
   }
-  
+
   // Body Text Styles
   static TextStyle bodyText() {
     return terminalText(
@@ -99,7 +99,7 @@ class HackerTheme {
       color: textGrey,
     );
   }
-  
+
   static TextStyle captionText() {
     return terminalText(
       fontSize: 12,
@@ -107,7 +107,7 @@ class HackerTheme {
       color: textGrey.withOpacity(0.7),
     );
   }
-  
+
   // Button Styles
   static TextStyle buttonText() {
     return terminalText(
@@ -117,7 +117,7 @@ class HackerTheme {
       letterSpacing: 0.8,
     );
   }
-  
+
   // Code/Technical Text Style
   static TextStyle codeText() {
     return TextStyle(
@@ -129,7 +129,7 @@ class HackerTheme {
       height: 1.5,
     );
   }
-  
+
   // Light Theme Colors
   static const lightPrimaryGreen = Color(0xFF006633);
   static const lightSecondaryGreen = Color(0xFF009944);
@@ -138,12 +138,12 @@ class HackerTheme {
   static const lightOnPrimary = Color(0xFFFFFFFF);
   static const lightOnSecondary = Color(0xFFFFFFFF);
   static const lightOnSurface = Color(0xFF1A1A1A);
-  
+
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
-      
+
       // Color Scheme
       colorScheme: const ColorScheme.dark(
         primary: primaryGreen,
@@ -155,7 +155,7 @@ class HackerTheme {
         error: errorRed,
         onError: pureBlack,
       ),
-      
+
       // App Bar Theme
       appBarTheme: AppBarTheme(
         backgroundColor: darkerGreen,
@@ -171,14 +171,14 @@ class HackerTheme {
         iconTheme: const IconThemeData(color: primaryGreen, size: 24),
         actionsIconTheme: const IconThemeData(color: primaryGreen, size: 24),
       ),
-      
+
       // Card Theme
       cardTheme: CardThemeData(
         color: darkGrey,
         elevation: 4,
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),
-      
+
       // Elevated Button Theme
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -193,7 +193,7 @@ class HackerTheme {
           textStyle: buttonText(),
         ),
       ),
-      
+
       // Outlined Button Theme
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
@@ -206,7 +206,7 @@ class HackerTheme {
           textStyle: buttonText(),
         ),
       ),
-      
+
       // Text Button Theme
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
@@ -214,7 +214,7 @@ class HackerTheme {
           textStyle: buttonText(),
         ),
       ),
-      
+
       // Input Decoration Theme
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
@@ -238,7 +238,7 @@ class HackerTheme {
         labelStyle: const TextStyle(color: textGrey),
         hintStyle: TextStyle(color: textGrey.withOpacity(0.6)),
       ),
-      
+
       // Bottom Navigation Bar Theme
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: darkerGreen,
@@ -247,14 +247,14 @@ class HackerTheme {
         type: BottomNavigationBarType.fixed,
         elevation: 8,
       ),
-      
+
       // Floating Action Button Theme
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
         backgroundColor: primaryGreen,
         foregroundColor: darkerGreen,
         elevation: 6,
       ),
-      
+
       // Chip Theme
       chipTheme: ChipThemeData(
         backgroundColor: mediumGrey,
@@ -265,13 +265,13 @@ class HackerTheme {
           side: const BorderSide(color: lightGrey),
         ),
       ),
-      
+
       // Progress Indicator Theme
       progressIndicatorTheme: const ProgressIndicatorThemeData(
         color: primaryGreen,
         linearTrackColor: mediumGrey,
       ),
-      
+
       // Switch Theme
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith((states) {
@@ -287,7 +287,7 @@ class HackerTheme {
           return mediumGrey;
         }),
       ),
-      
+
       // Divider Theme
       dividerTheme: const DividerThemeData(
         color: lightGrey,
@@ -296,12 +296,12 @@ class HackerTheme {
       ),
     );
   }
-  
+
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
-      
+
       colorScheme: const ColorScheme.light(
         primary: lightPrimaryGreen,
         secondary: lightSecondaryGreen,
@@ -310,7 +310,7 @@ class HackerTheme {
         onSecondary: lightOnSecondary,
         onSurface: lightOnSurface,
       ),
-      
+
       appBarTheme: const AppBarTheme(
         backgroundColor: lightSurface,
         foregroundColor: lightPrimaryGreen,
@@ -323,7 +323,7 @@ class HackerTheme {
           color: lightPrimaryGreen,
         ),
       ),
-      
+
       // Update other theme properties for light mode as needed
     );
   }

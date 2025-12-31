@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import '../../components/favorites/favorites_content.dart';
+import '../components/favorites/favorites_content.dart';
 
 class FavoritesPage extends StatelessWidget {
-  const FavoritesPage({Key? key}) : super(key: key);
+  const FavoritesPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: FavoritesContent(),
+    return Scaffold(
+      body: const FavoritesContent(),
     );
   }
 }

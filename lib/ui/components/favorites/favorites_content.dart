@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../components/collapsible_bottomsheet.dart';
-import '../../data/models/project_info.dart';
+import '../collapsible_bottomsheet.dart';
+import 'package:involvex_app/data/models/log.dart';
+import 'package:involvex_app/data/models/project_info.dart';
 
 class FavoritesContent extends StatelessWidget {
-  const FavoritesContent({Key? key}) : super(key: key);
+  const FavoritesContent({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -25,9 +26,9 @@ class FavoritesContent extends StatelessWidget {
               title: Text(
                 'Favorites',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: Colors.greenAccent,
-                  fontWeight: FontWeight.bold,
-                ),
+                      color: Colors.greenAccent,
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
               background: Container(
                 decoration: const BoxDecoration(
@@ -49,7 +50,7 @@ class FavoritesContent extends StatelessWidget {
                   // Favorites Header
                   _buildSectionHeader('Your Favorites'),
                   const SizedBox(height: 16),
-                  
+
                   // Repository Favorites
                   _buildPlatformSection(
                     context,
@@ -59,10 +60,10 @@ class FavoritesContent extends StatelessWidget {
                     Icons.favorite,
                     Icons.code,
                   ),
-                  
+
                   const SizedBox(height: 24),
-                  
-                  // Package Favorites  
+
+                  // Package Favorites
                   _buildPlatformSection(
                     context,
                     'Packages',
@@ -71,9 +72,9 @@ class FavoritesContent extends StatelessWidget {
                     Icons.favorite,
                     Icons.inventory_2,
                   ),
-                  
+
                   const SizedBox(height: 24),
-                  
+
                   // Quick Actions
                   _buildQuickActions(context),
                 ],
@@ -145,7 +146,7 @@ class FavoritesContent extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: accentColor.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(8),
-                    border: BorderSide(
+                    border: Border.all(
                       color: accentColor.withOpacity(0.5),
                       width: 1,
                     ),
@@ -295,23 +296,14 @@ class FavoritesContent extends StatelessWidget {
 class FavoritesListBottomSheet extends StatelessWidget {
   final String platform;
 
-  const FavoritesListBottomSheet({Key? key, required this.platform}) : super(key: key);
+  const FavoritesListBottomSheet({super.key, required this.platform});
 
   @override
   Widget build(BuildContext context) {
     return CollapsibleBottomSheet(
       title: '$platform Favorites',
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // TODO: Replace with actual favorites data
-            _buildFavoriteItem(context, 'Example Repository', 'A sample project', 150, 'JavaScript', 'MIT'),
-            _buildFavoriteItem(context, 'Another Repo', 'Sample description', 89, 'Python', 'Apache-2.0'),
-            _buildFavoriteItem(context, 'Third Example', 'Another sample', 234, 'TypeScript', 'MIT'),
-          ],
-        ),
-      ),
+      logs: const <Log>[],
+      projectInfo: ProjectInfo(endpoint: '', projectId: '', projectName: ''),
     );
   }
 

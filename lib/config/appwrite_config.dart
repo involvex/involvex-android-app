@@ -4,34 +4,32 @@ class AppwriteConfig {
   // Replace with your actual Appwrite endpoint and project details
   static const String endpoint = 'https://your-appwrite-project.com/v1';
   static const String projectId = 'your-project-id';
-  
+
   // Database Collections
   static const String usersCollection = 'users';
   static const String subscriptionsCollection = 'subscriptions';
   static const String releasesCollection = 'releases';
   static const String notificationsCollection = 'notifications';
-  
+
   // Storage Buckets
   static const String exportsBucket = 'exports';
-  
+
   static Client createClient() {
-    return Client()
-        .setEndpoint(endpoint)
-        .setProject(projectId);
+    return Client().setEndpoint(endpoint).setProject(projectId);
   }
-  
+
   static Databases createDatabases(Client client) {
     return Databases(client);
   }
-  
+
   static Account createAccount(Client client) {
     return Account(client);
   }
-  
+
   static Storage createStorage(Client client) {
     return Storage(client);
   }
-  
+
   static Functions createFunctions(Client client) {
     return Functions(client);
   }

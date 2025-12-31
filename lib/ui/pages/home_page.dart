@@ -1,26 +1,51 @@
-
 import 'package:involvex_app/theme/hacker_theme.dart';
+import 'package:involvex_app/data/models/github_repository.dart';
+import 'package:involvex_app/data/models/npm_package.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:involvex_app/providers/trending_provider.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  ConsumerState<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
+class _HomePageState extends ConsumerState<HomePage>
+    with TickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   late TabController _tabController;
-  bool _isLoading = false;
-  String _selectedTimeframe = 'daily';
-  final bool _showGitHub = true;
-  final bool _showNpm = true;
+  TrendingTimeframe _selectedTimeframe = TrendingTimeframe.daily;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-    _loadData();
+    // Restore saved tab index from PageStorage
+    final savedIndex = PageStorage.of(context).readState(
+          context,
+          identifier: const ValueKey('home_tab_index'),
+        ) as int? ??
+        0;
+
+    _tabController = TabController(
+      length: 2,
+      vsync: this,
+      initialIndex: savedIndex,
+    );
+
+    // Save tab index whenever it changes
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        PageStorage.of(context).writeState(
+          context,
+          _tabController.index,
+          identifier: const ValueKey('home_tab_index'),
+        );
+      }
+    });
   }
 
   @override
@@ -29,21 +54,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  Future<void> _loadData() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    // Simulate API loading
-    await Future.delayed(const Duration(seconds: 1));
-    
-    setState(() {
-      _isLoading = false;
-    });
+  void _refreshData() {
+    ref.invalidate(trendingRepositoriesProvider(_selectedTimeframe));
+    ref.invalidate(trendingPackagesProvider(_selectedTimeframe));
   }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
     return Scaffold(
       backgroundColor: HackerTheme.darkerGreen,
       appBar: AppBar(
@@ -54,28 +72,27 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: _isLoading ? null : _loadData,
+            onPressed: _refreshData,
             color: HackerTheme.primaryGreen,
           ),
-          PopupMenuButton<String>(
+          PopupMenuButton<TrendingTimeframe>(
             icon: Icon(Icons.more_vert, color: HackerTheme.primaryGreen),
             onSelected: (value) {
               setState(() {
                 _selectedTimeframe = value;
               });
-              _loadData();
             },
             itemBuilder: (context) => [
               const PopupMenuItem(
-                value: 'daily',
+                value: TrendingTimeframe.daily,
                 child: Text('Daily'),
               ),
               const PopupMenuItem(
-                value: 'weekly',
+                value: TrendingTimeframe.weekly,
                 child: Text('Weekly'),
               ),
               const PopupMenuItem(
-                value: 'monthly',
+                value: TrendingTimeframe.monthly,
                 child: Text('Monthly'),
               ),
             ],
@@ -92,19 +109,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ],
         ),
       ),
-      body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(
-                color: HackerTheme.primaryGreen,
-              ),
-            )
-          : TabBarView(
-              controller: _tabController,
-              children: [
-                _buildGitHubTab(),
-                _buildNpmTab(),
-              ],
-            ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _buildGitHubTab(),
+          _buildNpmTab(),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           // Quick toggle between GitHub and npm
@@ -120,8 +131,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _buildGitHubTab() {
-    final mockRepositories = _generateMockRepositories();
-    
+    final trendingRepos =
+        ref.watch(trendingRepositoriesProvider(_selectedTimeframe));
+
     return Column(
       children: [
         // Filter Bar
@@ -131,15 +143,56 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         // Repository List
         Expanded(
           child: RefreshIndicator(
-            onRefresh: _loadData,
+            onRefresh: () async {
+              _refreshData();
+            },
             color: HackerTheme.primaryGreen,
             backgroundColor: HackerTheme.darkerGreen,
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: mockRepositories.length,
-              itemBuilder: (context, index) {
-                return _buildRepositoryCard(mockRepositories[index]);
+            child: trendingRepos.when(
+              data: (repositories) {
+                if (repositories.isEmpty) {
+                  return Center(
+                    child: Text(
+                      'No trending repositories found',
+                      style: HackerTheme.bodyText().copyWith(
+                        color: HackerTheme.textGrey,
+                      ),
+                    ),
+                  );
+                }
+                return ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: repositories.length,
+                  itemBuilder: (context, index) {
+                    return _buildRepositoryCard(repositories[index]);
+                  },
+                );
               },
+              loading: () => const Center(
+                child: CircularProgressIndicator(
+                  color: HackerTheme.primaryGreen,
+                ),
+              ),
+              error: (error, stack) => Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.error_outline, color: Colors.red[300], size: 64),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Error loading repositories',
+                      style: HackerTheme.bodyText()
+                          .copyWith(color: Colors.red[300]),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      error.toString(),
+                      style: HackerTheme.captionText(),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
@@ -148,8 +201,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _buildNpmTab() {
-    final mockPackages = _generateMockPackages();
-    
+    final trendingPackages =
+        ref.watch(trendingPackagesProvider(_selectedTimeframe));
+
     return Column(
       children: [
         // Filter Bar
@@ -159,15 +213,56 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         // Package List
         Expanded(
           child: RefreshIndicator(
-            onRefresh: _loadData,
+            onRefresh: () async {
+              _refreshData();
+            },
             color: HackerTheme.primaryGreen,
             backgroundColor: HackerTheme.darkerGreen,
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: mockPackages.length,
-              itemBuilder: (context, index) {
-                return _buildPackageCard(mockPackages[index]);
+            child: trendingPackages.when(
+              data: (packages) {
+                if (packages.isEmpty) {
+                  return Center(
+                    child: Text(
+                      'No trending packages found',
+                      style: HackerTheme.bodyText().copyWith(
+                        color: HackerTheme.textGrey,
+                      ),
+                    ),
+                  );
+                }
+                return ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: packages.length,
+                  itemBuilder: (context, index) {
+                    return _buildPackageCard(packages[index]);
+                  },
+                );
               },
+              loading: () => const Center(
+                child: CircularProgressIndicator(
+                  color: HackerTheme.primaryGreen,
+                ),
+              ),
+              error: (error, stack) => Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.error_outline, color: Colors.red[300], size: 64),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Error loading packages',
+                      style: HackerTheme.bodyText()
+                          .copyWith(color: Colors.red[300]),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      error.toString(),
+                      style: HackerTheme.captionText(),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
@@ -189,18 +284,20 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ),
           const SizedBox(width: 16),
           Expanded(
-            child: SegmentedButton<String>(
+            child: SegmentedButton<TrendingTimeframe>(
               segments: const [
-                ButtonSegment(value: 'daily', label: Text('Daily')),
-                ButtonSegment(value: 'weekly', label: Text('Weekly')),
-                ButtonSegment(value: 'monthly', label: Text('Monthly')),
+                ButtonSegment(
+                    value: TrendingTimeframe.daily, label: Text('Daily')),
+                ButtonSegment(
+                    value: TrendingTimeframe.weekly, label: Text('Weekly')),
+                ButtonSegment(
+                    value: TrendingTimeframe.monthly, label: Text('Monthly')),
               ],
               selected: {_selectedTimeframe},
-              onSelectionChanged: (Set<String> newSelection) {
+              onSelectionChanged: (Set<TrendingTimeframe> newSelection) {
                 setState(() {
                   _selectedTimeframe = newSelection.first;
                 });
-                _loadData();
               },
               style: SegmentedButton.styleFrom(
                 backgroundColor: HackerTheme.mediumGrey,
@@ -228,7 +325,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            'Showing: ${_selectedTimeframe.characters.first.toUpperCase()}${_selectedTimeframe.substring(1)} Trending',
+            'Showing: ${timeframeToString(_selectedTimeframe).characters.first.toUpperCase()}${timeframeToString(_selectedTimeframe).substring(1)} Trending',
             style: HackerTheme.captionText().copyWith(
               color: HackerTheme.secondaryGreen,
             ),
@@ -298,7 +395,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ],
             ),
             const SizedBox(height: 12),
-            
+
             // Description
             if (repo.description.isNotEmpty) ...[
               Text(
@@ -309,7 +406,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ),
               const SizedBox(height: 12),
             ],
-            
+
             // Stats row
             Row(
               children: [
@@ -329,10 +426,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     ),
                   ),
                   const SizedBox(width: 4),
-                  Text(
-                    repo.language,
-                    style: HackerTheme.captionText(),
+                  Flexible(
+                    child: Text(
+                      repo.language,
+                      style: HackerTheme.captionText(),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
+                  const SizedBox(width: 8),
                 ],
                 const Spacer(),
                 Text(
@@ -342,14 +443,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ],
             ),
             const SizedBox(height: 8),
-            
+
             // License and topics
             if (repo.license != null || repo.topics != null) ...[
               Row(
                 children: [
                   if (repo.license != null) ...[
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: HackerTheme.primaryGreen.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(4),
@@ -430,7 +532,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ],
             ),
             const SizedBox(height: 12),
-            
+
             // Description
             if (package.description.isNotEmpty) ...[
               Text(
@@ -441,7 +543,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ),
               const SizedBox(height: 12),
             ],
-            
+
             // Stats row
             Row(
               children: [
@@ -449,21 +551,26 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 const SizedBox(width: 8),
                 _buildStatChip(Icons.star, package.stars.toString()),
                 const SizedBox(width: 8),
-                _buildStatChip(Icons.inventory_2, package.versions.length.toString()),
+                _buildStatChip(
+                    Icons.inventory_2, package.versions.length.toString()),
                 const SizedBox(width: 8),
                 if (package.license != null) ...[
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: HackerTheme.primaryGreen.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(3),
-                      border: Border.all(color: HackerTheme.primaryGreen),
-                    ),
-                    child: Text(
-                      package.license!,
-                      style: HackerTheme.captionText().copyWith(
-                        color: HackerTheme.primaryGreen,
-                        fontSize: 9,
+                  Flexible(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: HackerTheme.primaryGreen.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(3),
+                        border: Border.all(color: HackerTheme.primaryGreen),
+                      ),
+                      child: Text(
+                        package.license!,
+                        style: HackerTheme.captionText().copyWith(
+                          color: HackerTheme.primaryGreen,
+                          fontSize: 9,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ),
@@ -477,7 +584,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ],
             ),
             const SizedBox(height: 8),
-            
+
             // Keywords
             if (package.keywords.isNotEmpty) ...[
               Wrap(
@@ -485,7 +592,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 runSpacing: 4,
                 children: package.keywords.take(3).map((keyword) {
                   return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
                       color: HackerTheme.mediumGrey,
                       borderRadius: BorderRadius.circular(3),
@@ -551,7 +659,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       'YAML': const Color(0xFFCB171E),
       'JSON': const Color(0xFF292929),
     };
-    
+
     return colors[language] ?? const Color(0xFFCCCCCC);
   }
 
@@ -572,7 +680,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         id: 'repo_$index',
         name: 'awesome-project-$index',
         fullName: 'user/awesome-project-$index',
-        description: 'A fantastic project that does amazing things with technology and innovation.',
+        description:
+            'A fantastic project that does amazing things with technology and innovation.',
         htmlUrl: 'https://github.com/user/awesome-project-$index',
         cloneUrl: 'https://github.com/user/awesome-project-$index.git',
         sshUrl: 'git@github.com:user/awesome-project-$index.git',
@@ -580,10 +689,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         forks: 100 + index * 5,
         issues: index % 10,
         watchers: 50 + index * 2,
-        language: index % 5 == 0 ? 'JavaScript' : 
-                 index % 4 == 0 ? 'Python' :
-                 index % 3 == 0 ? 'TypeScript' : 'Java',
-        license: index % 3 == 0 ? 'MIT' : index % 2 == 0 ? 'Apache-2.0' : null,
+        language: index % 5 == 0
+            ? 'JavaScript'
+            : index % 4 == 0
+                ? 'Python'
+                : index % 3 == 0
+                    ? 'TypeScript'
+                    : 'Java',
+        license: index % 3 == 0
+            ? 'MIT'
+            : index % 2 == 0
+                ? 'Apache-2.0'
+                : null,
         createdAt: DateTime.now().subtract(Duration(days: index * 30)),
         updatedAt: DateTime.now().subtract(Duration(days: index % 7)),
         pushedAt: DateTime.now().subtract(Duration(days: index % 3)),
@@ -601,7 +718,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         ownerHtmlUrl: 'https://github.com/user$index',
         topics: 'awesome,technology,innovation,opensource',
         trendingScore: 1000.0 + index * 50.0,
-        trendingPeriod: _selectedTimeframe,
+        trendingPeriod: timeframeToString(_selectedTimeframe),
       );
     });
   }
@@ -611,7 +728,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       return NpmPackage(
         name: 'awesome-package-$index',
         version: '1.${index % 10}.${index % 5}',
-        description: 'An amazing npm package that provides incredible functionality for developers worldwide.',
+        description:
+            'An amazing npm package that provides incredible functionality for developers worldwide.',
         npmUrl: 'https://www.npmjs.com/package/awesome-package-$index',
         homepage: 'https://awesome-package-$index.com',
         repositoryUrl: 'https://github.com/user/awesome-package-$index',
@@ -627,7 +745,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         dependencies: ['react', 'lodash', 'moment'],
         devDependencies: ['jest', 'webpack', 'typescript'],
         trendingScore: 500.0 + index * 25.0,
-        trendingPeriod: _selectedTimeframe,
+        trendingPeriod: timeframeToString(_selectedTimeframe),
         metrics: {
           'monthlyDownloads': 100000 + index * 5000,
           'weeklyDownloads': 25000 + index * 1000,

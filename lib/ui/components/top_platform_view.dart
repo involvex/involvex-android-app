@@ -58,7 +58,8 @@ class PlatformIcon extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         color: const Color.fromARGB(255, 8, 255, 29),
-        borderRadius: BorderRadius.circular(context.isExtraWideScreen ? size * 0.2 : 24),
+        borderRadius:
+            BorderRadius.circular(context.isExtraWideScreen ? size * 0.2 : 24),
         border: Border.all(color: const Color(0x0A19191C), width: 1),
         boxShadow: [
           BoxShadow(
@@ -75,7 +76,8 @@ class PlatformIcon extends StatelessWidget {
           margin: context.isExtraWideScreen ? EdgeInsets.all(8) : null,
           decoration: BoxDecoration(
             color: const Color.fromARGB(255, 3, 238, 3),
-            borderRadius: BorderRadius.circular(context.isExtraWideScreen ? size * 0.2: 16),
+            borderRadius: BorderRadius.circular(
+                context.isExtraWideScreen ? size * 0.2 : 16),
             border: Border.all(color: const Color(0xFFFAFAFB), width: 1),
             boxShadow: [
               BoxShadow(

@@ -10,12 +10,15 @@ class SubscriptionsPage extends StatefulWidget {
   State<SubscriptionsPage> createState() => _SubscriptionsPageState();
 }
 
-class _SubscriptionsPageState extends State<SubscriptionsPage> 
-    with TickerProviderStateMixin {
+class _SubscriptionsPageState extends State<SubscriptionsPage>
+    with TickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   late TabController _tabController;
   List<GitHubRepository> _subscribedRepositories = [];
   List<NpmPackage> _subscribedPackages = [];
   bool _isLoading = false;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -37,11 +40,11 @@ class _SubscriptionsPageState extends State<SubscriptionsPage>
 
     // Simulate loading from Appwrite
     await Future.delayed(const Duration(seconds: 1));
-    
+
     // For demo, add some mock subscribed items
     _subscribedRepositories = _generateMockSubscribedRepositories();
     _subscribedPackages = _generateMockSubscribedPackages();
-    
+
     setState(() {
       _isLoading = false;
     });
@@ -53,6 +56,7 @@ class _SubscriptionsPageState extends State<SubscriptionsPage>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
     return Scaffold(
       backgroundColor: HackerTheme.darkerGreen,
       appBar: AppBar(
@@ -97,24 +101,32 @@ class _SubscriptionsPageState extends State<SubscriptionsPage>
           indicatorColor: HackerTheme.primaryGreen,
           tabs: [
             Tab(
-              text: 'Repositories',
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(Icons.code, size: 16),
                   const SizedBox(width: 4),
-                  Text('(${_subscribedRepositories.length})'),
+                  Flexible(
+                    child: Text(
+                      'Repositories (${_subscribedRepositories.length})',
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 ],
               ),
             ),
             Tab(
-              text: 'Packages',
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(Icons.inventory_2, size: 16),
                   const SizedBox(width: 4),
-                  Text('(${_subscribedPackages.length})'),
+                  Flexible(
+                    child: Text(
+                      'Packages (${_subscribedPackages.length})',
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -170,7 +182,8 @@ class _SubscriptionsPageState extends State<SubscriptionsPage>
         padding: const EdgeInsets.all(16),
         itemCount: _subscribedRepositories.length,
         itemBuilder: (context, index) {
-          return _buildSubscribedRepositoryCard(_subscribedRepositories[index], index);
+          return _buildSubscribedRepositoryCard(
+              _subscribedRepositories[index], index);
         },
       ),
     );
@@ -244,7 +257,8 @@ class _SubscriptionsPageState extends State<SubscriptionsPage>
               style: ElevatedButton.styleFrom(
                 backgroundColor: HackerTheme.primaryGreen,
                 foregroundColor: HackerTheme.darkerGreen,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
               child: Text(actionText),
             ),
@@ -320,7 +334,7 @@ class _SubscriptionsPageState extends State<SubscriptionsPage>
               ],
             ),
             const SizedBox(height: 12),
-            
+
             // Description
             if (repo.description.isNotEmpty) ...[
               Text(
@@ -331,7 +345,7 @@ class _SubscriptionsPageState extends State<SubscriptionsPage>
               ),
               const SizedBox(height: 12),
             ],
-            
+
             // Stats and info
             Row(
               children: [
@@ -359,7 +373,7 @@ class _SubscriptionsPageState extends State<SubscriptionsPage>
               ],
             ),
             const SizedBox(height: 8),
-            
+
             // Subscription info
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -459,7 +473,7 @@ class _SubscriptionsPageState extends State<SubscriptionsPage>
               ],
             ),
             const SizedBox(height: 12),
-            
+
             // Description
             if (package.description.isNotEmpty) ...[
               Text(
@@ -470,7 +484,7 @@ class _SubscriptionsPageState extends State<SubscriptionsPage>
               ),
               const SizedBox(height: 12),
             ],
-            
+
             // Stats and info
             Row(
               children: [
@@ -478,13 +492,14 @@ class _SubscriptionsPageState extends State<SubscriptionsPage>
                 const SizedBox(width: 8),
                 _buildStatChip(Icons.star, package.stars.toString()),
                 const SizedBox(width: 8),
-                _buildStatChip(Icons.inventory_2, package.versions.length.toString()),
+                _buildStatChip(
+                    Icons.inventory_2, package.versions.length.toString()),
                 const Spacer(),
                 _buildNewReleaseIndicator(package),
               ],
             ),
             const SizedBox(height: 8),
-            
+
             // Keywords
             if (package.keywords.isNotEmpty) ...[
               Wrap(
@@ -492,7 +507,8 @@ class _SubscriptionsPageState extends State<SubscriptionsPage>
                 runSpacing: 4,
                 children: package.keywords.take(3).map((keyword) {
                   return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
                       color: HackerTheme.mediumGrey,
                       borderRadius: BorderRadius.circular(3),
@@ -509,7 +525,7 @@ class _SubscriptionsPageState extends State<SubscriptionsPage>
               ),
               const SizedBox(height: 8),
             ],
-            
+
             // Subscription info
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -563,9 +579,11 @@ class _SubscriptionsPageState extends State<SubscriptionsPage>
 
   Widget _buildNewReleaseIndicator(dynamic item) {
     // Check if there's a new release (simulate)
-    final hasNewRelease = DateTime.now().difference(
-      item is GitHubRepository ? item.updatedAt : item.modified
-    ).inDays <= 7;
+    final hasNewRelease = DateTime.now()
+            .difference(
+                item is GitHubRepository ? item.updatedAt : item.modified)
+            .inDays <=
+        7;
 
     if (!hasNewRelease) return const SizedBox.shrink();
 
@@ -623,7 +641,7 @@ class _SubscriptionsPageState extends State<SubscriptionsPage>
       'YAML': const Color(0xFFCB171E),
       'JSON': const Color(0xFF292929),
     };
-    
+
     return colors[language] ?? const Color(0xFFCCCCCC);
   }
 
@@ -847,7 +865,8 @@ class _SubscriptionsPageState extends State<SubscriptionsPage>
         id: 'sub_repo_$index',
         name: 'subscribed-project-$index',
         fullName: 'user/subscribed-project-$index',
-        description: 'A subscribed repository that provides great functionality.',
+        description:
+            'A subscribed repository that provides great functionality.',
         htmlUrl: 'https://github.com/user/subscribed-project-$index',
         cloneUrl: 'https://github.com/user/subscribed-project-$index.git',
         sshUrl: 'git@github.com:user/subscribed-project-$index.git',
@@ -855,7 +874,11 @@ class _SubscriptionsPageState extends State<SubscriptionsPage>
         forks: 50 + index * 10,
         issues: index % 5,
         watchers: 30 + index * 5,
-        language: index % 3 == 0 ? 'JavaScript' : index % 2 == 0 ? 'Python' : 'TypeScript',
+        language: index % 3 == 0
+            ? 'JavaScript'
+            : index % 2 == 0
+                ? 'Python'
+                : 'TypeScript',
         license: index % 2 == 0 ? 'MIT' : 'Apache-2.0',
         createdAt: DateTime.now().subtract(Duration(days: index * 60)),
         updatedAt: DateTime.now().subtract(Duration(days: index % 3)),

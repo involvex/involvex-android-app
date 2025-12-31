@@ -10,34 +10,78 @@ class SearchPage extends StatefulWidget {
   State<SearchPage> createState() => _SearchPageState();
 }
 
-class _SearchPageState extends State<SearchPage> 
-    with TickerProviderStateMixin {
+class _SearchPageState extends State<SearchPage>
+    with TickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _minStarsController = TextEditingController();
-  
+
   bool _isSearching = false;
   String _searchQuery = '';
   String _selectedLanguage = 'All';
   String _selectedSort = 'best-match';
   int _minStars = 0;
-  
+
+  @override
+  bool get wantKeepAlive => true;
+
   List<GitHubRepository> _searchResultsRepositories = [];
   List<NpmPackage> _searchResultsPackages = [];
-  
+
   final List<String> _languages = [
-    'All', 'JavaScript', 'TypeScript', 'Python', 'Java', 'C++', 'C#', 'PHP', 
-    'Ruby', 'Go', 'Rust', 'Swift', 'Kotlin', 'Dart', 'Shell', 'HTML', 'CSS'
+    'All',
+    'JavaScript',
+    'TypeScript',
+    'Python',
+    'Java',
+    'C++',
+    'C#',
+    'PHP',
+    'Ruby',
+    'Go',
+    'Rust',
+    'Swift',
+    'Kotlin',
+    'Dart',
+    'Shell',
+    'HTML',
+    'CSS'
   ];
-  
+
   final List<String> _sortOptions = [
-    'best-match', 'stars', 'forks', 'updated', 'name'
+    'best-match',
+    'stars',
+    'forks',
+    'updated',
+    'name'
   ];
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    // Restore saved tab index from PageStorage
+    final savedIndex = PageStorage.of(context).readState(
+          context,
+          identifier: const ValueKey('search_tab_index'),
+        ) as int? ??
+        0;
+
+    _tabController = TabController(
+      length: 2,
+      vsync: this,
+      initialIndex: savedIndex,
+    );
+
+    // Save tab index whenever it changes
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        PageStorage.of(context).writeState(
+          context,
+          _tabController.index,
+          identifier: const ValueKey('search_tab_index'),
+        );
+      }
+    });
   }
 
   @override
@@ -50,6 +94,7 @@ class _SearchPageState extends State<SearchPage>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
     return Scaffold(
       backgroundColor: HackerTheme.darkerGreen,
       appBar: AppBar(
@@ -108,14 +153,16 @@ class _SearchPageState extends State<SearchPage>
                     hintStyle: HackerTheme.captionText().copyWith(
                       color: HackerTheme.textGrey.withOpacity(0.5),
                     ),
-                    prefixIcon: Icon(Icons.search, color: HackerTheme.primaryGreen),
+                    prefixIcon:
+                        Icon(Icons.search, color: HackerTheme.primaryGreen),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                       borderSide: BorderSide(color: HackerTheme.lightGrey),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: HackerTheme.primaryGreen, width: 2),
+                      borderSide:
+                          BorderSide(color: HackerTheme.primaryGreen, width: 2),
                     ),
                     filled: true,
                     fillColor: HackerTheme.mediumGrey,
@@ -129,7 +176,8 @@ class _SearchPageState extends State<SearchPage>
                 style: ElevatedButton.styleFrom(
                   backgroundColor: HackerTheme.primaryGreen,
                   foregroundColor: HackerTheme.darkerGreen,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
                 child: _isSearching
                     ? const SizedBox(
@@ -137,7 +185,8 @@ class _SearchPageState extends State<SearchPage>
                         height: 16,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.black),
                         ),
                       )
                     : const Text('Search'),
@@ -297,8 +346,9 @@ class _SearchPageState extends State<SearchPage>
   }
 
   Widget _buildQuickFilterChip(String filter) {
-    final isSelected = _searchController.text.toLowerCase().contains(filter.toLowerCase());
-    
+    final isSelected =
+        _searchController.text.toLowerCase().contains(filter.toLowerCase());
+
     return FilterChip(
       label: Text(filter),
       selected: isSelected,
@@ -486,7 +536,7 @@ class _SearchPageState extends State<SearchPage>
               ],
             ),
             const SizedBox(height: 12),
-            
+
             // Description
             if (repo.description.isNotEmpty) ...[
               Text(
@@ -497,7 +547,7 @@ class _SearchPageState extends State<SearchPage>
               ),
               const SizedBox(height: 12),
             ],
-            
+
             // Stats
             Row(
               children: [
@@ -528,7 +578,7 @@ class _SearchPageState extends State<SearchPage>
               ],
             ),
             const SizedBox(height: 8),
-            
+
             // Actions
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
@@ -616,7 +666,7 @@ class _SearchPageState extends State<SearchPage>
               ],
             ),
             const SizedBox(height: 12),
-            
+
             // Description
             if (package.description.isNotEmpty) ...[
               Text(
@@ -627,7 +677,7 @@ class _SearchPageState extends State<SearchPage>
               ),
               const SizedBox(height: 12),
             ],
-            
+
             // Stats
             Row(
               children: [
@@ -635,7 +685,8 @@ class _SearchPageState extends State<SearchPage>
                 const SizedBox(width: 8),
                 _buildStatChip(Icons.star, package.stars.toString()),
                 const SizedBox(width: 8),
-                _buildStatChip(Icons.inventory_2, package.versions.length.toString()),
+                _buildStatChip(
+                    Icons.inventory_2, package.versions.length.toString()),
                 const Spacer(),
                 Text(
                   package.timeAgo,
@@ -644,7 +695,7 @@ class _SearchPageState extends State<SearchPage>
               ],
             ),
             const SizedBox(height: 8),
-            
+
             // Keywords
             if (package.keywords.isNotEmpty) ...[
               Wrap(
@@ -652,7 +703,8 @@ class _SearchPageState extends State<SearchPage>
                 runSpacing: 4,
                 children: package.keywords.take(3).map((keyword) {
                   return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
                       color: HackerTheme.mediumGrey,
                       borderRadius: BorderRadius.circular(3),
@@ -669,7 +721,7 @@ class _SearchPageState extends State<SearchPage>
               ),
               const SizedBox(height: 8),
             ],
-            
+
             // Actions
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
@@ -741,7 +793,7 @@ class _SearchPageState extends State<SearchPage>
       'HTML': const Color(0xFFE34C26),
       'CSS': const Color(0xFF563D7C),
     };
-    
+
     return colors[language] ?? const Color(0xFFCCCCCC);
   }
 
@@ -757,7 +809,7 @@ class _SearchPageState extends State<SearchPage>
     try {
       // Simulate API search
       await Future.delayed(const Duration(seconds: 1));
-      
+
       if (_tabController.index == 0) {
         // Search repositories
         _searchResultsRepositories = _generateMockSearchResults(query);
@@ -781,7 +833,7 @@ class _SearchPageState extends State<SearchPage>
       _minStars = 0;
       _minStarsController.clear();
     });
-    
+
     if (_searchQuery.isNotEmpty) {
       _performSearch();
     }
@@ -829,17 +881,23 @@ class _SearchPageState extends State<SearchPage>
         id: 'search_repo_$index',
         name: '${query.toLowerCase()}-result-$index',
         fullName: 'user/${query.toLowerCase()}-result-$index',
-        description: 'A search result for "$query" with amazing functionality and features.',
+        description:
+            'A search result for "$query" with amazing functionality and features.',
         htmlUrl: 'https://github.com/user/${query.toLowerCase()}-result-$index',
-        cloneUrl: 'https://github.com/user/${query.toLowerCase()}-result-$index.git',
+        cloneUrl:
+            'https://github.com/user/${query.toLowerCase()}-result-$index.git',
         sshUrl: 'git@github.com:user/${query.toLowerCase()}-result-$index.git',
         stars: 100 + index * 20,
         forks: 20 + index * 5,
         issues: index % 3,
         watchers: 30 + index * 3,
-        language: _selectedLanguage == 'All' ? 
-                 (index % 3 == 0 ? 'JavaScript' : index % 2 == 0 ? 'Python' : 'TypeScript') :
-                 _selectedLanguage,
+        language: _selectedLanguage == 'All'
+            ? (index % 3 == 0
+                ? 'JavaScript'
+                : index % 2 == 0
+                    ? 'Python'
+                    : 'TypeScript')
+            : _selectedLanguage,
         createdAt: DateTime.now().subtract(Duration(days: index * 20)),
         updatedAt: DateTime.now().subtract(Duration(days: index % 7)),
         pushedAt: DateTime.now().subtract(Duration(days: index % 3)),
@@ -876,10 +934,13 @@ class _SearchPageState extends State<SearchPage>
       return NpmPackage(
         name: '${query.toLowerCase()}-pkg-$index',
         version: '1.0.$index',
-        description: 'NPM package for "$query" with powerful features and excellent performance.',
-        npmUrl: 'https://www.npmjs.com/package/${query.toLowerCase()}-pkg-$index',
+        description:
+            'NPM package for "$query" with powerful features and excellent performance.',
+        npmUrl:
+            'https://www.npmjs.com/package/${query.toLowerCase()}-pkg-$index',
         homepage: 'https://${query.toLowerCase()}-pkg-$index.com',
-        repositoryUrl: 'https://github.com/user/${query.toLowerCase()}-pkg-$index',
+        repositoryUrl:
+            'https://github.com/user/${query.toLowerCase()}-pkg-$index',
         modified: DateTime.now().subtract(Duration(days: index * 10)),
         keywords: [query.toLowerCase(), 'search', 'result', 'package'],
         downloads: 5000 + index * 500,

@@ -11,18 +11,19 @@ class AppwriteRepository {
   static const String pingPath = "/ping";
   static const String appwriteProjectId = Environment.appwriteProjectId;
   static const String appwriteProjectName = Environment.appwriteProjectName;
-  static const String appwritePublicEndpoint = Environment.appwritePublicEndpoint;
+  static const String appwritePublicEndpoint =
+      Environment.appwritePublicEndpoint;
 
   final Client _client = Client()
       .setProject(appwriteProjectId)
       .setEndpoint(appwritePublicEndpoint);
 
-  late final Account _account;
-  late final Databases _databases;
+  late final Account account;
+  late final Databases databases;
 
   AppwriteRepository._internal() {
-    _account = Account(_client);
-    _databases = Databases(_client);
+    account = Account(_client);
+    databases = Databases(_client);
   }
 
   static final AppwriteRepository _instance = AppwriteRepository._internal();
