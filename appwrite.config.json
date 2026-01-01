@@ -353,7 +353,7 @@
             "adapter": "static",
             "installCommand": "",
             "buildCommand": "",
-            "outputDirectory": "./build/web",
+            "outputDirectory": ".",
             "fallbackFile": "index.html",
             "enabled": true
         }
