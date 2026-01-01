@@ -38,7 +38,8 @@
       "Bash(xcopy:*)",
       "Bash(git add:*)",
       "Bash(git commit -m \"$\\(cat <<''EOF''\nDeploy InvolvexApp web to GitHub Pages\n\n- Add docs/ folder with production Flutter web build\n- Include .nojekyll to prevent Jekyll processing\n- Deploy 52 files \\(11.46 MB\\) for static hosting\n- Alternative to Appwrite Sites due to queue issues\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
-      "Bash(gh:*)"
+      "Bash(gh:*)",
+      "Bash(git stash:*)"
     ]
   }
 }
