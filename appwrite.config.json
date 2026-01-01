@@ -344,5 +344,18 @@
             "encryption": true,
             "antivirus": true
         }
+    ],
+    "sites": [
+        {
+            "$id": "involvex-web",
+            "name": "InvolvexApp Web",
+            "framework": "other",
+            "adapter": "static",
+            "installCommand": "",
+            "buildCommand": "",
+            "outputDirectory": "./build/web",
+            "fallbackFile": "index.html",
+            "enabled": true
+        }
     ]
 }
