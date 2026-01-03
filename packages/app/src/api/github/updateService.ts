@@ -7,7 +7,8 @@ import axios from 'axios';
 import { Alert, Linking } from 'react-native';
 import pkg from '../../../package.json';
 
-const GITHUB_RELEASES_URL = 'https://api.github.com/repos/involvex/involvex-android-app/releases/latest';
+const GITHUB_RELEASES_URL =
+  'https://api.github.com/repos/involvex/involvex-android-app/releases/latest';
 
 export interface GitHubRelease {
   tag_name: string;
@@ -34,7 +35,10 @@ class UpdateService {
       if (this.isNewerVersion(currentVersion, latestVersion)) {
         this.showUpdateAlert(latestVersion, latestRelease);
       } else if (manual) {
-        Alert.alert('No Updates', `You are running the latest version (${currentVersion}).`);
+        Alert.alert(
+          'No Updates',
+          `You are running the latest version (${currentVersion}).`,
+        );
       }
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 404) {
@@ -47,7 +51,10 @@ class UpdateService {
 
       console.error('Failed to check for updates:', error);
       if (manual) {
-        Alert.alert('Error', 'Failed to check for updates. Please check your connection.');
+        Alert.alert(
+          'Error',
+          'Failed to check for updates. Please check your connection.',
+        );
       }
     }
   }
@@ -59,7 +66,11 @@ class UpdateService {
     const currentParts = current.split('.').map(Number);
     const latestParts = latest.split('.').map(Number);
 
-    for (let i = 0; i < Math.max(currentParts.length, latestParts.length); i++) {
+    for (
+      let i = 0;
+      i < Math.max(currentParts.length, latestParts.length);
+      i++
+    ) {
       const c = currentParts[i] || 0;
       const l = latestParts[i] || 0;
       if (l > c) return true;
@@ -77,12 +88,12 @@ class UpdateService {
       `A new version (${version}) of Involvex is available. Would you like to download it?`,
       [
         { text: 'Later', style: 'cancel' },
-        { 
-          text: 'View Release', 
-          onPress: () => Linking.openURL(release.html_url) 
+        {
+          text: 'View Release',
+          onPress: () => Linking.openURL(release.html_url),
         },
-        { 
-          text: 'Download APK', 
+        {
+          text: 'Download APK',
           onPress: () => {
             const apkAsset = release.assets.find(a => a.name.endsWith('.apk'));
             if (apkAsset) {
@@ -91,9 +102,9 @@ class UpdateService {
               Linking.openURL(release.html_url);
             }
           },
-          style: 'default'
+          style: 'default',
         },
-      ]
+      ],
     );
   }
 }

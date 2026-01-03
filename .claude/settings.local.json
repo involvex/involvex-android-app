@@ -82,7 +82,11 @@
       "Bash(git rm:*)",
       "Bash(del nul)",
       "Bash(del packageswebnul)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(git config:*)",
+      "Bash(npm run build:android:*)",
+      "Bash(npm run release:android:*)",
+      "Bash(git tag:*)"
     ]
   },
   "hooks": {

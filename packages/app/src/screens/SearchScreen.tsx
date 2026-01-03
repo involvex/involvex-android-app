@@ -45,7 +45,9 @@ export const SearchScreen: React.FC = () => {
   const [githubResults, setGithubResults] = useState<GitHubRepository[]>([]);
   const [npmResults, setNpmResults] = useState<NpmPackage[]>([]);
   const [showFilters, setShowFilters] = useState(false);
-  const [subscribedItems, setSubscribedItems] = useState<Set<string>>(new Set());
+  const [subscribedItems, setSubscribedItems] = useState<Set<string>>(
+    new Set(),
+  );
 
   // Filters
   const [selectedLanguage, setSelectedLanguage] = useState<string>('');
@@ -65,8 +67,14 @@ export const SearchScreen: React.FC = () => {
     }
   };
 
-  const handleToggleSubscription = async (item: GitHubRepository | NpmPackage, type: 'github' | 'npm') => {
-    const itemId = type === 'github' ? String((item as GitHubRepository).id) : (item as NpmPackage).name;
+  const handleToggleSubscription = async (
+    item: GitHubRepository | NpmPackage,
+    type: 'github' | 'npm',
+  ) => {
+    const itemId =
+      type === 'github'
+        ? String((item as GitHubRepository).id)
+        : (item as NpmPackage).name;
     const isSubscribed = subscribedItems.has(itemId);
 
     try {
@@ -83,13 +91,17 @@ export const SearchScreen: React.FC = () => {
           type: type === 'github' ? 'repository' : 'package',
           itemId,
           name: item.name,
-          fullName: type === 'github' ? (item as GitHubRepository).fullName : undefined,
+          fullName:
+            type === 'github' ? (item as GitHubRepository).fullName : undefined,
           data: JSON.stringify(item),
           subscribedAt: Date.now(),
           isActive: true,
         });
         setSubscribedItems(prev => new Set(prev).add(itemId));
-        Alert.alert('Subscribed', `${item.name} added to your personal subscriptions.`);
+        Alert.alert(
+          'Subscribed',
+          `${item.name} added to your personal subscriptions.`,
+        );
       }
     } catch (error) {
       console.error('Subscription toggle error:', error);
@@ -289,18 +301,22 @@ export const SearchScreen: React.FC = () => {
     return (
       <View style={styles.card}>
         <View style={styles.cardHeader}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.cardHeaderTitle}
             onPress={() => item.htmlUrl && Linking.openURL(item.htmlUrl)}
           >
             <Text style={styles.cardTitle}>{item.name}</Text>
             <Text style={styles.cardSubtitle}>{item.fullName}</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => handleToggleSubscription(item, 'github')}>
-            <Icon 
-              name={isSubscribed ? "star" : "star-outline"} 
-              size={28} 
-              color={isSubscribed ? HackerTheme.secondary : HackerTheme.lightGrey} 
+          <TouchableOpacity
+            onPress={() => handleToggleSubscription(item, 'github')}
+          >
+            <Icon
+              name={isSubscribed ? 'star' : 'star-outline'}
+              size={28}
+              color={
+                isSubscribed ? HackerTheme.secondary : HackerTheme.lightGrey
+              }
             />
           </TouchableOpacity>
         </View>
@@ -333,18 +349,22 @@ export const SearchScreen: React.FC = () => {
     return (
       <View style={styles.card}>
         <View style={styles.cardHeader}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.cardHeaderTitle}
             onPress={() => item.npmUrl && Linking.openURL(item.npmUrl)}
           >
             <Text style={styles.cardTitle}>{item.name}</Text>
             <Text style={styles.cardSubtitle}>v{item.version}</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => handleToggleSubscription(item, 'npm')}>
-            <Icon 
-              name={isSubscribed ? "star" : "star-outline"} 
-              size={28} 
-              color={isSubscribed ? HackerTheme.secondary : HackerTheme.lightGrey} 
+          <TouchableOpacity
+            onPress={() => handleToggleSubscription(item, 'npm')}
+          >
+            <Icon
+              name={isSubscribed ? 'star' : 'star-outline'}
+              size={28}
+              color={
+                isSubscribed ? HackerTheme.secondary : HackerTheme.lightGrey
+              }
             />
           </TouchableOpacity>
         </View>
@@ -355,7 +375,9 @@ export const SearchScreen: React.FC = () => {
         )}
         <View style={styles.statsRow}>
           <Text style={styles.statText}>📦 {item.formattedDownloads}</Text>
-          {item.stars > 0 && <Text style={styles.statText}>⭐ {item.stars}</Text>}
+          {item.stars > 0 && (
+            <Text style={styles.statText}>⭐ {item.stars}</Text>
+          )}
         </View>
       </View>
     );

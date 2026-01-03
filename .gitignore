@@ -86,3 +86,5 @@ packages/web/.env
 **/.wrangler/
 
 .claude/lastplan.txt
+
+.internal

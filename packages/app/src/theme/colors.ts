@@ -10,7 +10,9 @@ export const HackerTheme = {
   secondary: '#39FF14', // Bright green
   darkGreen: '#0A3D0A', // Dark background green
   darkerGreen: '#051A05', // Very dark green
+  background: '#051A05', // Alias for background
   accentGreen: '#1AFF66', // Accent green
+  accent: '#39FF14', // Alias for secondary
 
   // Neutral Colors
   pureBlack: '#000000',

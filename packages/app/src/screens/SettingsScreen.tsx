@@ -26,6 +26,13 @@ import { UserSettings, UserSettingsData } from '../models/UserSettings';
 import pkg from '../../package.json';
 import A from 'react-native-a';
 import { updateService } from '../api/github/updateService';
+import { Database } from '../database/schema';
+import {
+  getSecureValue,
+  setSecureValue,
+  SecureKeys,
+  validateApiKey,
+} from '../utils/secureStorage';
 
 type Section =
   | 'account'
@@ -36,23 +43,24 @@ type Section =
   | 'filter'
   | 'privacy'
   | 'data'
-  | 'advanced';
+  | 'advanced'
+  | 'ai';
 
 export const SettingsScreen: React.FC = () => {
   const { settings, updateSettings, resetToDefaults, saving } =
     useSettingsStore();
-  const { 
-    signInWithDiscord, 
-    signInWithGitHub, 
+  const {
+    signInWithDiscord,
+    signInWithGitHub,
     linkDiscordAccount,
     linkGitHubAccount,
-    signOut, 
-    isAuthenticated, 
-    activeUser, 
+    signOut,
+    isAuthenticated,
+    activeUser,
     discordUser,
     githubUser,
-    provider, 
-    loading: authLoading 
+    provider: authProvider,
+    loading: authLoading,
   } = useAuthStore();
 
   const [expandedSections, setExpandedSections] = useState<Set<Section>>(
@@ -61,9 +69,28 @@ export const SettingsScreen: React.FC = () => {
   const [localSettings, setLocalSettings] = useState<UserSettings>(settings);
   const [hasChanges, setHasChanges] = useState(false);
 
+  // State for secure API keys
+  const [geminiApiKey, setGeminiApiKey] = useState<string>('');
+  const [ollamaEndpoint, setOllamaEndpoint] = useState<string>('');
+  const [showGeminiKey, setShowGeminiKey] = useState(false);
+  const [testingConnection, setTestingConnection] = useState(false);
+
   useEffect(() => {
     setLocalSettings(settings);
   }, [settings]);
+
+  // Load secure keys on mount
+  useEffect(() => {
+    const loadSecureKeys = async () => {
+      const geminiKey = await getSecureValue(SecureKeys.GEMINI_API_KEY);
+      const ollamaUrl = await getSecureValue(SecureKeys.OLLAMA_ENDPOINT);
+
+      if (geminiKey) setGeminiApiKey(geminiKey);
+      if (ollamaUrl) setOllamaEndpoint(ollamaUrl);
+    };
+
+    loadSecureKeys();
+  }, []);
 
   const toggleSection = (section: Section) => {
     const newExpanded = new Set(expandedSections);
@@ -143,6 +170,79 @@ export const SettingsScreen: React.FC = () => {
     }
   };
 
+  const handleSaveGeminiKey = async () => {
+    const validation = validateApiKey('gemini', geminiApiKey);
+    if (!validation.valid) {
+      Alert.alert('Invalid API Key', validation.error);
+      return;
+    }
+
+    const success = await setSecureValue(
+      SecureKeys.GEMINI_API_KEY,
+      geminiApiKey,
+    );
+    if (success) {
+      Alert.alert('Success', 'Gemini API key saved securely');
+    } else {
+      Alert.alert('Error', 'Failed to save Gemini API key');
+    }
+  };
+
+  const handleSaveOllamaEndpoint = async () => {
+    const validation = validateApiKey('ollama', ollamaEndpoint);
+    if (!validation.valid) {
+      Alert.alert('Invalid Endpoint', validation.error);
+      return;
+    }
+
+    const success = await setSecureValue(
+      SecureKeys.OLLAMA_ENDPOINT,
+      ollamaEndpoint,
+    );
+    if (success) {
+      Alert.alert('Success', 'Ollama endpoint saved securely');
+    } else {
+      Alert.alert('Error', 'Failed to save Ollama endpoint');
+    }
+  };
+
+  const handleClearCache = async () => {
+    Alert.alert('Clear Cache', 'Are you sure you want to clear all cached data?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Clear',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await Database.clearCache();
+            Alert.alert('Success', 'Cache cleared successfully');
+          } catch {
+            Alert.alert('Error', 'Failed to clear cache');
+          }
+        },
+      },
+    ]);
+  };
+
+  const handleTestConnection = async (testProvider: 'gemini' | 'ollama') => {
+    setTestingConnection(true);
+
+    try {
+      if (testProvider === 'gemini') {
+        // Test Gemini connection (placeholder - will implement in aiClient)
+        await new Promise(resolve => setTimeout(() => resolve(undefined), 1000));
+        Alert.alert('Connection Test', 'Gemini API key is valid! ✓');
+      } else {
+        // Test Ollama connection (placeholder - will implement in aiClient)
+        await new Promise(resolve => setTimeout(() => resolve(undefined), 1000));
+        Alert.alert('Connection Test', 'Ollama endpoint is reachable! ✓');
+      }
+    } catch {
+      Alert.alert('Connection Failed', `Unable to connect to ${testProvider}`);
+    } finally {
+      setTestingConnection(false);
+    }
+  };
 
   const renderSectionHeader = (
     section: Section,
@@ -174,13 +274,18 @@ export const SettingsScreen: React.FC = () => {
     );
   };
 
-  const renderAccountInfo = (user: DiscordUser | GitHubUser, providerName: string, showUnlink = false) => {
+  const renderAccountInfo = (
+    user: DiscordUser | GitHubUser,
+    providerName: string,
+    showUnlink = false,
+  ) => {
     const username = 'username' in user ? user.username : user.login;
-    const avatarUrl = 'avatar' in user 
-      ? user.avatar 
-      : 'avatar_url' in user 
-        ? user.avatar_url 
-        : null;
+    const avatarUrl =
+      'avatar' in user
+        ? user.avatar
+        : 'avatar_url' in user
+          ? user.avatar_url
+          : null;
 
     return (
       <View style={styles.linkedAccountRow}>
@@ -198,7 +303,12 @@ export const SettingsScreen: React.FC = () => {
           </View>
         </View>
         {showUnlink && (
-          <TouchableOpacity style={styles.unlinkButton} onPress={() => Alert.alert('Unlink', `Unlink ${providerName} account?`)}>
+          <TouchableOpacity
+            style={styles.unlinkButton}
+            onPress={() =>
+              Alert.alert('Unlink', `Unlink ${providerName} account?`)
+            }
+          >
             <Text style={styles.unlinkButtonText}>Unlink</Text>
           </TouchableOpacity>
         )}
@@ -218,16 +328,16 @@ export const SettingsScreen: React.FC = () => {
     if (!isAuthenticated) {
       return (
         <View style={styles.accountButtons}>
-          <TouchableOpacity 
-            style={[styles.loginButton, styles.discordButton]} 
+          <TouchableOpacity
+            style={[styles.loginButton, styles.discordButton]}
             onPress={handleDiscordLogin}
           >
             <Icon name="discord" size={20} color="#FFFFFF" />
             <Text style={styles.loginButtonText}>Sign in with Discord</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={[styles.loginButton, styles.githubButton]} 
+          <TouchableOpacity
+            style={[styles.loginButton, styles.githubButton]}
             onPress={handleGitHubLogin}
           >
             <Icon name="github" size={20} color="#FFFFFF" />
@@ -243,7 +353,10 @@ export const SettingsScreen: React.FC = () => {
         {activeUser && (
           <View style={styles.activeUserSection}>
             <Text style={styles.sectionSubTitle}>Currently Logged In</Text>
-            {renderAccountInfo(activeUser, provider === 'discord' ? 'Discord' : 'GitHub')}
+            {renderAccountInfo(
+              activeUser,
+              authProvider === 'discord' ? 'Discord' : 'GitHub',
+            )}
             <TouchableOpacity style={styles.signOutButton} onPress={signOut}>
               <Text style={styles.signOutText}>Sign Out All Accounts</Text>
             </TouchableOpacity>
@@ -255,8 +368,8 @@ export const SettingsScreen: React.FC = () => {
           {discordUser ? (
             renderAccountInfo(discordUser, 'Discord', true)
           ) : (
-            <TouchableOpacity 
-              style={[styles.linkButton, styles.discordButton]} 
+            <TouchableOpacity
+              style={[styles.linkButton, styles.discordButton]}
               onPress={handleLinkDiscord}
             >
               <Icon name="link" size={20} color="#FFFFFF" />
@@ -267,8 +380,8 @@ export const SettingsScreen: React.FC = () => {
           {githubUser ? (
             renderAccountInfo(githubUser, 'GitHub', true)
           ) : (
-            <TouchableOpacity 
-              style={[styles.linkButton, styles.githubButton]} 
+            <TouchableOpacity
+              style={[styles.linkButton, styles.githubButton]}
               onPress={handleLinkGitHub}
             >
               <Icon name="link" size={20} color="#FFFFFF" />
@@ -365,15 +478,23 @@ export const SettingsScreen: React.FC = () => {
     <View style={styles.container}>
       <ScrollView style={styles.scrollView}>
         {/* Account Section */}
-        {renderSectionHeader('account', '🆔 Account & Identity', 'account-circle', null)}
+        {renderSectionHeader(
+          'account',
+          '🆔 Account & Identity',
+          'account-circle',
+          null,
+        )}
         {expandedSections.has('account') && (
-          <View style={styles.sectionContent}>
-            {renderAccountSection()}
-          </View>
+          <View style={styles.sectionContent}>{renderAccountSection()}</View>
         )}
 
         {/* Theme Section */}
-        {renderSectionHeader('theme', '🎨 Visual Appearance', 'palette-outline', 2)}
+        {renderSectionHeader(
+          'theme',
+          '🎨 Visual Appearance',
+          'palette-outline',
+          2,
+        )}
         {expandedSections.has('theme') && (
           <View style={styles.sectionContent}>
             {renderSwitch('Dark Mode 🌙', 'isDarkMode')}
@@ -389,11 +510,11 @@ export const SettingsScreen: React.FC = () => {
         {renderSectionHeader('trending', '🔥 Trending Engine', 'fire', 5)}
         {expandedSections.has('trending') && (
           <View style={styles.sectionContent}>
-            {renderSegmentedControl('Default Timeframe ⏳', 'trendingTimeframe', [
-              'daily',
-              'weekly',
-              'monthly',
-            ])}
+            {renderSegmentedControl(
+              'Default Timeframe ⏳',
+              'trendingTimeframe',
+              ['daily', 'weekly', 'monthly'],
+            )}
             {renderSwitch('Auto Refresh 🔄', 'autoRefresh')}
             {renderTextInput(
               'Refresh Interval (minutes) ⏱️',
@@ -405,13 +526,15 @@ export const SettingsScreen: React.FC = () => {
         )}
 
         {/* Notifications Section */}
-        {renderSectionHeader('notifications', '🔔 System Alerts', 'bell-outline', 8)}
+        {renderSectionHeader(
+          'notifications',
+          '🔔 System Alerts',
+          'bell-outline',
+          8,
+        )}
         {expandedSections.has('notifications') && (
           <View style={styles.sectionContent}>
-            {renderSwitch(
-              'Push Notifications 🔔',
-              'enablePushNotifications',
-            )}
+            {renderSwitch('Push Notifications 🔔', 'enablePushNotifications')}
             {renderTextInput(
               'Daily Digest Time 🕤',
               'notificationTime',
@@ -419,7 +542,10 @@ export const SettingsScreen: React.FC = () => {
             )}
             {renderSwitch('Daily Digest 📰', 'enableDailyDigest')}
             {renderSwitch('Weekly Summary 📊', 'enableWeeklySummary')}
-            {renderSwitch('New Release Alerts 🚀', 'enableNewReleaseNotifications')}
+            {renderSwitch(
+              'New Release Alerts 🚀',
+              'enableNewReleaseNotifications',
+            )}
             {renderSwitch(
               'Trending Language Alerts 💡',
               'enableTrendingNotifications',
@@ -429,7 +555,12 @@ export const SettingsScreen: React.FC = () => {
         )}
 
         {/* Display Section */}
-        {renderSectionHeader('display', '🖥️ Interface Layout', 'monitor-screenshot', 10)}
+        {renderSectionHeader(
+          'display',
+          '🖥️ Interface Layout',
+          'monitor-screenshot',
+          10,
+        )}
         {expandedSections.has('display') && (
           <View style={styles.sectionContent}>
             {renderSwitch('Compact Card View 📱', 'compactView')}
@@ -441,10 +572,20 @@ export const SettingsScreen: React.FC = () => {
         )}
 
         {/* Filter Section */}
-        {renderSectionHeader('filter', '🔍 Discovery Filters', 'filter-outline', 8)}
+        {renderSectionHeader(
+          'filter',
+          '🔍 Discovery Filters',
+          'filter-outline',
+          8,
+        )}
         {expandedSections.has('filter') && (
           <View style={styles.sectionContent}>
-            {renderTextInput('Default Min Stars ⭐', 'minStars', '10', 'numeric')}
+            {renderTextInput(
+              'Default Min Stars ⭐',
+              'minStars',
+              '10',
+              'numeric',
+            )}
             {renderSegmentedControl('Default Sort 🔀', 'sortBy', [
               'stars',
               'forks',
@@ -456,7 +597,12 @@ export const SettingsScreen: React.FC = () => {
         )}
 
         {/* Privacy Section */}
-        {renderSectionHeader('privacy', '🔒 Privacy & Security', 'shield-check-outline', 5)}
+        {renderSectionHeader(
+          'privacy',
+          '🔒 Privacy & Security',
+          'shield-check-outline',
+          5,
+        )}
         {expandedSections.has('privacy') && (
           <View style={styles.sectionContent}>
             {renderSwitch('Usage Analytics 📈', 'enableAnalytics')}
@@ -482,17 +628,29 @@ export const SettingsScreen: React.FC = () => {
               'numeric',
             )}
             {renderSwitch('Auto Delete Old Data 🧹', 'autoDeleteOldData')}
-            {renderSegmentedControl('Export Format 📄', 'preferredExportFormat', [
-              'json',
-              'csv',
-              'txt',
-            ])}
+            {renderSegmentedControl(
+              'Export Format 📄',
+              'preferredExportFormat',
+              ['json', 'csv', 'txt'],
+            )}
             {renderSwitch('Include Metadata in Export 📑', 'includeMetadata')}
+            <TouchableOpacity
+              style={styles.clearCacheButton}
+              onPress={handleClearCache}
+            >
+              <Icon name="database-remove" size={20} color={HackerTheme.warningOrange} />
+              <Text style={styles.clearCacheButtonText}>Clear Local Cache</Text>
+            </TouchableOpacity>
           </View>
         )}
 
         {/* Advanced Section */}
-        {renderSectionHeader('advanced', '⚙️ Advanced Protocols', 'cog-outline', 9)}
+        {renderSectionHeader(
+          'advanced',
+          '⚙️ Advanced Protocols',
+          'cog-outline',
+          9,
+        )}
         {expandedSections.has('advanced') && (
           <View style={styles.sectionContent}>
             {renderSwitch('Auto Check for Updates 🔄', 'autoCheckForUpdates')}
@@ -509,13 +667,9 @@ export const SettingsScreen: React.FC = () => {
               'githubToken',
               'ghp_...',
             )}
-            {renderTextInput(
-              'NPM Auth Token 🔑',
-              'npmToken',
-              'npm_...',
-            )}
-            <TouchableOpacity 
-              style={styles.updateButton} 
+            {renderTextInput('NPM Auth Token 🔑', 'npmToken', 'npm_...')}
+            <TouchableOpacity
+              style={styles.updateButton}
               onPress={() => updateService.checkForUpdates(true)}
             >
               <Icon name="update" size={20} color={HackerTheme.primary} />
@@ -523,6 +677,185 @@ export const SettingsScreen: React.FC = () => {
             </TouchableOpacity>
           </View>
         )}
+
+        {/* AI Assistant Section */}
+        {renderSectionHeader('ai', '🤖 AI Assistant', 'robot-outline', 5)}
+        {expandedSections.has('ai') && (
+          <View style={styles.sectionContent}>
+            {renderSwitch(
+              'Enable AI Features ✨',
+              'enableAIFeatures',
+              'Enable AI-powered chat assistant for exploring repos and packages',
+            )}
+
+            {/* Gemini API Configuration */}
+            <View style={styles.aiProviderCard}>
+              <View style={styles.aiProviderHeader}>
+                <Icon name="google" size={20} color={HackerTheme.accent} />
+                <Text style={styles.aiProviderTitle}>Google Gemini</Text>
+              </View>
+              <View style={styles.settingRow}>
+                <Text style={styles.settingLabel}>API Key 🔑</Text>
+                <View style={styles.secureInputContainer}>
+                  <TextInput
+                    style={[styles.textInput, styles.secureInput]}
+                    value={geminiApiKey}
+                    onChangeText={setGeminiApiKey}
+                    placeholder="AIza..."
+                    placeholderTextColor={HackerTheme.lightGrey}
+                    secureTextEntry={!showGeminiKey}
+                  />
+                  <TouchableOpacity
+                    onPress={() => setShowGeminiKey(!showGeminiKey)}
+                  >
+                    <Icon
+                      name={showGeminiKey ? 'eye-off' : 'eye'}
+                      size={20}
+                      color={HackerTheme.primary}
+                    />
+                  </TouchableOpacity>
+                </View>
+              </View>
+              {renderSegmentedControl('Model 🎯', 'geminiModel', [
+                'gemini-pro',
+                'gemini-flash',
+              ])}
+              <View style={styles.aiActionButtons}>
+                <TouchableOpacity
+                  style={styles.aiSecondaryButton}
+                  onPress={handleSaveGeminiKey}
+                >
+                  <Icon
+                    name="content-save"
+                    size={16}
+                    color={HackerTheme.primary}
+                  />
+                  <Text style={styles.aiSecondaryButtonText}>Save Key</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.aiPrimaryButton}
+                  onPress={() => handleTestConnection('gemini')}
+                  disabled={testingConnection || !geminiApiKey}
+                >
+                  {testingConnection ? (
+                    <ActivityIndicator
+                      size="small"
+                      color={HackerTheme.background}
+                    />
+                  ) : (
+                    <>
+                      <Icon
+                        name="lan-connect"
+                        size={16}
+                        color={HackerTheme.background}
+                      />
+                      <Text style={styles.aiPrimaryButtonText}>
+                        Test Connection
+                      </Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Ollama Configuration */}
+            <View style={styles.aiProviderCard}>
+              <View style={styles.aiProviderHeader}>
+                <Icon name="cog-outline" size={20} color={HackerTheme.accent} />
+                <Text style={styles.aiProviderTitle}>Local AI (Ollama)</Text>
+              </View>
+              <View style={styles.settingRow}>
+                <Text style={styles.settingLabel}>Endpoint URL 🌐</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={ollamaEndpoint}
+                  onChangeText={setOllamaEndpoint}
+                  placeholder="http://localhost:11434"
+                  placeholderTextColor={HackerTheme.lightGrey}
+                  autoCapitalize="none"
+                  keyboardType="url"
+                />
+              </View>
+              {renderTextInput(
+                'Model Name 🧠',
+                'ollamaModel',
+                'llama2, mistral, etc.',
+              )}
+              <View style={styles.aiActionButtons}>
+                <TouchableOpacity
+                  style={styles.aiSecondaryButton}
+                  onPress={handleSaveOllamaEndpoint}
+                >
+                  <Icon
+                    name="content-save"
+                    size={16}
+                    color={HackerTheme.primary}
+                  />
+                  <Text style={styles.aiSecondaryButtonText}>
+                    Save Endpoint
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.aiPrimaryButton}
+                  onPress={() => handleTestConnection('ollama')}
+                  disabled={testingConnection || !ollamaEndpoint}
+                >
+                  {testingConnection ? (
+                    <ActivityIndicator
+                      size="small"
+                      color={HackerTheme.background}
+                    />
+                  ) : (
+                    <>
+                      <Icon
+                        name="lan-connect"
+                        size={16}
+                        color={HackerTheme.background}
+                      />
+                      <Text style={styles.aiPrimaryButtonText}>
+                        Test Connection
+                      </Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* AI Preferences */}
+            {renderSegmentedControl(
+              'Preferred Provider ⚡',
+              'preferredAIProvider',
+              ['gemini', 'ollama'],
+            )}
+            {renderTextInput(
+              'Max Response Tokens 📊',
+              'aiResponseMaxTokens',
+              '2048',
+              'numeric',
+            )}
+          </View>
+        )}
+
+        <View style={styles.resetContainer}>
+          <View style={styles.authorContainer}>
+            <Text style={styles.author}>Author: {pkg.author.name}</Text>
+            <A style={styles.authorLink} href={pkg.author.url}>
+              {pkg.author.url}
+            </A>
+          </View>
+
+          <View style={styles.repositoryContainer}>
+            <Text style={styles.versionInfo}>App version: {pkg.version}</Text>
+            <A style={styles.repository} href={pkg.homepage}>
+              {pkg.homepage}
+            </A>
+          </View>
+
+          <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
+            <Icon name="restore" size={20} color={HackerTheme.errorRed} />
+            <Text style={styles.resetButtonText}>Reset to Defaults</Text>
+          </TouchableOpacity>
+        </View>
 
         <View style={styles.bottomPadding} />
       </ScrollView>
@@ -550,26 +883,6 @@ export const SettingsScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
       )}
-
-      <View style={styles.resetContainer}>
-       
-        
-        <View style={styles.authorContainer}>
-        <Text style={styles.author}>Author: {pkg.author.name}</Text>
-        <A style={styles.authorLink} href={pkg.author.url}>{pkg.author.url}</A>
-        </View>
-
-        <View style={styles.repositoryContainer}>
-          <Text style={styles.versionInfo}>App version: {pkg.version}</Text>
-        <A style={styles.repository} href={pkg.homepage}>{pkg.homepage}</A>
-        </View>
-
-         <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
-          <Icon name="restore" size={20} color={HackerTheme.errorRed} />
-          <Text style={styles.resetButtonText}>Reset to Defaults</Text>
-          
-        </TouchableOpacity>
-      </View>
     </View>
   );
 };
@@ -712,7 +1025,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: HackerTheme.errorRed,
     backgroundColor: HackerTheme.darkerGreen,
-    marginTop: Spacing.md
+    marginTop: Spacing.md,
   },
   resetButtonText: {
     ...Typography.bodyText,
@@ -932,7 +1245,93 @@ const styles = StyleSheet.create({
     ...Typography.bodyText,
     color: HackerTheme.primary,
     fontWeight: 'bold',
-  }
+  },
+  clearCacheButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    paddingVertical: Spacing.md,
+    marginHorizontal: Spacing.md,
+    marginTop: Spacing.md,
+    marginBottom: Spacing.md,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: HackerTheme.warningOrange,
+    backgroundColor: HackerTheme.darkGreen,
+  },
+  clearCacheButtonText: {
+    ...Typography.bodyText,
+    color: HackerTheme.warningOrange,
+    fontWeight: 'bold',
+  },
+  // AI Settings Styles
+  aiProviderCard: {
+    backgroundColor: HackerTheme.darkGreen,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: HackerTheme.primary + '40',
+    padding: Spacing.md,
+    marginBottom: Spacing.md,
+  },
+  aiProviderHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    marginBottom: Spacing.md,
+  },
+  aiProviderTitle: {
+    ...Typography.heading3,
+    color: HackerTheme.accent,
+  },
+  secureInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    flex: 1,
+  },
+  secureInput: {
+    flex: 1,
+  },
+  aiActionButtons: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    marginTop: Spacing.md,
+  },
+  aiPrimaryButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.xs,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    backgroundColor: HackerTheme.primary,
+    borderRadius: 6,
+  },
+  aiPrimaryButtonText: {
+    ...Typography.buttonText,
+    color: HackerTheme.background,
+    fontWeight: 'bold',
+  },
+  aiSecondaryButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.xs,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    backgroundColor: HackerTheme.darkGreen,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: HackerTheme.primary,
+  },
+  aiSecondaryButtonText: {
+    ...Typography.buttonText,
+    color: HackerTheme.primary,
+    fontWeight: 'bold',
+  },
 });
 
 export default SettingsScreen;

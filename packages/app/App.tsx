@@ -14,6 +14,7 @@ import { useAuthStore } from './src/store/authStore';
 import { useSettingsStore } from './src/store/settingsStore';
 import { HackerTheme } from './src/theme/colors';
 import { updateService } from './src/api/github/updateService';
+import AIChatBottomSheet from './src/components/AIChat/AIChatBottomSheet';
 
 function App() {
   const [isInitialized, setIsInitialized] = useState(false);
@@ -51,7 +52,12 @@ function App() {
         console.log('App initialization complete');
       } catch (error) {
         console.error('App initialization error:', error);
-        // Still allow app to run even if initialization fails
+        // Show alert but allow app to start (UI will handle missing DB)
+        Alert.alert(
+          'Database Error',
+          'Failed to initialize local database. Some features may be unavailable.',
+          [{ text: 'OK' }],
+        );
         setIsInitialized(true);
       }
     };
@@ -77,6 +83,9 @@ function App() {
         <NavigationContainer>
           <RootNavigator />
         </NavigationContainer>
+
+        {/* AI Chat Bottom Sheet - renders on top of everything */}
+        <AIChatBottomSheet />
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

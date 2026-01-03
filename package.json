@@ -32,7 +32,9 @@
     "deploy:db": "cd packages/database && bun run deploy",
     "gradle:stop": "cd packages/app && bun run gradle:stop",
     "gradle:clean": "cd packages/app && bun run gradle:clean",
-    "app:version:patch": "node scripts/bump-app-version.js"
+    "app:version:patch": "node scripts/bump-app-version.js --patch",
+    "app:version:minor": "node scripts/bump-app-version.js --minor",
+    "app:version:major": "node scripts/bump-app-version.js --major"
   },
   "devDependencies": {
     "@types/bun": "latest",

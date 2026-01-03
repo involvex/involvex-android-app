@@ -71,12 +71,19 @@ export interface UserSettingsData {
   preferredExportFormat: 'json' | 'csv' | 'txt';
   includeMetadata: boolean;
 
-  // Advanced Settings (4 fields)
+  // Advanced Settings (5 fields)
   enableDebugMode: boolean;
   enableBetaFeatures: boolean;
   apiEndpoint: string;
   requestTimeout: number; // seconds
   autoCheckForUpdates: boolean;
+
+  // AI Assistant Settings (5 fields)
+  enableAIFeatures: boolean;
+  geminiModel: 'gemini-pro' | 'gemini-flash';
+  ollamaModel: string | null; // e.g., 'llama2', 'mistral'
+  preferredAIProvider: 'gemini' | 'ollama';
+  aiResponseMaxTokens: number;
 }
 
 export class UserSettings implements UserSettingsData {
@@ -153,6 +160,13 @@ export class UserSettings implements UserSettingsData {
   requestTimeout: number;
   autoCheckForUpdates: boolean;
 
+  // AI Assistant
+  enableAIFeatures: boolean;
+  geminiModel: 'gemini-pro' | 'gemini-flash';
+  ollamaModel: string | null;
+  preferredAIProvider: 'gemini' | 'ollama';
+  aiResponseMaxTokens: number;
+
   constructor(data?: Partial<UserSettingsData>) {
     // Theme Settings
     this.isDarkMode = data?.isDarkMode ?? true;
@@ -228,6 +242,13 @@ export class UserSettings implements UserSettingsData {
     this.apiEndpoint = data?.apiEndpoint ?? 'https://api.github.com';
     this.requestTimeout = data?.requestTimeout ?? 30;
     this.autoCheckForUpdates = data?.autoCheckForUpdates ?? true;
+
+    // AI Assistant Settings
+    this.enableAIFeatures = data?.enableAIFeatures ?? false;
+    this.geminiModel = data?.geminiModel ?? 'gemini-flash';
+    this.ollamaModel = data?.ollamaModel ?? null;
+    this.preferredAIProvider = data?.preferredAIProvider ?? 'gemini';
+    this.aiResponseMaxTokens = data?.aiResponseMaxTokens ?? 2048;
   }
 
   /**
@@ -288,6 +309,11 @@ export class UserSettings implements UserSettingsData {
       apiEndpoint: json.apiEndpoint,
       requestTimeout: json.requestTimeout,
       autoCheckForUpdates: json.autoCheckForUpdates,
+      enableAIFeatures: json.enableAIFeatures,
+      geminiModel: json.geminiModel,
+      ollamaModel: json.ollamaModel,
+      preferredAIProvider: json.preferredAIProvider,
+      aiResponseMaxTokens: json.aiResponseMaxTokens,
     });
   }
 
@@ -397,6 +423,11 @@ export class UserSettings implements UserSettingsData {
       apiEndpoint: this.apiEndpoint,
       requestTimeout: this.requestTimeout,
       autoCheckForUpdates: this.autoCheckForUpdates,
+      enableAIFeatures: this.enableAIFeatures,
+      geminiModel: this.geminiModel,
+      ollamaModel: this.ollamaModel,
+      preferredAIProvider: this.preferredAIProvider,
+      aiResponseMaxTokens: this.aiResponseMaxTokens,
     };
   }
 

@@ -22,13 +22,11 @@ export type MainTabParamList = {
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-const TabBarIcon = (name: string) => ({
-  color,
-  size,
-}: {
-  color: string;
-  size: number;
-}) => <Icon name={name} size={size} color={color} />;
+const TabBarIcon =
+  (name: string) =>
+  ({ color, size }: { color: string; size: number }) => (
+    <Icon name={name} size={size} color={color} />
+  );
 
 export const MainTabNavigator: React.FC = () => {
   return (

@@ -36,6 +36,7 @@ export interface GitHubRepositoryData {
   ownerAvatarUrl: string;
   ownerHtmlUrl: string;
   topics: string | null;
+  homepage: string | null;
   trendingScore: number;
   trendingPeriod: 'daily' | 'weekly' | 'monthly';
   lastReleaseDate: Date | null;
@@ -75,6 +76,7 @@ export class GitHubRepository implements GitHubRepositoryData {
   ownerAvatarUrl: string;
   ownerHtmlUrl: string;
   topics: string | null;
+  homepage: string | null;
   trendingScore: number;
   trendingPeriod: 'daily' | 'weekly' | 'monthly';
   lastReleaseDate: Date | null;
@@ -113,6 +115,7 @@ export class GitHubRepository implements GitHubRepositoryData {
     this.ownerAvatarUrl = data.ownerAvatarUrl;
     this.ownerHtmlUrl = data.ownerHtmlUrl;
     this.topics = data.topics;
+    this.homepage = data.homepage;
     this.trendingScore = data.trendingScore;
     this.trendingPeriod = data.trendingPeriod;
     this.lastReleaseDate = data.lastReleaseDate;
@@ -158,6 +161,7 @@ export class GitHubRepository implements GitHubRepositoryData {
       ownerAvatarUrl: json.owner?.avatar_url || '',
       ownerHtmlUrl: json.owner?.html_url || '',
       topics: json.topics?.join(',') || null,
+      homepage: json.homepage || json.html_url || null,
       trendingScore,
       trendingPeriod: 'daily',
       lastReleaseDate: null,
@@ -311,10 +315,9 @@ export class GitHubRepository implements GitHubRepositoryData {
       hasIssues: this.hasIssues,
       hasPages: this.hasPages,
       hasWiki: this.hasWiki,
-      ownerLogin: this.ownerLogin,
-      ownerAvatarUrl: this.ownerAvatarUrl,
       ownerHtmlUrl: this.ownerHtmlUrl,
       topics: this.topics,
+      homepage: this.homepage,
       trendingScore: this.trendingScore,
       trendingPeriod: this.trendingPeriod,
       lastReleaseDate: this.lastReleaseDate?.toISOString(),

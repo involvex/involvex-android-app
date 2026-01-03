@@ -16,6 +16,11 @@ export class Database {
    * Initialize database and create tables
    */
   static async init(): Promise<void> {
+    if (this.db) {
+      console.log('Database already initialized');
+      return;
+    }
+
     try {
       this.db = await SQLite.openDatabase({
         name: 'trending_hub.db',
@@ -96,6 +101,21 @@ export class Database {
       );
     `);
 
+    // AI Chat Messages table
+    await this.db.executeSql(`
+      CREATE TABLE IF NOT EXISTS ai_chat_messages (
+        id TEXT PRIMARY KEY,
+        role TEXT NOT NULL,
+        content TEXT NOT NULL,
+        context_type TEXT,
+        context_id TEXT,
+        provider TEXT NOT NULL,
+        model TEXT NOT NULL,
+        token_count INTEGER,
+        created_at INTEGER DEFAULT (strftime('%s', 'now') * 1000)
+      );
+    `);
+
     // Create indexes for performance
     await this.db.executeSql(
       'CREATE INDEX IF NOT EXISTS idx_subscriptions_type ON subscriptions(type);',
@@ -118,6 +138,19 @@ export class Database {
     await this.db.executeSql(
       'CREATE INDEX IF NOT EXISTS idx_cache_expires ON cache(expires_at);',
     );
+    await this.db.executeSql(
+      'CREATE INDEX IF NOT EXISTS idx_chat_created ON ai_chat_messages(created_at DESC);',
+    );
+    await this.db.executeSql(
+      'CREATE INDEX IF NOT EXISTS idx_chat_context ON ai_chat_messages(context_type, context_id);',
+    );
+  }
+
+  /**
+   * Check if database is initialized
+   */
+  static isInitialized(): boolean {
+    return this.db !== null;
   }
 
   /**
@@ -149,8 +182,18 @@ export class Database {
     await this.db.executeSql('DELETE FROM releases;');
     await this.db.executeSql('DELETE FROM notifications;');
     await this.db.executeSql('DELETE FROM cache;');
+    await this.db.executeSql('DELETE FROM ai_chat_messages;');
 
     console.log('All data cleared');
+  }
+
+  /**
+   * Clear all cache entries
+   */
+  static async clearCache(): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
+    await this.db.executeSql('DELETE FROM cache;');
+    console.log('Cache cleared');
   }
 
   /**

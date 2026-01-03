@@ -21,6 +21,7 @@ import { HackerTheme } from '../theme/colors';
 import { Typography } from '../theme/typography';
 import { Spacing } from '../theme/spacing';
 import { useTrendingStore } from '../store/trendingStore';
+import { useAIChatStore } from '../store/aiChatStore';
 import { TimeframeType } from '../api/github/githubClient';
 import { GitHubRepository } from '../models/GitHubRepository';
 import { NpmPackage } from '../models/NpmPackage';
@@ -31,7 +32,9 @@ type TabType = 'github' | 'npm';
 export const HomeScreen: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('github');
   const [showFilters, setShowFilters] = useState(false);
-  const [subscribedItems, setSubscribedItems] = useState<Set<string>>(new Set());
+  const [subscribedItems, setSubscribedItems] = useState<Set<string>>(
+    new Set(),
+  );
 
   const {
     timeframe,
@@ -48,6 +51,9 @@ export const HomeScreen: React.FC = () => {
     setSortOrder,
     refreshAll,
   } = useTrendingStore();
+
+  // AI Chat store
+  const openChat = useAIChatStore(state => state.openChat);
 
   useEffect(() => {
     // Initial data fetch
@@ -69,8 +75,14 @@ export const HomeScreen: React.FC = () => {
     loadSubscriptions();
   };
 
-  const handleToggleSubscription = async (item: GitHubRepository | NpmPackage, type: 'github' | 'npm') => {
-    const itemId = type === 'github' ? String((item as GitHubRepository).id) : (item as NpmPackage).name;
+  const handleToggleSubscription = async (
+    item: GitHubRepository | NpmPackage,
+    type: 'github' | 'npm',
+  ) => {
+    const itemId =
+      type === 'github'
+        ? String((item as GitHubRepository).id)
+        : (item as NpmPackage).name;
     const isSubscribed = subscribedItems.has(itemId);
 
     try {
@@ -87,13 +99,17 @@ export const HomeScreen: React.FC = () => {
           type: type === 'github' ? 'repository' : 'package',
           itemId,
           name: item.name,
-          fullName: type === 'github' ? (item as GitHubRepository).fullName : undefined,
+          fullName:
+            type === 'github' ? (item as GitHubRepository).fullName : undefined,
           data: JSON.stringify(item),
           subscribedAt: Date.now(),
           isActive: true,
         });
         setSubscribedItems(prev => new Set(prev).add(itemId));
-        Alert.alert('Subscribed', `${item.name} added to your personal subscriptions.`);
+        Alert.alert(
+          'Subscribed',
+          `${item.name} added to your personal subscriptions.`,
+        );
       }
     } catch (toggleError) {
       console.error('Subscription toggle error:', toggleError);
@@ -238,14 +254,14 @@ export const HomeScreen: React.FC = () => {
     <View style={styles.header}>
       <View style={styles.headerTop}>
         <Text style={styles.headerTitle}>TRENDING_DATA</Text>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.filterToggleButton}
           onPress={() => setShowFilters(!showFilters)}
         >
-          <Icon 
-            name={showFilters ? "filter-remove" : "filter-variant"} 
-            size={24} 
-            color={showFilters ? HackerTheme.primary : HackerTheme.lightGrey} 
+          <Icon
+            name={showFilters ? 'filter-remove' : 'filter-variant'}
+            size={24}
+            color={showFilters ? HackerTheme.primary : HackerTheme.lightGrey}
           />
         </TouchableOpacity>
       </View>
@@ -258,77 +274,91 @@ export const HomeScreen: React.FC = () => {
   const renderGitHubItem = ({ item }: { item: GitHubRepository }) => {
     const isSubscribed = subscribedItems.has(String(item.id));
     return (
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <TouchableOpacity 
-            style={styles.cardHeaderTitle}
-            onPress={() => item.htmlUrl && Linking.openURL(item.htmlUrl)}
-          >
-            <Text style={styles.cardTitle}>{item.name}</Text>
-            <Text style={styles.cardSubtitle}>{item.fullName}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => handleToggleSubscription(item, 'github')}>
-            <Icon 
-              name={isSubscribed ? "star" : "star-outline"} 
-              size={28} 
-              color={isSubscribed ? HackerTheme.secondary : HackerTheme.lightGrey} 
-            />
-          </TouchableOpacity>
-        </View>
-        {item.description && (
-          <Text style={styles.cardDescription} numberOfLines={2}>
-            {item.description}
-          </Text>
-        )}
-        <View style={styles.statsRow}>
-          <Text style={styles.statText}>⭐ {item.formattedStars}</Text>
-          <Text style={styles.statText}>🍴 {item.formattedForks}</Text>
-          {item.language && (
-            <View style={styles.languageBadge}>
-              <View
-                style={[
-                  styles.languageDot,
-                  { backgroundColor: item.languageColor },
-                ]}
+      <TouchableOpacity onLongPress={() => openChat(item)} activeOpacity={0.9}>
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <TouchableOpacity
+              style={styles.cardHeaderTitle}
+              onPress={() => item.htmlUrl && Linking.openURL(item.htmlUrl)}
+            >
+              <Text style={styles.cardTitle}>{item.name}</Text>
+              <Text style={styles.cardSubtitle}>{item.fullName}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => handleToggleSubscription(item, 'github')}
+            >
+              <Icon
+                name={isSubscribed ? 'star' : 'star-outline'}
+                size={28}
+                color={
+                  isSubscribed ? HackerTheme.secondary : HackerTheme.lightGrey
+                }
               />
-              <Text style={styles.languageText}>{item.language}</Text>
-            </View>
+            </TouchableOpacity>
+          </View>
+          {item.description && (
+            <Text style={styles.cardDescription} numberOfLines={2}>
+              {item.description}
+            </Text>
           )}
+          <View style={styles.statsRow}>
+            <Text style={styles.statText}>⭐ {item.formattedStars}</Text>
+            <Text style={styles.statText}>🍴 {item.formattedForks}</Text>
+            {item.language && (
+              <View style={styles.languageBadge}>
+                <View
+                  style={[
+                    styles.languageDot,
+                    { backgroundColor: item.languageColor },
+                  ]}
+                />
+                <Text style={styles.languageText}>{item.language}</Text>
+              </View>
+            )}
+          </View>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
   const renderNpmItem = ({ item }: { item: NpmPackage }) => {
     const isSubscribed = subscribedItems.has(item.name);
     return (
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <TouchableOpacity 
-            style={styles.cardHeaderTitle}
-            onPress={() => item.npmUrl && Linking.openURL(item.npmUrl)}
-          >
-            <Text style={styles.cardTitle}>{item.name}</Text>
-            <Text style={styles.cardSubtitle}>v{item.version}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => handleToggleSubscription(item, 'npm')}>
-            <Icon 
-              name={isSubscribed ? "star" : "star-outline"} 
-              size={28} 
-              color={isSubscribed ? HackerTheme.secondary : HackerTheme.lightGrey} 
-            />
-          </TouchableOpacity>
+      <TouchableOpacity onLongPress={() => openChat(item)} activeOpacity={0.9}>
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <TouchableOpacity
+              style={styles.cardHeaderTitle}
+              onPress={() => item.npmUrl && Linking.openURL(item.npmUrl)}
+            >
+              <Text style={styles.cardTitle}>{item.name}</Text>
+              <Text style={styles.cardSubtitle}>v{item.version}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => handleToggleSubscription(item, 'npm')}
+            >
+              <Icon
+                name={isSubscribed ? 'star' : 'star-outline'}
+                size={28}
+                color={
+                  isSubscribed ? HackerTheme.secondary : HackerTheme.lightGrey
+                }
+              />
+            </TouchableOpacity>
+          </View>
+          {item.description && (
+            <Text style={styles.cardDescription} numberOfLines={2}>
+              {item.description}
+            </Text>
+          )}
+          <View style={styles.statsRow}>
+            <Text style={styles.statText}>📦 {item.formattedDownloads}</Text>
+            {item.stars > 0 && (
+              <Text style={styles.statText}>⭐ {item.stars}</Text>
+            )}
+          </View>
         </View>
-        {item.description && (
-          <Text style={styles.cardDescription} numberOfLines={2}>
-            {item.description}
-          </Text>
-        )}
-        <View style={styles.statsRow}>
-          <Text style={styles.statText}>📦 {item.formattedDownloads}</Text>
-          {item.stars > 0 && <Text style={styles.statText}>⭐ {item.stars}</Text>}
-        </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -377,6 +407,15 @@ export const HomeScreen: React.FC = () => {
           ListEmptyComponent={renderEmptyState}
         />
       )}
+
+      {/* Floating Action Button for AI Chat */}
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => openChat()}
+        activeOpacity={0.8}
+      >
+        <Icon name="robot-outline" size={28} color={HackerTheme.background} />
+      </TouchableOpacity>
     </View>
   );
 };
@@ -402,7 +441,7 @@ const styles = StyleSheet.create({
     ...Typography.heading3,
     color: HackerTheme.primary,
     letterSpacing: 2,
-    fontSize: 12
+    fontSize: 12,
   },
   filterToggleButton: {
     padding: Spacing.xs,
@@ -559,7 +598,7 @@ const styles = StyleSheet.create({
     ...Typography.bodyText,
     color: HackerTheme.darkGrey,
     fontWeight: '800',
-    fontFamily: 'monospace'
+    fontFamily: 'monospace',
   },
   languageBadge: {
     flexDirection: 'row',
@@ -601,6 +640,22 @@ const styles = StyleSheet.create({
     color: HackerTheme.errorRed,
     marginTop: Spacing.sm,
     textAlign: 'center',
+  },
+  fab: {
+    position: 'absolute',
+    right: Spacing.lg,
+    bottom: Spacing.lg,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: HackerTheme.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 8,
+    shadowColor: HackerTheme.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
   },
 });
 
