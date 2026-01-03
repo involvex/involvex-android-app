@@ -1,4 +1,9 @@
-import { json, redirect, type ActionFunctionArgs, type LoaderFunctionArgs } from "@remix-run/cloudflare";
+import {
+  json,
+  redirect,
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+} from "@remix-run/cloudflare";
 import { Form, Link, useActionData } from "@remix-run/react";
 import bcrypt from "bcryptjs";
 import { createUser, getUserByEmail } from "../services/db.server";
@@ -47,39 +52,72 @@ export default function Signup() {
   const actionData = useActionData<typeof action>();
 
   return (
-    <div className="container" style={{ maxWidth: '400px', paddingTop: '4rem' }}>
+    <div
+      className="container"
+      style={{ maxWidth: "400px", paddingTop: "4rem" }}
+    >
       <h1 className="hacker-text">Establish Identity</h1>
-      <Form method="post" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <Form
+        method="post"
+        style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+      >
         <input
           name="username"
           placeholder="Codename (Username)"
           required
-          style={{ padding: '0.5rem', background: 'var(--color-dark-grey)', color: 'var(--color-primary)', border: '1px solid var(--color-primary)' }}
+          style={{
+            padding: "0.5rem",
+            background: "var(--color-dark-grey)",
+            color: "var(--color-primary)",
+            border: "1px solid var(--color-primary)",
+          }}
         />
         <input
           name="email"
           type="email"
           placeholder="Secure-Mail (Email)"
           required
-          style={{ padding: '0.5rem', background: 'var(--color-dark-grey)', color: 'var(--color-primary)', border: '1px solid var(--color-primary)' }}
+          style={{
+            padding: "0.5rem",
+            background: "var(--color-dark-grey)",
+            color: "var(--color-primary)",
+            border: "1px solid var(--color-primary)",
+          }}
         />
         <input
           name="password"
           type="password"
           placeholder="Access-Key (Password)"
           required
-          style={{ padding: '0.5rem', background: 'var(--color-dark-grey)', color: 'var(--color-primary)', border: '1px solid var(--color-primary)' }}
+          style={{
+            padding: "0.5rem",
+            background: "var(--color-dark-grey)",
+            color: "var(--color-primary)",
+            border: "1px solid var(--color-primary)",
+          }}
         />
-        {actionData?.error && <p style={{ color: 'var(--color-error-red)' }}>{actionData.error}</p>}
+        {actionData?.error && (
+          <p style={{ color: "var(--color-error-red)" }}>{actionData.error}</p>
+        )}
         <button
           type="submit"
-          style={{ padding: '0.75rem', background: 'var(--color-primary)', color: 'var(--color-pure-black)', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
+          style={{
+            padding: "0.75rem",
+            background: "var(--color-primary)",
+            color: "var(--color-pure-black)",
+            fontWeight: "bold",
+            border: "none",
+            cursor: "pointer",
+          }}
         >
           Initialize Account
         </button>
       </Form>
-      <p style={{ marginTop: '1rem', textAlign: 'center' }}>
-        Already indexed? <Link to="/auth/login" style={{ color: 'var(--color-secondary)' }}>Login</Link>
+      <p style={{ marginTop: "1rem", textAlign: "center" }}>
+        Already indexed?{" "}
+        <Link to="/auth/login" style={{ color: "var(--color-secondary)" }}>
+          Login
+        </Link>
       </p>
     </div>
   );

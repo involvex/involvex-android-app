@@ -6,4 +6,5 @@ export interface Env {
   DISCORD_CLIENT_ID: string;
   DISCORD_CLIENT_SECRET: string;
   DISCORD_OAUTH_CALLBACK: string;
+  USER: string;
 }

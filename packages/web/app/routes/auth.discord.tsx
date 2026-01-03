@@ -10,7 +10,8 @@ export async function loader({ context }: LoaderFunctionArgs) {
     throw new Error("DISCORD_CLIENT_ID not configured");
   }
 
-  const discordAuthUrl = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(callbackUrl)}&response_type=code&scope=identify%20email&state=${Math.random().toString(36).substring(7)}`;
+  const state = `discord:${Math.random().toString(36).substring(7)}`;
+  const discordAuthUrl = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(callbackUrl)}&response_type=code&scope=identify%20email&state=${state}`;
 
   return redirect(discordAuthUrl);
 }

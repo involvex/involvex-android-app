@@ -1,19 +1,19 @@
 /* HackerTheme - Matrix-style dark green terminal aesthetic */
 
 :root {
-  --color-primary: #00FF41;
-  --color-secondary: #39FF14;
-  --color-dark-green: #0A3D0A;
-  --color-darker-green: #051A05;
-  --color-accent-green: #1AFF66;
+  --color-primary: #00ff41;
+  --color-secondary: #39ff14;
+  --color-dark-green: #0a3d0a;
+  --color-darker-green: #051a05;
+  --color-accent-green: #1aff66;
   --color-pure-black: #000000;
-  --color-dark-grey: #1A1A1A;
-  --color-medium-grey: #2D2D2D;
+  --color-dark-grey: #1a1a1a;
+  --color-medium-grey: #2d2d2d;
   --color-light-grey: #404040;
-  --color-text-grey: #B8B8B8;
-  --color-error-red: #FF4444;
-  --color-warning-orange: #FF8800;
-  --color-success-green: #00FF41;
+  --color-text-grey: #b8b8b8;
+  --color-error-red: #ff4444;
+  --color-warning-orange: #ff8800;
+  --color-success-green: #00ff41;
 }
 
 * {
@@ -23,7 +23,7 @@
 }
 
 body {
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   background-color: var(--color-pure-black);
   color: var(--color-primary);
   line-height: 1.6;
@@ -39,7 +39,12 @@ a:hover {
   text-decoration: underline;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   color: var(--color-primary);
   font-weight: bold;
   margin-bottom: 1rem;
@@ -142,7 +147,6 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--color-success-green);
 }
 
-
 /* Danger Zone */
 .danger-zone {
   margin-top: 4rem;
@@ -173,3 +177,26 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 0.9rem;
 }
 
+/* Admin Specific Styles */
+.role-select {
+  padding: 0.5rem;
+  background-color: var(--color-dark-grey);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  border-radius: 4px;
+  margin-right: 0.5rem;
+}
+
+.btn-small {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.8rem;
+  border-radius: 4px;
+  background-color: var(--color-primary);
+  color: var(--color-pure-black);
+  border: none;
+  cursor: pointer;
+}
+
+.btn-small:hover {
+  background-color: var(--color-secondary);
+}

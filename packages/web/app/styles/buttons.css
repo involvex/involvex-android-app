@@ -1,5 +1,20 @@
 /* Button Styles */
 
+:root {
+  --color-primary: #00ff41;
+  --color-secondary: #39ff14;
+  --color-dark-green: #0a3d0a;
+  --color-darker-green: #051a05;
+  --color-accent-green: #1aff66;
+  --color-pure-black: #000000;
+  --color-dark-grey: #1a1a1a;
+  --color-medium-grey: #2d2d2d;
+  --color-light-grey: #404040;
+  --color-text-grey: #b8b8b8;
+  --color-error-red: #ff4444;
+  --color-warning-orange: #ff8800;
+  --color-success-green: #00ff41;
+}
 .btn {
   display: inline-flex;
   align-items: center;
@@ -33,9 +48,9 @@
 }
 
 .btn-discord {
-  background-color: #5865F2;
-  color: #FFFFFF;
-  border-color: #5865F2;
+  background-color: #5865f2;
+  color: #ffffff;
+  border-color: #5865f2;
 }
 .btn-discord:hover {
   background-color: #4f5bda;
@@ -43,13 +58,12 @@
 
 .btn-github {
   background-color: #24292e;
-  color: #FFFFFF;
+  color: #ffffff;
   border-color: #24292e;
 }
 .btn-github:hover {
   background-color: #1a1e22;
 }
-
 
 /* Link-style destructive button */
 .btn-link-destructive {
@@ -63,7 +77,6 @@
 .btn-link-destructive:hover {
   color: #ff6666;
 }
-
 
 /* Mobile Styles */
 @media (max-width: 768px) {

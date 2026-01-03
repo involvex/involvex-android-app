@@ -1,6 +1,6 @@
 {
   "name": "@involvex/app",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "author": {
     "name": "Involvex",
     "url": "https://involvex.github.io/Involvex/"
@@ -32,7 +32,7 @@
     "@react-navigation/bottom-tabs": "^7.9.0",
     "@react-navigation/native": "^7.1.26",
     "@react-navigation/stack": "^7.6.13",
-    "@shopify/flash-list": "^2.2.0",
+    "@shopify/flash-list": "2.2.0",
     "axios": "^1.13.2",
     "axios-retry": "^4.5.0",
     "base-64": "^1.0.0",

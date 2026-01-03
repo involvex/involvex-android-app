@@ -402,6 +402,7 @@ const styles = StyleSheet.create({
     ...Typography.heading3,
     color: HackerTheme.primary,
     letterSpacing: 2,
+    fontSize: 12
   },
   filterToggleButton: {
     padding: Spacing.xs,

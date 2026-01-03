@@ -10,5 +10,5 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 
   // Pass a state parameter to identify this as a linking request
-  return redirect(`/auth/github?state=linking`);
+  return redirect(`/auth/github?state=linking:github`);
 }

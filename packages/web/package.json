@@ -11,7 +11,10 @@
     "preview": "wrangler pages dev build/client",
     "typecheck": "tsc",
     "lint": "eslint . --ignore-pattern build",
-    "lint:fix": "eslint . --fix --ignore-pattern build"
+    "lint:fix": "eslint . --fix --ignore-pattern build",
+    "prebuild": "bun run format && bun run lint:fix && bun run typecheck",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@involvex/shared": "workspace:*",

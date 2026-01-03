@@ -35,6 +35,7 @@ bun run deploy
 The site automatically deploys to Cloudflare Pages when you run `bun run deploy`.
 
 Make sure you're logged in to Cloudflare:
+
 ```bash
 wrangler login
 ```

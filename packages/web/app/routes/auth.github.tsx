@@ -10,7 +10,8 @@ export async function loader({ context }: LoaderFunctionArgs) {
     throw new Error("GITHUB_OAUTH_CLIENT_ID not configured");
   }
 
-  const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${callbackUrl}&scope=read:user,user:email&state=${Math.random().toString(36).substring(7)}`;
+  const state = `github:${Math.random().toString(36).substring(7)}`;
+  const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${callbackUrl}&scope=read:user,user:email&state=${state}`;
 
   return redirect(githubAuthUrl);
 }
