@@ -1,0 +1,35 @@
+{
+  "name": "@involvex/web",
+  "version": "0.0.3",
+  "private": true,
+  "sideEffects": false,
+  "type": "module",
+  "scripts": {
+    "dev": "remix vite:dev",
+    "build": "remix vite:build",
+    "deploy": "bun run build && wrangler pages deploy ./build/client",
+    "preview": "wrangler pages dev ./build/client",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@involvex/shared": "workspace:*",
+    "@remix-run/cloudflare": "^2.15.0",
+    "@remix-run/cloudflare-pages": "^2.15.0",
+    "@remix-run/react": "^2.15.0",
+    "isbot": "^4.1.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241230.0",
+    "@remix-run/dev": "^2.15.0",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "typescript": "^5.8.3",
+    "vite": "^6.0.7",
+    "wrangler": "^3.96.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

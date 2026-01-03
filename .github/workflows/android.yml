@@ -2,9 +2,8 @@ name: Android CI
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    tags:
+      - 'v*'  # Trigger on version tags like v0.0.3, v1.0.0, etc.
 
 jobs:
   build:
@@ -29,8 +28,9 @@ jobs:
           node-version: '22'
           cache: 'npm'
 
-      - name: Install dependencies
-        run: npm install
+      - name: Install dependencies with Bun
+        run: bun install
+        working-directory: packages/app
 
       - name: Accept Android SDK licenses
         run: |
@@ -44,15 +44,15 @@ jobs:
           fi
 
       - name: Grant execute permission for gradlew
-        working-directory: android
+        working-directory: packages/app/android
         run: chmod +x gradlew
 
       - name: Build debug APK (no keystore required)
-        working-directory: android
+        working-directory: packages/app/android
         run: ./gradlew assembleDebug --no-daemon --stacktrace --info
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: android-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: involvexapp-${{ github.ref_name }}-debug
+          path: packages/app/android/app/build/outputs/apk/debug/app-debug.apk

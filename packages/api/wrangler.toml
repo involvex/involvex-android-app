@@ -1,0 +1,14 @@
+name = "involvex-api"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "involvex-production"
+database_id = "" # Copy from packages/database/wrangler.toml after creating database
+
+[env.production]
+# Production routes - update with your domain
+# routes = [
+#   { pattern = "api.involvex.app/*", zone_name = "involvex.app" }
+# ]

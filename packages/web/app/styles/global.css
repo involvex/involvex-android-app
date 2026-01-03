@@ -1,0 +1,57 @@
+/* HackerTheme - Matrix-style dark green terminal aesthetic */
+
+:root {
+  --color-primary: #00FF41;
+  --color-secondary: #39FF14;
+  --color-dark-green: #0A3D0A;
+  --color-darker-green: #051A05;
+  --color-accent-green: #1AFF66;
+  --color-pure-black: #000000;
+  --color-dark-grey: #1A1A1A;
+  --color-medium-grey: #2D2D2D;
+  --color-light-grey: #404040;
+  --color-text-grey: #B8B8B8;
+  --color-error-red: #FF4444;
+  --color-warning-orange: #FF8800;
+  --color-success-green: #00FF41;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Courier New', monospace;
+  background-color: var(--color-pure-black);
+  color: var(--color-primary);
+  line-height: 1.6;
+}
+
+a {
+  color: var(--color-accent-green);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--color-secondary);
+  text-decoration: underline;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--color-primary);
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.hacker-text {
+  color: var(--color-primary);
+  text-shadow: 0 0 10px var(--color-primary);
+}

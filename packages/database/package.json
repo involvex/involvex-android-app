@@ -1,0 +1,15 @@
+{
+  "name": "@involvex/database",
+  "version": "0.0.3",
+  "private": true,
+  "scripts": {
+    "create": "wrangler d1 create involvex-production",
+    "migrate": "wrangler d1 migrations apply involvex-production",
+    "migrate:local": "wrangler d1 migrations apply involvex-production --local",
+    "studio": "wrangler d1 execute involvex-production --command '.tables'",
+    "deploy": "wrangler d1 migrations apply involvex-production --remote"
+  },
+  "devDependencies": {
+    "wrangler": "^3.96.0"
+  }
+}
