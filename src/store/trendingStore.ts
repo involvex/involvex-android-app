@@ -1,0 +1,139 @@
+/**
+ * Trending Store
+ * Manages trending repositories and packages state
+ * Uses Zustand for state management
+ */
+
+import { create } from 'zustand';
+import { immer } from 'zustand/middleware/immer';
+import { GitHubRepository } from '../models/GitHubRepository';
+import { NpmPackage } from '../models/NpmPackage';
+import { githubService } from '../api/github/githubService';
+import { npmService } from '../api/npm/npmService';
+import { TimeframeType } from '../api/github/githubClient';
+
+interface TrendingState {
+  // State
+  timeframe: TimeframeType;
+  githubRepos: GitHubRepository[];
+  npmPackages: NpmPackage[];
+  loading: boolean;
+  error: string | null;
+  lastFetch: Date | null;
+
+  // Actions
+  setTimeframe: (timeframe: TimeframeType) => void;
+  fetchGitHubTrending: () => Promise<void>;
+  fetchNpmTrending: () => Promise<void>;
+  refreshAll: () => Promise<void>;
+  clearError: () => void;
+}
+
+export const useTrendingStore = create<TrendingState>()(
+  immer((set, get) => ({
+    // Initial State
+    timeframe: 'daily',
+    githubRepos: [],
+    npmPackages: [],
+    loading: false,
+    error: null,
+    lastFetch: null,
+
+    // Set timeframe and auto-refresh
+    setTimeframe: (timeframe: TimeframeType) => {
+      set(state => {
+        state.timeframe = timeframe;
+      });
+
+      // Auto-refresh when timeframe changes
+      get().refreshAll();
+    },
+
+    // Fetch GitHub trending repositories
+    fetchGitHubTrending: async () => {
+      try {
+        set(state => {
+          state.loading = true;
+          state.error = null;
+        });
+
+        const repos = await githubService.getTrending(get().timeframe, {
+          minStars: 10,
+          perPage: 50,
+        });
+
+        set(state => {
+          state.githubRepos = repos;
+          state.loading = false;
+          state.lastFetch = new Date();
+        });
+
+        console.log(`Fetched ${repos.length} GitHub repositories`);
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : 'Failed to fetch repositories';
+
+        set(state => {
+          state.loading = false;
+          state.error = message;
+        });
+
+        console.error('Error fetching GitHub trending:', error);
+      }
+    },
+
+    // Fetch npm trending packages
+    fetchNpmTrending: async () => {
+      try {
+        set(state => {
+          state.loading = true;
+          state.error = null;
+        });
+
+        const packages = await npmService.getTrending(get().timeframe, {
+          quality: 0.8,
+          popularity: 0.9,
+          maintenance: 0.5,
+          perPage: 50,
+        });
+
+        set(state => {
+          state.npmPackages = packages;
+          state.loading = false;
+          state.lastFetch = new Date();
+        });
+
+        console.log(`Fetched ${packages.length} npm packages`);
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : 'Failed to fetch packages';
+
+        set(state => {
+          state.loading = false;
+          state.error = message;
+        });
+
+        console.error('Error fetching npm trending:', error);
+      }
+    },
+
+    // Refresh both GitHub and npm
+    refreshAll: async () => {
+      await Promise.all([
+        get().fetchGitHubTrending(),
+        get().fetchNpmTrending(),
+      ]);
+    },
+
+    // Clear error
+    clearError: () => {
+      set(state => {
+        state.error = null;
+      });
+    },
+  })),
+);
+
+export default useTrendingStore;

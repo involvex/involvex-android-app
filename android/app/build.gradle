@@ -77,13 +77,14 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.trendinghubnew"
+    namespace "com.involvex"
     defaultConfig {
-        applicationId "com.trendinghubnew"
+        applicationId "com.involvex.involvexapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
+        manifestPlaceholders = [appAuthRedirectScheme: 'com.involvex']
     }
     signingConfigs {
         debug {

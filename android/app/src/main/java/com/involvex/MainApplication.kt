@@ -1,4 +1,4 @@
-package com.trendinghubnew
+package com.involvex
 
 import android.app.Application
 import com.facebook.react.PackageList

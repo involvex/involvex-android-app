@@ -1,44 +1,89 @@
 /**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
+ * Trending Hub App
+ * React Native app for discovering trending GitHub repos and npm packages
  */
 
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+import React, { useEffect, useState } from 'react';
+import { StatusBar, View, ActivityIndicator, StyleSheet } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import RootNavigator from './src/navigation/RootNavigator';
+import { Database } from './src/database/schema';
+import { useAuthStore } from './src/store/authStore';
+import { useSettingsStore } from './src/store/settingsStore';
+import { HackerTheme } from './src/theme/colors';
 
 function App() {
-  const isDarkMode = useColorScheme() === 'dark';
+  const [isInitialized, setIsInitialized] = useState(false);
+  const initializeAuth = useAuthStore(state => state.initialize);
+  const loadSettings = useSettingsStore(state => state.loadSettings);
+
+  useEffect(() => {
+    const initializeApp = async () => {
+      try {
+        console.log('Initializing app...');
+
+        // Initialize database
+        await Database.init();
+        console.log('Database initialized');
+
+        // Initialize auth state
+        await initializeAuth();
+        console.log('Auth initialized');
+
+        // Load user settings
+        await loadSettings();
+        console.log('Settings loaded');
+
+        // Clean expired cache
+        await Database.cleanExpiredCache();
+        console.log('Cache cleaned');
+
+        setIsInitialized(true);
+        console.log('App initialization complete');
+      } catch (error) {
+        console.error('App initialization error:', error);
+        // Still allow app to run even if initialization fails
+        setIsInitialized(true);
+      }
+    };
+
+    initializeApp();
+  }, [initializeAuth, loadSettings]);
+
+  if (!isInitialized) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={HackerTheme.primary} />
+      </View>
+    );
+  }
 
   return (
-    <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
-    </SafeAreaProvider>
-  );
-}
-
-function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
-
-  return (
-    <View style={styles.container}>
-      <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
-      />
-    </View>
+    <GestureHandlerRootView style={styles.container}>
+      <SafeAreaProvider>
+        <StatusBar
+          barStyle="light-content"
+          backgroundColor={HackerTheme.darkerGreen}
+        />
+        <NavigationContainer>
+          <RootNavigator />
+        </NavigationContainer>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: HackerTheme.darkerGreen,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

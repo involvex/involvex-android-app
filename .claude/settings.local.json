@@ -1,0 +1,125 @@
+{
+  "env": {
+    "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "8000",
+    "DISABLE_NON_ESSENTIAL_MODEL_CALLS": "1",
+    "DISABLE_COST_WARNINGS": "1"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(appwrite --version:*)",
+      "Bash(appwrite client:*)",
+      "Bash(appwrite databases listCollections:*)",
+      "Bash(appwrite databases list-collections:*)",
+      "Bash(appwrite :*)",
+      "Bash(appwrite databases create-collection:*)",
+      "Bash(appwrite databases create-string-attribute:*)",
+      "Bash(appwrite databases create-boolean-attribute:*)",
+      "Bash(Remove-Item \"lib\\\\ui\\\\components\\\\navigation\\\\main_navigation.dart\" -Force)",
+      "Bash(Remove-Item \"lib\\\\ui\\\\components\\\\navigation\\\\bottom_nav_bar.dart\" -Force)",
+      "Bash(flutter pub run build_runner build:*)",
+      "Bash(appwrite push:*)",
+      "Bash(appwrite deploy:*)",
+      "Bash(chmod:*)",
+      "Bash(flutter pub get:*)",
+      "Bash(flutter analyze:*)",
+      "Bash(gradlew clean:*)",
+      "Bash(.gradlew.bat clean:*)",
+      "Bash(flutter build:*)",
+      "Bash(flutter clean:*)",
+      "Bash(tee:*)",
+      "Bash(./gradlew:*)",
+      "Bash(flutter format:*)",
+      "Bash(dart format:*)",
+      "Bash(flutter run:*)",
+      "Bash(appwrite --help:*)",
+      "Bash(appwrite sites --help:*)",
+      "Bash(appwrite sites:*)",
+      "Bash(appwrite projects --help:*)",
+      "Bash(appwrite projects create-platform:*)",
+      "Bash(appwrite projects update-o-auth-2:*)",
+      "Bash(timeout /t 30)",
+      "Bash(appwrite storage --help:*)",
+      "Bash(if exist docs rmdir /s /q docs)",
+      "Bash(xcopy:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nDeploy InvolvexApp web to GitHub Pages\n\n- Add docs/ folder with production Flutter web build\n- Include .nojekyll to prevent Jekyll processing\n- Deploy 52 files \\(11.46 MB\\) for static hosting\n- Alternative to Appwrite Sites due to queue issues\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(gh:*)",
+      "Bash(git stash:*)",
+      "Bash(npx react-native@latest init TrendingHub --template react-native-template-typescript --skip-install)",
+      "Bash(npm install)",
+      "Bash(npm install:*)",
+      "Bash(pod install)",
+      "Bash(findstr:*)",
+      "Bash(npm ci:*)",
+      "Bash(npx react-native:*)",
+      "Bash(where java:*)",
+      "Bash(java -version:*)",
+      "Bash(npm run android:*)",
+      "Bash(npx @react-native-community/cli@latest init:*)",
+      "Bash(git -C D:/repos/involvex/trending-hub-rn/TrendingHubNew log --oneline -20)"
+    ]
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npm"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Evaluate if Claude should stop: $ARGUMENTS. Check if all tasks are complete. Validate that there is a clean production ready build. Make sure you checked formatting, lint and for type errors."
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:\\Program Files\\Python313\\python.exe -m mira --init --project=\"%CLAUDE_PROJECT_DIR%\" --quiet",
+            "timeout": 30000
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [[ \"$CLAUDE_TOOL_FILE_PATH\" == *.js || \"$CLAUDE_TOOL_FILE_PATH\" == *.ts || \"$CLAUDE_TOOL_FILE_PATH\" == *.jsx || \"$CLAUDE_TOOL_FILE_PATH\" == *.tsx ]]; then npx eslint \"$CLAUDE_TOOL_FILE_PATH\" --fix 2>/dev/null || true; elif [[ \"$CLAUDE_TOOL_FILE_PATH\" == *.py ]]; then pylint \"$CLAUDE_TOOL_FILE_PATH\" 2>/dev/null || true; elif [[ \"$CLAUDE_TOOL_FILE_PATH\" == *.rb ]]; then rubocop \"$CLAUDE_TOOL_FILE_PATH\" --auto-correct 2>/dev/null || true; fi"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [[ \"$CLAUDE_TOOL_FILE_PATH\" == *.js || \"$CLAUDE_TOOL_FILE_PATH\" == *.ts || \"$CLAUDE_TOOL_FILE_PATH\" == *.jsx || \"$CLAUDE_TOOL_FILE_PATH\" == *.tsx || \"$CLAUDE_TOOL_FILE_PATH\" == *.json || \"$CLAUDE_TOOL_FILE_PATH\" == *.css || \"$CLAUDE_TOOL_FILE_PATH\" == *.html ]]; then npx prettier --write \"$CLAUDE_TOOL_FILE_PATH\" 2>/dev/null || true; elif [[ \"$CLAUDE_TOOL_FILE_PATH\" == *.py ]]; then black \"$CLAUDE_TOOL_FILE_PATH\" 2>/dev/null || true; elif [[ \"$CLAUDE_TOOL_FILE_PATH\" == *.go ]]; then gofmt -w \"$CLAUDE_TOOL_FILE_PATH\" 2>/dev/null || true; elif [[ \"$CLAUDE_TOOL_FILE_PATH\" == *.rs ]]; then rustfmt \"$CLAUDE_TOOL_FILE_PATH\" 2>/dev/null || true; elif [[ \"$CLAUDE_TOOL_FILE_PATH\" == *.php ]]; then php-cs-fixer fix \"$CLAUDE_TOOL_FILE_PATH\" 2>/dev/null || true; fi"
+          }
+        ]
+      }
+    ]
+  }
+}
