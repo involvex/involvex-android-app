@@ -552,11 +552,7 @@ export const SettingsScreen: React.FC = () => {
       )}
 
       <View style={styles.resetContainer}>
-        <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
-          <Icon name="restore" size={20} color={HackerTheme.errorRed} />
-          <Text style={styles.resetButtonText}>Reset to Defaults</Text>
-          
-        </TouchableOpacity>
+       
         
         <View style={styles.authorContainer}>
         <Text style={styles.author}>Author: {pkg.author.name}</Text>
@@ -565,9 +561,14 @@ export const SettingsScreen: React.FC = () => {
 
         <View style={styles.repositoryContainer}>
           <Text style={styles.versionInfo}>App version: {pkg.version}</Text>
-        <Text style={styles.repositorylabel}>Repository: </Text>
-        <A style={styles.repository} href={pkg.repository}>{pkg.repository}</A>
+        <A style={styles.repository} href={pkg.homepage}>{pkg.homepage}</A>
         </View>
+
+         <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
+          <Icon name="restore" size={20} color={HackerTheme.errorRed} />
+          <Text style={styles.resetButtonText}>Reset to Defaults</Text>
+          
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -711,6 +712,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: HackerTheme.errorRed,
     backgroundColor: HackerTheme.darkerGreen,
+    marginTop: Spacing.md
   },
   resetButtonText: {
     ...Typography.bodyText,
@@ -885,12 +887,14 @@ const styles = StyleSheet.create({
     color: HackerTheme.primary,
     textAlign: 'center',
     marginTop: Spacing.xs,
+    marginBottom: Spacing.xs,
     textDecorationLine: 'underline',
   },
   repository: {
     color: HackerTheme.secondary,
     textAlign: 'center',
     marginTop: Spacing.xs,
+    marginBottom: Spacing.xs,
     textDecorationLine: 'underline',
   },
   repositorylabel: {
@@ -898,6 +902,7 @@ const styles = StyleSheet.create({
     color: HackerTheme.textGrey,
     textAlign: 'center',
     marginTop: Spacing.xs,
+    marginBottom: Spacing.xs,
   },
   repositoryContainer: {
     alignItems: 'center',
@@ -906,6 +911,7 @@ const styles = StyleSheet.create({
     borderColor: HackerTheme.accentGreen,
     backgroundColor: HackerTheme.darkerGreen,
     marginTop: Spacing.sm,
+    marginBottom: Spacing.xs,
     borderRadius: '5%',
   },
   updateButton: {

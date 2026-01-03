@@ -1,10 +1,11 @@
 {
   "name": "@involvex/app",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "author": {
     "name": "Involvex",
     "url": "https://involvex.github.io/Involvex/"
   },
+  "homepage": "https://involvex-portal.pages.dev/",
   "repository": "https://github.com/involvex/involvex-android-app.git",
   "private": true,
   "scripts": {
