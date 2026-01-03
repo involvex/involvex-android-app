@@ -6,7 +6,7 @@ import {
   ScrollRestoration,
 } from "@remix-run/react";
 import type { LinksFunction } from "@remix-run/cloudflare";
-import stylesheet from "~/styles/global.css?url";
+import stylesheet from "./styles/global.css?url";
 import favicon from '../assets/favicon.png';
 
 export const links: LinksFunction = () => [

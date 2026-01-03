@@ -13,9 +13,6 @@ export default defineConfig({
     sourcemap: false,
     outDir: 'build',
     assetsDir: 'assets',
-    rollupOptions:{
-      external: [ '~/styles/global.css?url']
-    }
   },
   plugins: [
     remix({

@@ -26,7 +26,7 @@
     "db:create": "cd packages/database && bun run create",
     "db:migrate": "cd packages/database && bun run migrate",
     "deploy:api": "cd packages/api && bun run deploy",
-    "deploy:web": "cd packages/web && bun && bun run deploy",
+    "deploy:web": "cd packages/web && bun run deploy",
     "deploy:db": "cd packages/database && bun run deploy",
     "gradle:stop": "cd packages/app && bun run gradle:stop",
     "gradle:clean": "cd packages/app && bun run gradle:clean"

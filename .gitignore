@@ -77,3 +77,9 @@ yarn-error.log
 .mira
 
 .env
+
+packages/app/.env
+
+# Wrangler local development
+.wrangler/
+**/.wrangler/

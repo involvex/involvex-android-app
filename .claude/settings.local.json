@@ -62,7 +62,15 @@
       "Bash(git restore:*)",
       "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: migrate to Bun monorepo with Cloudflare infrastructure\n\nBREAKING CHANGES:\n- Restructured as Bun workspace monorepo\n- Changed application ID: com.involvex → com.involvex.involvexapp\n- Removed react-native-a dependency \\(replaced with Linking API\\)\n- GitHub workflow now builds only on version tags\n\nNew Structure:\n- packages/app: React Native mobile app\n- packages/web: Cloudflare Pages \\(Remix landing + dashboard\\)\n- packages/api: Cloudflare Workers API\n- packages/database: D1 database schema\n- packages/shared: Shared theme, types, and utils\n\nChanges:\n- Update application ID to com.involvex.involvexapp\n- Fix SettingsScreen URL links to use Linking.openURL\n- Update GitHub workflow for tag-based builds with versioned artifacts\n- Create shared package with HackerTheme and TypeScript types\n- Create D1 database schema matching mobile SQLite\n- Create Workers API with trending/subscriptions/auth endpoints\n- Create Remix web app with HackerTheme\n- Update metro.config.js for monorepo support\n- Migrate from npm to Bun package manager\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
       "Bash(git commit:*)",
-      "Bash(ln:*)"
+      "Bash(ln:*)",
+      "Bash(wrangler --version:*)",
+      "Bash(wrangler whoami:*)",
+      "Bash(wrangler d1 execute:*)",
+      "Bash(wrangler secret put:*)",
+      "Bash(wrangler pages project create:*)",
+      "Bash(wrangler pages deploy:*)",
+      "WebFetch(domain:involvex-api.involvex.workers.dev)",
+      "WebFetch(domain:baa828f7.app-3p4.pages.dev)"
     ]
   },
   "hooks": {

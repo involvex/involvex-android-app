@@ -7,8 +7,8 @@
   "scripts": {
     "dev": "remix vite:dev",
     "build": "remix vite:build",
-    "deploy": "bun run build && wrangler pages deploy ./build/client",
-    "preview": "wrangler pages dev ./build/client",
+    "deploy": "bash deploy.sh",
+    "preview": "wrangler pages dev build/client",
     "typecheck": "tsc",
     "lint": "eslint . --ignore-pattern build",
     "lint:fix": "eslint . --fix --ignore-pattern build"
