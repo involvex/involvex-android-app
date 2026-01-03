@@ -1,6 +1,7 @@
-name = "involvex-web"
+name = "app"  # Will be available at app.pages.dev or app.involvex.workers.dev
 compatibility_date = "2024-01-01"
 pages_build_output_dir = "./build/client"
 
 # Cloudflare Pages configuration
 # Deploy with: bun run deploy
+# Custom domain: Set up in Cloudflare Pages dashboard
