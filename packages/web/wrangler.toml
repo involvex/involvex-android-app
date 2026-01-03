@@ -1,4 +1,4 @@
-name = "app"  # Will be available at app.pages.dev or app.involvex.workers.dev
+name = "web"  # Will be available at app.pages.dev or app.involvex.workers.dev
 compatibility_date = "2024-01-01"
 pages_build_output_dir = "./build/client"
 

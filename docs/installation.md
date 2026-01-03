@@ -7,6 +7,7 @@ Involvex is currently available as an Android application (APK) and a Web dashbo
 Since Involvex is in early access, you can install it by downloading the APK directly from our GitHub releases.
 
 ### Steps to Install
+
 1. **Download the APK:** Go to the [Releases](https://github.com/involvex/trending-hub-rn/releases) page on your Android device.
 2. **Select the latest version:** Download the `involvex-vX.X.X-debug.apk` file.
 3. **Enable Unknown Sources:** If prompted, allow your browser or file manager to "Install unknown apps".

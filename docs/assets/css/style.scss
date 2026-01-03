@@ -1,27 +1,31 @@
 ---
 ---
+
 @import "jekyll-theme-hacker";
 
 :root {
-  --color-primary: #00FF41;
-  --color-secondary: #39FF14;
-  --color-dark-green: #0A3D0A;
-  --color-darker-green: #051A05;
-  --color-accent-green: #1AFF66;
+  --color-primary: #00ff41;
+  --color-secondary: #39ff14;
+  --color-dark-green: #0a3d0a;
+  --color-darker-green: #051a05;
+  --color-accent-green: #1aff66;
   --color-pure-black: #000000;
-  --color-text-grey: #B8B8B8;
+  --color-text-grey: #b8b8b8;
 }
 
 body {
   background-color: var(--color-pure-black) !important;
   color: var(--color-primary) !important;
-  font-family: 'Courier New', Courier, monospace !important;
-  background-image: linear-gradient(rgba(0, 255, 65, 0.05) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(0, 255, 65, 0.05) 1px, transparent 1px) !important;
+  font-family: "Courier New", Courier, monospace !important;
+  background-image:
+    linear-gradient(rgba(0, 255, 65, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 65, 0.05) 1px, transparent 1px) !important;
   background-size: 20px 20px !important;
 }
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
   color: var(--color-primary) !important;
   text-transform: uppercase !important;
   letter-spacing: 2px !important;
@@ -31,7 +35,7 @@ h1, h2, h3 {
   border: 1px solid var(--color-primary) !important;
   background: transparent !important;
   color: var(--color-primary) !important;
-  font-family: 'Courier New', Courier, monospace !important;
+  font-family: "Courier New", Courier, monospace !important;
 }
 
 .btn:hover {
@@ -51,7 +55,8 @@ a:hover {
   max-width: 900px !important;
 }
 
-code, pre {
+code,
+pre {
   background-color: var(--color-dark-green) !important;
   color: var(--color-secondary) !important;
   border: 1px solid var(--color-primary) !important;
