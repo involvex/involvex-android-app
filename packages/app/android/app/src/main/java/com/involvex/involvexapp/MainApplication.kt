@@ -1,4 +1,4 @@
-package com.involvex
+package com.involvex.involvexapp
 
 import android.app.Application
 import com.facebook.react.PackageList

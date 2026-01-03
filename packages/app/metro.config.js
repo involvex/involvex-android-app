@@ -21,6 +21,8 @@ const config = {
     // Support workspace: protocol
     extraNodeModules: {
       '@involvex/shared': path.resolve(monorepoRoot, 'packages/shared'),
+      '@involvex/api': path.resolve(monorepoRoot, 'packages/api'),
+      '@involvex/database': path.resolve(monorepoRoot, 'packages/database'),
     },
   },
 };

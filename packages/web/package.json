@@ -17,8 +17,9 @@
     "@remix-run/cloudflare-pages": "^2.15.0",
     "@remix-run/react": "^2.15.0",
     "isbot": "^4.1.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "server": "react-dom/server"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241230.0",
