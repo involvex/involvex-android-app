@@ -79,7 +79,7 @@ android {
 
     namespace "com.involvex"
     defaultConfig {
-        applicationId "com.involvex.involvexapp"
+        applicationId "com.involvex"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
