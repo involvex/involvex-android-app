@@ -13,6 +13,7 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
+  Linking,
 } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -288,10 +289,13 @@ export const SearchScreen: React.FC = () => {
     return (
       <View style={styles.card}>
         <View style={styles.cardHeader}>
-          <View style={styles.cardHeaderTitle}>
+          <TouchableOpacity 
+            style={styles.cardHeaderTitle}
+            onPress={() => item.htmlUrl && Linking.openURL(item.htmlUrl)}
+          >
             <Text style={styles.cardTitle}>{item.name}</Text>
             <Text style={styles.cardSubtitle}>{item.fullName}</Text>
-          </View>
+          </TouchableOpacity>
           <TouchableOpacity onPress={() => handleToggleSubscription(item, 'github')}>
             <Icon 
               name={isSubscribed ? "star" : "star-outline"} 
@@ -329,10 +333,13 @@ export const SearchScreen: React.FC = () => {
     return (
       <View style={styles.card}>
         <View style={styles.cardHeader}>
-          <View style={styles.cardHeaderTitle}>
+          <TouchableOpacity 
+            style={styles.cardHeaderTitle}
+            onPress={() => item.npmUrl && Linking.openURL(item.npmUrl)}
+          >
             <Text style={styles.cardTitle}>{item.name}</Text>
             <Text style={styles.cardSubtitle}>v{item.version}</Text>
-          </View>
+          </TouchableOpacity>
           <TouchableOpacity onPress={() => handleToggleSubscription(item, 'npm')}>
             <Icon 
               name={isSubscribed ? "star" : "star-outline"} 

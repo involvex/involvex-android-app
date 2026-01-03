@@ -65,7 +65,7 @@ class SubscriptionsRepository {
     const now = Date.now();
 
     await db.executeSql(
-      `INSERT INTO subscriptions (id, type, item_id, name, full_name, data, subscribed_at, is_active, created_at, updated_at)
+      `INSERT OR REPLACE INTO subscriptions (id, type, item_id, name, full_name, data, subscribed_at, is_active, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
       [
         subscription.id,
