@@ -5,6 +5,7 @@
 
 import axios, { AxiosInstance } from 'axios';
 import axiosRetry from 'axios-retry';
+import useSettingsStore from '../../store/settingsStore';
 
 export type TimeframeType = 'daily' | 'weekly' | 'monthly';
 
@@ -37,10 +38,10 @@ class GitHubClient {
     this.client.interceptors.request.use(config => {
       // TODO: Add GitHub Personal Access Token from settings if available
       // This increases rate limit from 60 to 5000 requests/hour
-      // const token = getUserGitHubToken();
-      // if (token) {
-      //   config.headers.Authorization = `Bearer ${token}`;
-      // }
+      const token = getUserGitHubToken(useSettingsStore.apply);
+      if (token === true) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
       return config;
     });
 
@@ -100,3 +101,14 @@ class GitHubClient {
 // Export singleton instance
 export const githubClient = new GitHubClient();
 export default githubClient;
+function getUserGitHubToken(Token: any) {
+  
+  if (Token === "true") {
+    return true;
+  }else{
+    
+    return false;
+    
+  }
+}
+
