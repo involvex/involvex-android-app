@@ -1,6 +1,6 @@
 {
   "name": "@involvex/app",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "author": {
     "name": "Involvex",
     "url": "https://involvex.github.io/Involvex/"
@@ -73,6 +73,7 @@
     "@types/react-test-renderer": "^19.1.0",
     "@typescript-eslint/eslint-plugin": "8.51.0",
     "@typescript-eslint/parser": "8.51.0",
+    "babel-jest": "30.2.0",
     "eslint": "^8.19.0",
     "eslint-plugin-eslint-comments": "3.2.0",
     "eslint-plugin-ft-flow": "3.0.11",

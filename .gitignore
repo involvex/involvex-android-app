@@ -79,6 +79,7 @@ yarn-error.log
 .env
 
 packages/app/.env
+packages/web/.env
 
 # Wrangler local development
 .wrangler/

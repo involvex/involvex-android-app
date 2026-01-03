@@ -1,9 +1,24 @@
 -- Cloudflare D1 Database Schema
 -- Matches SQLite schema from mobile app (packages/app/src/database/schema.ts)
 
+-- Users table
+CREATE TABLE IF NOT EXISTS users (
+  id TEXT PRIMARY KEY,
+  email TEXT UNIQUE,
+  password_hash TEXT,
+  username TEXT,
+  role TEXT DEFAULT 'user', -- 'user' or 'admin'
+  avatar_url TEXT,
+  discord_id TEXT UNIQUE,
+  github_id TEXT UNIQUE,
+  created_at INTEGER DEFAULT (unixepoch() * 1000),
+  updated_at INTEGER DEFAULT (unixepoch() * 1000)
+);
+
 -- Subscriptions table
 CREATE TABLE IF NOT EXISTS subscriptions (
   id TEXT PRIMARY KEY,
+  user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
   type TEXT NOT NULL,
   item_id TEXT NOT NULL UNIQUE,
   name TEXT NOT NULL,
@@ -50,6 +65,7 @@ CREATE TABLE IF NOT EXISTS cache (
 );
 
 -- Indexes for performance
+CREATE INDEX IF NOT EXISTS idx_subscriptions_user ON subscriptions(user_id);
 CREATE INDEX IF NOT EXISTS idx_subscriptions_type ON subscriptions(type);
 CREATE INDEX IF NOT EXISTS idx_subscriptions_active ON subscriptions(is_active);
 CREATE INDEX IF NOT EXISTS idx_releases_subscription ON releases(subscription_id);

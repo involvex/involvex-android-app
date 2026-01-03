@@ -2,6 +2,11 @@ name = "involvex-portal"
 compatibility_date = "2024-01-01"
 pages_build_output_dir = "./build/client"
 
+[[d1_databases]]
+binding = "DB"
+database_name = "involvex-production"
+database_id = "47718e0a-3505-4a4a-90de-2023e20a6536"
+
 # Cloudflare Pages configuration
 # Deploy with: bun run deploy
 # Custom domain: Set up in Cloudflare Pages dashboard

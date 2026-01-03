@@ -37,4 +37,4 @@ writeFileSync(join(functionsDir, "[[path]].js"), handlerContent.trim());
 
 console.log("Deploying to Cloudflare Pages...");
 // Using 'involvex-portal' for a cleaner URL (involvex-portal.pages.dev)
-run("npx", ["wrangler", "pages", "deploy", "build/client", "--project-name=involvex-portal"]);
+run("npx", ["wrangler", "pages", "deploy", "build/client", "--project-name=involvex-portal","--env-file",".env"]);

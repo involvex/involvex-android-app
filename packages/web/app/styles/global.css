@@ -55,3 +55,121 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--color-primary);
   text-shadow: 0 0 10px var(--color-primary);
 }
+
+/* Card for grouping content */
+.card {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  border: 1px solid var(--color-primary);
+  background: var(--color-dark-grey);
+}
+.card h2 {
+  color: var(--color-primary);
+  border-bottom: 1px solid var(--color-primary);
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+/* Account Linking Styles */
+.account-linking {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.linked-account {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.linked-account span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Form Styles */
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.form-group label {
+  color: var(--color-primary);
+  font-size: 0.8rem;
+}
+.form-group input {
+  padding: 0.75rem;
+  background: var(--color-dark-grey);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+}
+.form-group input:disabled {
+  background: var(--color-pure-black);
+  color: var(--color-text-grey);
+  border-color: var(--color-dark-grey);
+}
+.label-disabled {
+  color: var(--color-text-grey);
+}
+
+/* Flash Messages */
+.flash-message {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid;
+}
+.flash-message.success {
+  border-color: var(--color-success-green);
+  background-color: rgba(68, 255, 68, 0.1);
+  color: var(--color-success-green);
+}
+.flash-message.error {
+  border-color: var(--color-error-red);
+  background-color: rgba(255, 68, 68, 0.1);
+  color: var(--color-error-red);
+}
+.flash-message.warning {
+  border-color: var(--color-warning-orange);
+  background-color: rgba(255, 136, 0, 0.1);
+  color: var(--color-warning-orange);
+}
+.success-message {
+  color: var(--color-success-green);
+}
+
+
+/* Danger Zone */
+.danger-zone {
+  margin-top: 4rem;
+  padding: 2rem;
+  border: 1px solid var(--color-error-red);
+  background-color: rgba(255, 68, 68, 0.05);
+}
+.danger-zone h3 {
+  color: var(--color-error-red);
+}
+.danger-zone p {
+  color: var(--color-text-grey);
+  font-size: 0.9rem;
+  margin: 1rem 0;
+}
+.btn-destructive {
+  background: transparent;
+  color: var(--color-error-red);
+  border: 1px solid var(--color-error-red);
+}
+.btn-destructive:hover {
+  background: var(--color-error-red);
+  color: var(--color-pure-black);
+}
+
+.link-subtle {
+  color: var(--color-text-grey);
+  font-size: 0.9rem;
+}
+

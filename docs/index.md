@@ -3,7 +3,7 @@ layout: default
 title: Home
 ---
 
-# > Involvex User Guide\_
+# > Involvex User Guide
 
 Welcome to the official user guide for **Involvex**, the neural-link dashboard for tracking trending repositories and neural-packages in the deep web (or just GitHub/npm).
 
