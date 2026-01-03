@@ -1,11 +1,11 @@
-import { json, type LoaderFunctionArgs } from "@remix-run/cloudflare";
+import { json } from "@remix-run/cloudflare";
 import { useLoaderData } from "@remix-run/react";
 import { StatsCard } from "../components/dashboard/StatsCard";
 import { TrendingList } from "../components/dashboard/TrendingList";
 import { SubscriptionsList } from "../components/dashboard/SubscriptionsList";
 import type { GitHubRepository, NpmPackage, Subscription } from "@involvex/shared";
 
-export async function loader({ context }: LoaderFunctionArgs) {
+export async function loader() {
   const apiBase = "https://involvex-api.involvex.workers.dev";
 
   try {

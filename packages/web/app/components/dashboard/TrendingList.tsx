@@ -73,7 +73,7 @@ export function TrendingList({ type, items }: TrendingListProps) {
         {items.length === 0 ? (
           <p style={{ padding: '1rem 0', color: 'var(--color-text-grey)' }}>No trending items found.</p>
         ) : (
-          items.map((item, index) => (
+          items.map((item) => (
             type === 'github' 
               ? <GitHubItem key={(item as GitHubRepository).id} repo={item as GitHubRepository} />
               : <NpmItem key={(item as NpmPackage).name} pkg={item as NpmPackage} />

@@ -23,7 +23,7 @@ export async function handleSubscriptions(
         JSON.stringify({ success: true, data: result.results }),
         { headers }
       );
-    } catch (error) {
+    } catch (_error) {
       return new Response(
         JSON.stringify({ success: false, error: 'Database error' }),
         { status: 500, headers }
@@ -34,7 +34,7 @@ export async function handleSubscriptions(
   // POST /api/subscriptions - Create subscription
   if (method === 'POST') {
     try {
-      const body = await request.json() as any;
+      const body = await request.json() as Record<string, any>;
       const id = crypto.randomUUID();
       const now = Date.now();
 
@@ -57,7 +57,7 @@ export async function handleSubscriptions(
         JSON.stringify({ success: true, data: { id } }),
         { status: 201, headers }
       );
-    } catch (error) {
+    } catch (_error) {
       return new Response(
         JSON.stringify({ success: false, error: 'Failed to create subscription' }),
         { status: 500, headers }
@@ -79,7 +79,7 @@ export async function handleSubscriptions(
         JSON.stringify({ success: true }),
         { headers }
       );
-    } catch (error) {
+    } catch (_error) {
       return new Response(
         JSON.stringify({ success: false, error: 'Failed to delete subscription' }),
         { status: 500, headers }
