@@ -1,3 +1,4 @@
+// import  stylesheet  from '~/styles/global.css?url';
 import { vitePlugin as remix } from "@remix-run/dev";
 import { defineConfig } from "vite";
 
@@ -9,23 +10,12 @@ export default defineConfig({
     allowedHosts: ['localhost', '127.0.0.1', '0.0.0.0', '1.1.1.1'],
   },
   build: {
-    sourcemap: true,
+    sourcemap: false,
     outDir: 'build',
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          react: ['react', 'react-dom'],
-        },
-        assetFileNames: (assetInfo) => {
-          if (assetInfo.name?.endsWith('.css')) {
-            return 'styles/[name]-[hash][extname]';
-          }
-          return 'assets/[name]-[hash][extname]';
-        },
-        entryFileNames: 'assets/[name]-[hash].js',
-        chunkFileNames: 'assets/[name]-[hash].js',
-      },
-    },
+    assetsDir: 'assets',
+    rollupOptions:{
+      external: [ '~/styles/global.css?url']
+    }
   },
   plugins: [
     remix({

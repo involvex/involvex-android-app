@@ -6,8 +6,8 @@ import {
   ScrollRestoration,
 } from "@remix-run/react";
 import type { LinksFunction } from "@remix-run/cloudflare";
-import stylesheet from "./styles/global.css";
-import favicon from '../favicon.png';
+import stylesheet from "~/styles/global.css?url";
+import favicon from '../assets/favicon.png';
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: stylesheet },
@@ -33,5 +33,5 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet /> as any;
+  return <Outlet />;
 }
