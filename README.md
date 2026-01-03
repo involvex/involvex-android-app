@@ -13,18 +13,21 @@ Involvex App is a mobile application designed for developers to discover and tra
 ## ✨ Key Features
 
 ### 🔥 Trending Discovery
+
 - **GitHub Repositories**: Track trending repositories with customizable timeframes (daily, weekly, monthly)
 - **npm Packages**: Discover popular npm packages based on quality, popularity, and maintenance scores
 - **Real-time Updates**: Auto-refresh functionality with configurable intervals
 - **Smart Filtering**: Filter by minimum stars, programming language, and other criteria
 
 ### 🎨 User Interface
+
 - **Hacker Theme**: Matrix-inspired dark green terminal aesthetic with neon accents
 - **Responsive Design**: Optimized for both Android and iOS devices
 - **Compact Views**: Toggle between regular and compact card layouts
 - **Language Support**: Visual language indicators with color-coded badges
 
 ### ⚙️ Comprehensive Settings
+
 - **8 Settings Sections** with 51 configuration options:
   - Theme customization (Dark Mode, Hacker Theme)
   - Trending preferences and auto-refresh
@@ -36,12 +39,14 @@ Involvex App is a mobile application designed for developers to discover and tra
   - Advanced debugging and beta features
 
 ### 📊 Data Management
+
 - **Offline Mode**: Browse cached content without internet connection
 - **Smart Caching**: Configurable cache expiry and size limits
 - **Data Export**: Export data in JSON, CSV, or TXT formats
 - **Subscription Management**: Track and manage your favorite repositories and packages
 
 ### 🔔 Notifications
+
 - **Push Notifications**: Get notified about trending content
 - **Daily Digests**: Daily summary of trending repositories
 - **Weekly Reports**: Weekly trending summaries
@@ -94,17 +99,20 @@ src/
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone <repository-url>
    cd TrendingHubNew
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Install iOS dependencies** (macOS only)
+
    ```bash
    cd ios && pod install && cd ..
    ```
@@ -117,6 +125,7 @@ src/
 ### Running the App
 
 #### Android
+
 ```bash
 npm run android
 # or
@@ -124,6 +133,7 @@ react-native run-android
 ```
 
 #### iOS
+
 ```bash
 npm run ios
 # or
@@ -131,6 +141,7 @@ react-native run-ios
 ```
 
 #### Start Metro Bundler
+
 ```bash
 npm start
 # or
@@ -154,6 +165,7 @@ react-native start
 The app features a custom "Hacker Theme" inspired by terminal/Matrix aesthetics:
 
 ### Color Palette
+
 - **Primary Green**: `#00FF41` - Classic terminal green
 - **Secondary Green**: `#39FF14` - Bright accent green
 - **Dark Background**: `#0A3D0A` - Dark card background
@@ -161,7 +173,9 @@ The app features a custom "Hacker Theme" inspired by terminal/Matrix aesthetics:
 - **Text Colors**: Various shades of grey for optimal contrast
 
 ### Programming Language Support
+
 The app includes color-coded badges for popular programming languages:
+
 - JavaScript, TypeScript, Python, Java, C++, C, C#
 - PHP, Ruby, Go, Rust, Swift, Kotlin, Dart
 - Shell, HTML, CSS, Vue, React, Angular
@@ -180,6 +194,7 @@ The app integrates with several APIs:
 ### Database Schema
 
 The app uses SQLite for local data storage with tables for:
+
 - User settings and preferences
 - Cached repository and package data
 - Subscription management
@@ -188,6 +203,7 @@ The app uses SQLite for local data storage with tables for:
 ### State Management
 
 Using Zustand for efficient state management with stores for:
+
 - Authentication state
 - User settings
 - Trending data
@@ -196,24 +212,28 @@ Using Zustand for efficient state management with stores for:
 ## 📊 Features in Detail
 
 ### Trending Dashboard
+
 - Dual-tab interface for GitHub and npm content
 - Timeframe selector (daily, weekly, monthly)
 - Real-time refresh with pull-to-refresh
 - Infinite scrolling with optimized performance
 
 ### Search Functionality
+
 - Advanced search with filters
 - Language-specific filtering
 - Minimum star requirements
 - Sort by stars, forks, or date
 
 ### Settings Management
+
 - Comprehensive settings with 8 collapsible sections
 - Real-time preview of changes
 - Settings validation and error handling
 - Reset to defaults functionality
 
 ### Offline Support
+
 - Smart caching with configurable expiry
 - Offline mode toggle
 - Cache size management
@@ -245,6 +265,7 @@ Test files are located in the `__tests__/` directory and follow the naming conve
 5. Open a Pull Request
 
 ### Code Style
+
 - ESLint configuration for code quality
 - Prettier for consistent formatting
 - TypeScript for type safety
@@ -263,6 +284,7 @@ This project is private and proprietary software owned by Involvex.
 ## 📞 Support
 
 For support and questions:
+
 - Create an issue in the repository
 - Contact the development team
 - Check the documentation for common solutions
@@ -271,4 +293,4 @@ For support and questions:
 
 **Built with ❤️ by the Involvex Team**
 
-*Empowering developers to stay ahead of the curve with trending technology insights.*
+_Empowering developers to stay ahead of the curve with trending technology insights._
