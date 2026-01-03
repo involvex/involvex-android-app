@@ -21,7 +21,7 @@ import { HackerTheme } from '../theme/colors';
 import { Typography } from '../theme/typography';
 import { Spacing } from '../theme/spacing';
 import { useSettingsStore } from '../store/settingsStore';
-import { useAuthStore } from '../store/authStore';
+import { useAuthStore, DiscordUser, GitHubUser } from '../store/authStore';
 import { UserSettings, UserSettingsData } from '../models/UserSettings';
 
 type Section =
@@ -41,9 +41,13 @@ export const SettingsScreen: React.FC = () => {
   const { 
     signInWithDiscord, 
     signInWithGitHub, 
+    linkDiscordAccount,
+    linkGitHubAccount,
     signOut, 
     isAuthenticated, 
-    user, 
+    activeUser, 
+    discordUser,
+    githubUser,
     provider, 
     loading: authLoading 
   } = useAuthStore();
@@ -69,7 +73,6 @@ export const SettingsScreen: React.FC = () => {
   };
 
   const handleSettingChange = (key: keyof UserSettingsData, value: any) => {
-    // Ensure we are calling copyWith on the UserSettings instance
     setLocalSettings(prev => prev.copyWith({ [key]: value }));
     setHasChanges(true);
   };
@@ -103,27 +106,7 @@ export const SettingsScreen: React.FC = () => {
     );
   };
 
-  const handleClearCache = () => {
-    Alert.alert(
-      'Clear Cache',
-      'Clear all cached data? This cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Clear',
-          style: 'destructive',
-          onPress: async () => {
-            // Clear cache logic here
-            await handleClearCache();
-            Alert.alert('Success', 'Cache cleared successfully');
-          },
-        },
-      ],
-    );
-  };
-
   const handleDiscordLogin = async () => {
-    console.log('Discord login');
     try {
       await signInWithDiscord();
     } catch {
@@ -132,11 +115,28 @@ export const SettingsScreen: React.FC = () => {
   };
 
   const handleGitHubLogin = async () => {
-    console.log('GitHub login');
     try {
       await signInWithGitHub();
     } catch {
       Alert.alert('Login Error', 'Failed to sign in with GitHub');
+    }
+  };
+
+  const handleLinkDiscord = async () => {
+    try {
+      await linkDiscordAccount();
+      Alert.alert('Success', 'Discord account linked successfully!');
+    } catch {
+      Alert.alert('Link Error', 'Failed to link Discord account');
+    }
+  };
+
+  const handleLinkGitHub = async () => {
+    try {
+      await linkGitHubAccount();
+      Alert.alert('Success', 'GitHub account linked successfully!');
+    } catch {
+      Alert.alert('Link Error', 'Failed to link GitHub account');
     }
   };
 
@@ -170,67 +170,108 @@ export const SettingsScreen: React.FC = () => {
     );
   };
 
+  const renderAccountInfo = (user: DiscordUser | GitHubUser, providerName: string, showUnlink = false) => {
+    const username = 'username' in user ? user.username : user.login;
+    const avatarUrl = 'avatar' in user 
+      ? user.avatar 
+      : 'avatar_url' in user 
+        ? user.avatar_url 
+        : null;
+
+    return (
+      <View style={styles.linkedAccountRow}>
+        <View style={styles.userInfo}>
+          {avatarUrl ? (
+            <Image source={{ uri: avatarUrl }} style={styles.avatarSmall} />
+          ) : (
+            <View style={styles.avatarPlaceholderSmall}>
+              <Icon name="account" size={20} color={HackerTheme.darkerGreen} />
+            </View>
+          )}
+          <View>
+            <Text style={styles.linkedAccountName}>{username}</Text>
+            <Text style={styles.linkedAccountProvider}>{providerName}</Text>
+          </View>
+        </View>
+        {showUnlink && (
+          <TouchableOpacity style={styles.unlinkButton} onPress={() => Alert.alert('Unlink', `Unlink ${providerName} account?`)}>
+            <Text style={styles.unlinkButtonText}>Unlink</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    );
+  };
+
   const renderAccountSection = () => {
     if (authLoading) {
       return (
         <View style={styles.loadingContainer}>
-          
           <ActivityIndicator size="small" color={HackerTheme.primary} />
         </View>
       );
     }
 
-    if (isAuthenticated && user) {
-      const username = 'username' in user ? user.username : user.login;
-      const avatarUrl = 'avatar' in user 
-        ? user.avatar 
-        : 'avatar_url' in user 
-          ? user.avatar_url 
-          : null;
-
+    if (!isAuthenticated) {
       return (
-        <View style={styles.accountContainer}>
-          <View style={styles.userInfo}>
-            
-            {avatarUrl ? (
-              <Image source={{ uri: avatarUrl }} style={styles.avatar} />
-            ) : (
-              <View style={styles.avatarPlaceholder}>
-                <Icon name="account" size={32} color={HackerTheme.darkerGreen} />
-              </View>
-            )}
-            <View>
-              <Text style={styles.userName}>{username}</Text>
-              <Text style={styles.userProvider}>
-                Signed in with {provider === 'discord' ? 'Discord' : 'GitHub'}
-              </Text>
-            </View>
-          </View>
-          
-          <TouchableOpacity style={styles.signOutButton} onPress={signOut}>
-            <Text style={styles.signOutText}>Sign Out</Text>
+        <View style={styles.accountButtons}>
+          <TouchableOpacity 
+            style={[styles.loginButton, styles.discordButton]} 
+            onPress={handleDiscordLogin}
+          >
+            <Icon name="discord" size={20} color="#FFFFFF" />
+            <Text style={styles.loginButtonText}>Sign in with Discord</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.loginButton, styles.githubButton]} 
+            onPress={handleGitHubLogin}
+          >
+            <Icon name="github" size={20} color="#FFFFFF" />
+            <Text style={styles.loginButtonText}>Sign in with GitHub</Text>
           </TouchableOpacity>
         </View>
       );
     }
 
+    // User is authenticated
     return (
-      <View style={styles.accountButtons}>
-        <TouchableOpacity 
-          style={[styles.loginButton, styles.discordButton]} 
-          onPress={handleDiscordLogin}
-        >
-          <Icon name="discord" size={20} color="#FFFFFF" />
-          <Text style={styles.loginButtonText}>Sign in with Discord</Text>
-        </TouchableOpacity>
+      <View style={styles.accountContainer}>
+        {activeUser && (
+          <View style={styles.activeUserSection}>
+            <Text style={styles.sectionSubTitle}>Currently Logged In</Text>
+            {renderAccountInfo(activeUser, provider === 'discord' ? 'Discord' : 'GitHub')}
+            <TouchableOpacity style={styles.signOutButton} onPress={signOut}>
+              <Text style={styles.signOutText}>Sign Out All Accounts</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
-        <TouchableOpacity 
-          style={[styles.loginButton, styles.githubButton]} 
-          onPress={handleGitHubLogin}
-        >
-          <Icon name="github" size={20} color="#FFFFFF" />
-          <Text style={styles.loginButtonText}>Sign in with GitHub</Text>
-        </TouchableOpacity>
+        <View style={styles.linkedAccountsSection}>
+          <Text style={styles.sectionSubTitle}>Linked Accounts</Text>
+          {discordUser ? (
+            renderAccountInfo(discordUser, 'Discord', true)
+          ) : (
+            <TouchableOpacity 
+              style={[styles.linkButton, styles.discordButton]} 
+              onPress={handleLinkDiscord}
+            >
+              <Icon name="link" size={20} color="#FFFFFF" />
+              <Text style={styles.linkButtonText}>Link Discord Account</Text>
+            </TouchableOpacity>
+          )}
+
+          {githubUser ? (
+            renderAccountInfo(githubUser, 'GitHub', true)
+          ) : (
+            <TouchableOpacity 
+              style={[styles.linkButton, styles.githubButton]} 
+              onPress={handleLinkGitHub}
+            >
+              <Icon name="link" size={20} color="#FFFFFF" />
+              <Text style={styles.linkButtonText}>Link GitHub Account</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
     );
   };
@@ -542,10 +583,6 @@ export const SettingsScreen: React.FC = () => {
           <Icon name="restore" size={20} color={HackerTheme.errorRed} />
           <Text style={styles.resetButtonText}>Reset to Defaults</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.resetButton} onPress={handleClearCache}>
-          <Icon name="trash-can" size={20} color={HackerTheme.errorRed} />
-          <Text style={styles.resetButtonText}>Clear Cache</Text>
-        </TouchableOpacity>
       </View>
     </View>
   );
@@ -699,7 +736,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   accountContainer: {
-    padding: Spacing.md,
+    paddingHorizontal: Spacing.md,
   },
   userInfo: {
     flexDirection: 'row',
@@ -721,6 +758,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: Spacing.md,
   },
+  avatarSmall: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    marginRight: Spacing.sm,
+  },
+  avatarPlaceholderSmall: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: HackerTheme.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: Spacing.sm,
+  },
   userName: {
     ...Typography.heading3,
     color: HackerTheme.primary,
@@ -741,6 +793,15 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     gap: Spacing.sm,
   },
+  linkButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: Spacing.md,
+    borderRadius: 8,
+    gap: Spacing.sm,
+    marginTop: Spacing.sm,
+  },
   discordButton: {
     backgroundColor: '#5865F2',
   },
@@ -751,15 +812,62 @@ const styles = StyleSheet.create({
     ...Typography.buttonText,
     color: '#FFFFFF',
   },
+  linkButtonText: {
+    ...Typography.buttonText,
+    color: '#FFFFFF',
+  },
   signOutButton: {
     padding: Spacing.md,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: HackerTheme.errorRed,
     alignItems: 'center',
+    marginTop: Spacing.md,
   },
   signOutText: {
     ...Typography.buttonText,
+    color: HackerTheme.errorRed,
+  },
+  activeUserSection: {
+    marginBottom: Spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: HackerTheme.darkGreen,
+    paddingBottom: Spacing.md,
+  },
+  linkedAccountsSection: {
+    marginTop: Spacing.md,
+  },
+  sectionSubTitle: {
+    ...Typography.captionText,
+    color: HackerTheme.lightGrey,
+    marginBottom: Spacing.sm,
+  },
+  linkedAccountRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: Spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: HackerTheme.darkGreen,
+    marginBottom: Spacing.sm,
+  },
+  linkedAccountName: {
+    ...Typography.bodyText,
+    color: HackerTheme.lightOnPrimary,
+  },
+  linkedAccountProvider: {
+    ...Typography.captionText,
+    color: HackerTheme.lightGrey,
+    fontSize: 10,
+  },
+  unlinkButton: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: 5,
+    backgroundColor: HackerTheme.errorRed + '40',
+  },
+  unlinkButtonText: {
+    ...Typography.captionText,
     color: HackerTheme.errorRed,
   },
 });

@@ -8,6 +8,7 @@
   "scripts": {
     "android": "react-native run-android",
     "build:android": "react-native build-android",
+    "release:android": "react-native build-android --tasks AssembleRelease",
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
