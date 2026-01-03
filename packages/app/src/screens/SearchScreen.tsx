@@ -288,7 +288,7 @@ export const SearchScreen: React.FC = () => {
     return (
       <View style={styles.card}>
         <View style={styles.cardHeader}>
-          <View style={{ flex: 1 }}>
+          <View style={styles.cardHeaderTitle}>
             <Text style={styles.cardTitle}>{item.name}</Text>
             <Text style={styles.cardSubtitle}>{item.fullName}</Text>
           </View>
@@ -329,7 +329,7 @@ export const SearchScreen: React.FC = () => {
     return (
       <View style={styles.card}>
         <View style={styles.cardHeader}>
-          <View style={{ flex: 1 }}>
+          <View style={styles.cardHeaderTitle}>
             <Text style={styles.cardTitle}>{item.name}</Text>
             <Text style={styles.cardSubtitle}>v{item.version}</Text>
           </View>
@@ -566,6 +566,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginBottom: Spacing.xs,
+  },
+  cardHeaderTitle: {
+    flex: 1,
   },
   cardTitle: {
     ...Typography.heading3,

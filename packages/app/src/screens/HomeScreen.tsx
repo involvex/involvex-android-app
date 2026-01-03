@@ -3,7 +3,7 @@
  * Displays trending GitHub repos and npm packages with dual tabs
  */
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -12,7 +12,6 @@ import {
   ActivityIndicator,
   RefreshControl,
   TextInput,
-  ScrollView,
   Alert,
 } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
@@ -59,8 +58,8 @@ export const HomeScreen: React.FC = () => {
     try {
       const subs = await subscriptionsRepository.getAll();
       setSubscribedItems(new Set(subs.map(s => s.itemId)));
-    } catch (error) {
-      console.error('Failed to load subscriptions:', error);
+    } catch (loadError) {
+      console.error('Failed to load subscriptions:', loadError);
     }
   };
 
@@ -95,8 +94,8 @@ export const HomeScreen: React.FC = () => {
         setSubscribedItems(prev => new Set(prev).add(itemId));
         Alert.alert('Subscribed', `${item.name} added to your personal subscriptions.`);
       }
-    } catch (error) {
-      console.error('Subscription toggle error:', error);
+    } catch (toggleError) {
+      console.error('Subscription toggle error:', toggleError);
       Alert.alert('Error', 'Failed to update subscription.');
     }
   };
@@ -260,7 +259,7 @@ export const HomeScreen: React.FC = () => {
     return (
       <View style={styles.card}>
         <View style={styles.cardHeader}>
-          <View style={{ flex: 1 }}>
+          <View style={styles.cardHeaderTitle}>
             <Text style={styles.cardTitle}>{item.name}</Text>
             <Text style={styles.cardSubtitle}>{item.fullName}</Text>
           </View>
@@ -301,7 +300,7 @@ export const HomeScreen: React.FC = () => {
     return (
       <View style={styles.card}>
         <View style={styles.cardHeader}>
-          <View style={{ flex: 1 }}>
+          <View style={styles.cardHeaderTitle}>
             <Text style={styles.cardTitle}>{item.name}</Text>
             <Text style={styles.cardSubtitle}>v{item.version}</Text>
           </View>
@@ -522,6 +521,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginBottom: Spacing.xs,
+  },
+  cardHeaderTitle: {
+    flex: 1,
   },
   cardTitle: {
     ...Typography.heading3,

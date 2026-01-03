@@ -25,6 +25,7 @@ import { useAuthStore, DiscordUser, GitHubUser } from '../store/authStore';
 import { UserSettings, UserSettingsData } from '../models/UserSettings';
 import pkg from '../../package.json';
 import A from 'react-native-a';
+import { updateService } from '../api/github/updateService';
 
 type Section =
   | 'account'
@@ -513,6 +514,13 @@ export const SettingsScreen: React.FC = () => {
               'npmToken',
               'npm_...',
             )}
+            <TouchableOpacity 
+              style={styles.updateButton} 
+              onPress={() => updateService.checkForUpdates(true)}
+            >
+              <Icon name="update" size={20} color={HackerTheme.primary} />
+              <Text style={styles.updateButtonText}>Check for Updates Now</Text>
+            </TouchableOpacity>
           </View>
         )}
 
@@ -899,6 +907,25 @@ const styles = StyleSheet.create({
     backgroundColor: HackerTheme.darkerGreen,
     marginTop: Spacing.sm,
     borderRadius: '5%',
+  },
+  updateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    paddingVertical: Spacing.md,
+    marginHorizontal: Spacing.md,
+    marginTop: Spacing.md,
+    marginBottom: Spacing.sm,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: HackerTheme.primary,
+    backgroundColor: HackerTheme.darkGreen,
+  },
+  updateButtonText: {
+    ...Typography.bodyText,
+    color: HackerTheme.primary,
+    fontWeight: 'bold',
   }
 });
 
