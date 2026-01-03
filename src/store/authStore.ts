@@ -15,6 +15,7 @@ const AUTH_DISCORD_USER_KEY = '@auth:discord_user';
 const AUTH_GITHUB_USER_KEY = '@auth:github_user';
 const GUEST_MODE_KEY = '@auth:guest';
 const AUTH_PROVIDER_KEY = '@auth:provider'; // Stores the provider of the activeUser
+const AUTH_TOKEN_KEY = '@auth:token';
 
 export interface DiscordUser {
   id: string;
