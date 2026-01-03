@@ -3,7 +3,7 @@
  * Displays trending GitHub repos and npm packages with dual tabs
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -11,8 +11,12 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
+  TextInput,
+  ScrollView,
+  Alert,
 } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { HackerTheme } from '../theme/colors';
 import { Typography } from '../theme/typography';
 import { Spacing } from '../theme/spacing';
@@ -20,28 +24,81 @@ import { useTrendingStore } from '../store/trendingStore';
 import { TimeframeType } from '../api/github/githubClient';
 import { GitHubRepository } from '../models/GitHubRepository';
 import { NpmPackage } from '../models/NpmPackage';
+import { subscriptionsRepository } from '../database/repositories/subscriptionsRepository';
 
 type TabType = 'github' | 'npm';
 
 export const HomeScreen: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('github');
+  const [showFilters, setShowFilters] = useState(false);
+  const [subscribedItems, setSubscribedItems] = useState<Set<string>>(new Set());
+
   const {
     timeframe,
+    language,
+    sortBy,
+    sortOrder,
     githubRepos,
     npmPackages,
     loading,
     error,
     setTimeframe,
+    setLanguage,
+    setSortBy,
+    setSortOrder,
     refreshAll,
   } = useTrendingStore();
 
   useEffect(() => {
     // Initial data fetch
     refreshAll();
+    loadSubscriptions();
   }, [refreshAll]);
+
+  const loadSubscriptions = async () => {
+    try {
+      const subs = await subscriptionsRepository.getAll();
+      setSubscribedItems(new Set(subs.map(s => s.itemId)));
+    } catch (error) {
+      console.error('Failed to load subscriptions:', error);
+    }
+  };
 
   const handleRefresh = () => {
     refreshAll();
+    loadSubscriptions();
+  };
+
+  const handleToggleSubscription = async (item: GitHubRepository | NpmPackage, type: 'github' | 'npm') => {
+    const itemId = type === 'github' ? String((item as GitHubRepository).id) : (item as NpmPackage).name;
+    const isSubscribed = subscribedItems.has(itemId);
+
+    try {
+      if (isSubscribed) {
+        await subscriptionsRepository.removeByItemId(itemId);
+        setSubscribedItems(prev => {
+          const next = new Set(prev);
+          next.delete(itemId);
+          return next;
+        });
+      } else {
+        await subscriptionsRepository.add({
+          id: Math.random().toString(36).substring(7),
+          type: type === 'github' ? 'repository' : 'package',
+          itemId,
+          name: item.name,
+          fullName: type === 'github' ? (item as GitHubRepository).fullName : undefined,
+          data: JSON.stringify(item),
+          subscribedAt: Date.now(),
+          isActive: true,
+        });
+        setSubscribedItems(prev => new Set(prev).add(itemId));
+        Alert.alert('Subscribed', `${item.name} added to your personal subscriptions.`);
+      }
+    } catch (error) {
+      console.error('Subscription toggle error:', error);
+      Alert.alert('Error', 'Failed to update subscription.');
+    }
   };
 
   const handleTimeframeChange = (newTimeframe: TimeframeType) => {
@@ -106,48 +163,168 @@ export const HomeScreen: React.FC = () => {
     </View>
   );
 
-  const renderGitHubItem = ({ item }: { item: GitHubRepository }) => (
-    <View style={styles.card}>
-      <Text style={styles.cardTitle}>{item.name}</Text>
-      <Text style={styles.cardSubtitle}>{item.fullName}</Text>
-      {item.description && (
-        <Text style={styles.cardDescription} numberOfLines={2}>
-          {item.description}
-        </Text>
-      )}
-      <View style={styles.statsRow}>
-        <Text style={styles.statText}>⭐ {item.formattedStars}</Text>
-        <Text style={styles.statText}>🍴 {item.formattedForks}</Text>
-        {item.language && (
-          <View style={styles.languageBadge}>
-            <View
-              style={[
-                styles.languageDot,
-                { backgroundColor: item.languageColor },
-              ]}
-            />
-            <Text style={styles.languageText}>{item.language}</Text>
+  const renderFilterOptions = () => {
+    if (!showFilters) return null;
+
+    return (
+      <View style={styles.filtersPanel}>
+        <View style={styles.filterRow}>
+          <Text style={styles.filterLabel}>Language</Text>
+          <TextInput
+            style={styles.filterInput}
+            value={language || ''}
+            onChangeText={setLanguage}
+            placeholder="All Languages"
+            placeholderTextColor={HackerTheme.lightGrey}
+          />
+        </View>
+
+        {activeTab === 'github' && (
+          <View style={styles.filterRow}>
+            <Text style={styles.filterLabel}>Sort By</Text>
+            <View style={styles.sortButtons}>
+              {(['stars', 'forks', 'updated'] as const).map(sort => (
+                <TouchableOpacity
+                  key={sort}
+                  style={[
+                    styles.sortButton,
+                    sortBy === sort && styles.sortButtonActive,
+                  ]}
+                  onPress={() => setSortBy(sort)}
+                >
+                  <Text
+                    style={[
+                      styles.sortButtonText,
+                      sortBy === sort && styles.sortButtonTextActive,
+                    ]}
+                  >
+                    {sort.charAt(0).toUpperCase() + sort.slice(1)}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
         )}
+
+        <View style={styles.filterRow}>
+          <Text style={styles.filterLabel}>Order</Text>
+          <View style={styles.sortButtons}>
+            {(['desc', 'asc'] as const).map(order => (
+              <TouchableOpacity
+                key={order}
+                style={[
+                  styles.sortButton,
+                  sortOrder === order && styles.sortButtonActive,
+                ]}
+                onPress={() => setSortOrder(order)}
+              >
+                <Text
+                  style={[
+                    styles.sortButtonText,
+                    sortOrder === order && styles.sortButtonTextActive,
+                  ]}
+                >
+                  {order === 'desc' ? 'Most' : 'Least'}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
       </View>
+    );
+  };
+
+  const renderHeader = () => (
+    <View style={styles.header}>
+      <View style={styles.headerTop}>
+        <Text style={styles.headerTitle}>TRENDING_DATA</Text>
+        <TouchableOpacity 
+          style={styles.filterToggleButton}
+          onPress={() => setShowFilters(!showFilters)}
+        >
+          <Icon 
+            name={showFilters ? "filter-remove" : "filter-variant"} 
+            size={24} 
+            color={showFilters ? HackerTheme.primary : HackerTheme.lightGrey} 
+          />
+        </TouchableOpacity>
+      </View>
+      {renderTimeframeSelector()}
+      {renderFilterOptions()}
+      {renderTabSelector()}
     </View>
   );
 
-  const renderNpmItem = ({ item }: { item: NpmPackage }) => (
-    <View style={styles.card}>
-      <Text style={styles.cardTitle}>{item.name}</Text>
-      <Text style={styles.cardSubtitle}>v{item.version}</Text>
-      {item.description && (
-        <Text style={styles.cardDescription} numberOfLines={2}>
-          {item.description}
-        </Text>
-      )}
-      <View style={styles.statsRow}>
-        <Text style={styles.statText}>📦 {item.formattedDownloads}</Text>
-        {item.stars > 0 && <Text style={styles.statText}>⭐ {item.stars}</Text>}
+  const renderGitHubItem = ({ item }: { item: GitHubRepository }) => {
+    const isSubscribed = subscribedItems.has(String(item.id));
+    return (
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.cardTitle}>{item.name}</Text>
+            <Text style={styles.cardSubtitle}>{item.fullName}</Text>
+          </View>
+          <TouchableOpacity onPress={() => handleToggleSubscription(item, 'github')}>
+            <Icon 
+              name={isSubscribed ? "star" : "star-outline"} 
+              size={28} 
+              color={isSubscribed ? HackerTheme.secondary : HackerTheme.lightGrey} 
+            />
+          </TouchableOpacity>
+        </View>
+        {item.description && (
+          <Text style={styles.cardDescription} numberOfLines={2}>
+            {item.description}
+          </Text>
+        )}
+        <View style={styles.statsRow}>
+          <Text style={styles.statText}>⭐ {item.formattedStars}</Text>
+          <Text style={styles.statText}>🍴 {item.formattedForks}</Text>
+          {item.language && (
+            <View style={styles.languageBadge}>
+              <View
+                style={[
+                  styles.languageDot,
+                  { backgroundColor: item.languageColor },
+                ]}
+              />
+              <Text style={styles.languageText}>{item.language}</Text>
+            </View>
+          )}
+        </View>
       </View>
-    </View>
-  );
+    );
+  };
+
+  const renderNpmItem = ({ item }: { item: NpmPackage }) => {
+    const isSubscribed = subscribedItems.has(item.name);
+    return (
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.cardTitle}>{item.name}</Text>
+            <Text style={styles.cardSubtitle}>v{item.version}</Text>
+          </View>
+          <TouchableOpacity onPress={() => handleToggleSubscription(item, 'npm')}>
+            <Icon 
+              name={isSubscribed ? "star" : "star-outline"} 
+              size={28} 
+              color={isSubscribed ? HackerTheme.secondary : HackerTheme.lightGrey} 
+            />
+          </TouchableOpacity>
+        </View>
+        {item.description && (
+          <Text style={styles.cardDescription} numberOfLines={2}>
+            {item.description}
+          </Text>
+        )}
+        <View style={styles.statsRow}>
+          <Text style={styles.statText}>📦 {item.formattedDownloads}</Text>
+          {item.stars > 0 && <Text style={styles.statText}>⭐ {item.stars}</Text>}
+        </View>
+      </View>
+    );
+  };
 
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
@@ -162,8 +339,7 @@ export const HomeScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      {renderTimeframeSelector()}
-      {renderTabSelector()}
+      {renderHeader()}
 
       {loading && data.length === 0 ? (
         <View style={styles.loadingContainer}>
@@ -182,7 +358,7 @@ export const HomeScreen: React.FC = () => {
           }
           // @ts-ignore
           estimatedItemSize={150}
-          keyExtractor={(item: any) => item.id || item.name}
+          keyExtractor={(item: any) => item.id?.toString() || item.name}
           contentContainerStyle={styles.listContent}
           refreshControl={
             <RefreshControl
@@ -203,6 +379,26 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: HackerTheme.darkerGreen,
+  },
+  header: {
+    backgroundColor: HackerTheme.darkerGreen,
+    borderBottomWidth: 1,
+    borderBottomColor: HackerTheme.darkGreen,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.md,
+    paddingTop: Spacing.md,
+  },
+  headerTitle: {
+    ...Typography.heading3,
+    color: HackerTheme.primary,
+    letterSpacing: 2,
+  },
+  filterToggleButton: {
+    padding: Spacing.xs,
   },
   timeframeContainer: {
     flexDirection: 'row',
@@ -258,6 +454,58 @@ const styles = StyleSheet.create({
     color: HackerTheme.primary,
     fontWeight: '600',
   },
+  filtersPanel: {
+    paddingHorizontal: Spacing.md,
+    paddingBottom: Spacing.md,
+    gap: Spacing.sm,
+  },
+  filterRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: Spacing.md,
+  },
+  filterLabel: {
+    ...Typography.captionText,
+    color: HackerTheme.primary,
+    width: 80,
+  },
+  filterInput: {
+    flex: 1,
+    ...Typography.bodyText,
+    color: HackerTheme.lightOnPrimary,
+    backgroundColor: HackerTheme.darkGreen,
+    borderRadius: 8,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: HackerTheme.primary + '20',
+  },
+  sortButtons: {
+    flex: 1,
+    flexDirection: 'row',
+    gap: Spacing.xs,
+  },
+  sortButton: {
+    flex: 1,
+    paddingVertical: 4,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: HackerTheme.darkGreen,
+    alignItems: 'center',
+  },
+  sortButtonActive: {
+    backgroundColor: HackerTheme.primary + '20',
+    borderColor: HackerTheme.primary,
+  },
+  sortButtonText: {
+    fontSize: 10,
+    color: HackerTheme.lightGrey,
+  },
+  sortButtonTextActive: {
+    color: HackerTheme.primary,
+    fontWeight: 'bold',
+  },
   listContent: {
     padding: Spacing.md,
   },
@@ -269,10 +517,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: HackerTheme.primary + '20',
   },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: Spacing.xs,
+  },
   cardTitle: {
     ...Typography.heading3,
     color: HackerTheme.primary,
-    marginBottom: Spacing.xs,
   },
   cardSubtitle: {
     ...Typography.captionText,

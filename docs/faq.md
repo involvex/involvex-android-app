@@ -1,25 +1,21 @@
-# Frequently Asked Questions
+---
+layout: default
+title: FAQ
+---
+# > System FAQ_
 
-### Is Involvex free?
+### > Is Involvex free?
+Affirmative. Involvex is open-source and free for all users.
 
-Yes, Involvex is completely free and open-source.
+### > Data Sourcing?
+We interface with official GitHub REST APIs and npm Registry streams.
 
-### Where does the data come from?
+### > Contribution Protocols?
+Highly encouraged. Check our [GitHub repository](https://github.com/involvex/involvex-android-app).
 
-We use the official GitHub REST API and the npm Registry API to fetch trending data and package information.
+### > Why "HackerTheme"?
+Because productivity is enhanced in a high-contrast, distraction-free environment. Plus, it looks cool.
 
-### Can I contribute?
+### > Bug Reporting?
+Log an issue on our [GitHub Issues](https://github.com/involvex/involvex-android-app/issues) page.
 
-Absolutely! We welcome contributions. Check out our [GitHub repository](https://github.com/involvex/trending-hub-rn) for more information on how to get started.
-
-### Why a "Hacker Theme"?
-
-Because it looks cool! We wanted to create a tool that felt at home in a developer's environment.
-
-### How do I report a bug?
-
-Please open an issue on our [GitHub Issues](https://github.com/involvex/trending-hub-rn/issues) page with as much detail as possible.
-
-### Does it support iOS?
-
-The core app is built with React Native, but we are currently focusing on the Android release. An iOS version is planned for the future.

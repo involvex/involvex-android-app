@@ -15,6 +15,9 @@ import { TimeframeType } from '../api/github/githubClient';
 interface TrendingState {
   // State
   timeframe: TimeframeType;
+  language: string | null;
+  sortBy: 'stars' | 'forks' | 'updated' | 'best-match';
+  sortOrder: 'asc' | 'desc';
   githubRepos: GitHubRepository[];
   npmPackages: NpmPackage[];
   loading: boolean;
@@ -23,6 +26,9 @@ interface TrendingState {
 
   // Actions
   setTimeframe: (timeframe: TimeframeType) => void;
+  setLanguage: (language: string | null) => void;
+  setSortBy: (sortBy: 'stars' | 'forks' | 'updated' | 'best-match') => void;
+  setSortOrder: (sortOrder: 'asc' | 'desc') => void;
   fetchGitHubTrending: () => Promise<void>;
   fetchNpmTrending: () => Promise<void>;
   refreshAll: () => Promise<void>;
@@ -33,6 +39,9 @@ export const useTrendingStore = create<TrendingState>()(
   immer((set, get) => ({
     // Initial State
     timeframe: 'daily',
+    language: null,
+    sortBy: 'stars',
+    sortOrder: 'desc',
     githubRepos: [],
     npmPackages: [],
     loading: false,
@@ -49,6 +58,30 @@ export const useTrendingStore = create<TrendingState>()(
       get().refreshAll();
     },
 
+    // Set language and auto-refresh
+    setLanguage: (language: string | null) => {
+      set(state => {
+        state.language = language;
+      });
+      get().refreshAll();
+    },
+
+    // Set sort and auto-refresh
+    setSortBy: (sortBy: 'stars' | 'forks' | 'updated' | 'best-match') => {
+      set(state => {
+        state.sortBy = sortBy;
+      });
+      get().refreshAll();
+    },
+
+    // Set sort order and auto-refresh
+    setSortOrder: (sortOrder: 'asc' | 'desc') => {
+      set(state => {
+        state.sortOrder = sortOrder;
+      });
+      get().refreshAll();
+    },
+
     // Fetch GitHub trending repositories
     fetchGitHubTrending: async () => {
       try {
@@ -60,6 +93,9 @@ export const useTrendingStore = create<TrendingState>()(
         const repos = await githubService.getTrending(get().timeframe, {
           minStars: 10,
           perPage: 50,
+          language: get().language || undefined,
+          sort: get().sortBy,
+          order: get().sortOrder,
         });
 
         set(state => {

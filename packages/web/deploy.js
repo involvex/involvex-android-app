@@ -36,4 +36,4 @@ export const onRequest = createPagesFunctionHandler({
 writeFileSync(join(functionsDir, "[[path]].js"), handlerContent.trim());
 
 console.log("Deploying to Cloudflare Pages...");
-run("npx", ["wrangler", "pages", "deploy", "build/client", "--project-name=app"]);
+run("npx", ["wrangler", "pages", "deploy", "build/client", "--project-name=involvex-app"]);

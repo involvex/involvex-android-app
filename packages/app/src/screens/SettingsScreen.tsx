@@ -364,7 +364,7 @@ export const SettingsScreen: React.FC = () => {
     <View style={styles.container}>
       <ScrollView style={styles.scrollView}>
         {/* Account Section */}
-        {renderSectionHeader('account', 'Account', 'account', null)}
+        {renderSectionHeader('account', 'Account & Identity', 'account-cog', null)}
         {expandedSections.has('account') && (
           <View style={styles.sectionContent}>
             {renderAccountSection()}
@@ -372,185 +372,147 @@ export const SettingsScreen: React.FC = () => {
         )}
 
         {/* Theme Section */}
-        {renderSectionHeader('theme', 'Theme', 'palette', 2)}
+        {renderSectionHeader('theme', 'Visual Appearance', 'theme-light-dark', 2)}
         {expandedSections.has('theme') && (
           <View style={styles.sectionContent}>
-            {renderSwitch('Dark Mode', 'isDarkMode')}
+            {renderSwitch('Dark Mode 🌙', 'isDarkMode')}
             {renderSwitch(
-              'Hacker Theme',
+              'Hacker Theme 📟',
               'useHackerTheme',
-              'Matrix-style green theme',
+              'Matrix-style green terminal aesthetic',
             )}
           </View>
         )}
 
         {/* Trending Section */}
-        {renderSectionHeader('trending', 'Trending', 'fire', 5)}
+        {renderSectionHeader('trending', 'Trending Engine', 'trending-up', 5)}
         {expandedSections.has('trending') && (
           <View style={styles.sectionContent}>
-            {renderSegmentedControl('Default Timeframe', 'trendingTimeframe', [
+            {renderSegmentedControl('Default Timeframe ⏳', 'trendingTimeframe', [
               'daily',
               'weekly',
               'monthly',
             ])}
-            {renderSwitch('Auto Refresh', 'autoRefresh')}
+            {renderSwitch('Auto Refresh 🔄', 'autoRefresh')}
             {renderTextInput(
-              'Refresh Interval (minutes)',
+              'Refresh Interval (minutes) ⏱️',
               'refreshInterval',
               '30',
               'numeric',
             )}
-            {/* {renderSwitch('Show Trending Score', 'showTrendingScore')} */}
-            {/* {renderTextInput(
-              'Min Stars for Trending',
-              'minStarsForTrending',
-              '10',
-              'numeric'
-            )} */}
           </View>
         )}
 
         {/* Notifications Section */}
-        {renderSectionHeader('notifications', 'Notifications', 'bell', 8)}
+        {renderSectionHeader('notifications', 'System Alerts', 'bell-ring', 8)}
         {expandedSections.has('notifications') && (
           <View style={styles.sectionContent}>
             {renderSwitch(
-              'Enable Push Notifications',
+              'Push Notifications 🔔',
               'enablePushNotifications',
             )}
             {renderTextInput(
-              'Daily Digest Time',
+              'Daily Digest Time 🕤',
               'notificationTime',
               'HH:MM (e.g., 09:00)',
             )}
-            {renderSwitch('Daily Digest', 'enableDailyDigest')}
-            {renderSwitch('Weekly Summary', 'enableWeeklySummary')}
-            {renderSwitch('Release Alerts', 'enableNewReleaseNotifications')}
-            {/* {renderSwitch('Star Milestone Alerts', 'starMilestoneAlerts')} */}
+            {renderSwitch('Daily Digest 📰', 'enableDailyDigest')}
+            {renderSwitch('Weekly Summary 📊', 'enableWeeklySummary')}
+            {renderSwitch('New Release Alerts 🚀', 'enableNewReleaseNotifications')}
             {renderSwitch(
-              'Trending Language Alerts',
+              'Trending Language Alerts 💡',
               'enableTrendingNotifications',
             )}
-            {renderSwitch('Sound', 'enableSound')}
+            {renderSwitch('System Sound 🔈', 'enableSound')}
           </View>
         )}
 
         {/* Display Section */}
-        {renderSectionHeader('display', 'Display', 'monitor', 10)}
+        {renderSectionHeader('display', 'Interface Layout', 'cellphone-cog', 10)}
         {expandedSections.has('display') && (
           <View style={styles.sectionContent}>
-            {renderSwitch('Compact Card View', 'compactView')}
-            {/* {renderSwitch('Show Avatars', 'showAvatars')} */}
-            {/* {renderSwitch('Show Language Colors', 'showLanguageColors')} */}
-            {renderSwitch('Show Star Count', 'showStars')}
-            {renderSwitch('Show Fork Count', 'showForks')}
-            {/* {renderSwitch('Show Issue Count', 'showIssueCount')} */}
-            {renderSwitch('Show License', 'showLicense')}
-            {renderSwitch('Show Topics', 'showTopics')}
-            {/* {renderSegmentedControl('Card Image Size', 'cardImageSize', [
-              'small',
-              'medium',
-              'large',
-            ])} */}
-            {/* {renderTextInput('Max Topics Shown', 'maxTopicsShown', '3', 'numeric')} */}
+            {renderSwitch('Compact Card View 📱', 'compactView')}
+            {renderSwitch('Show Star Count ⭐', 'showStars')}
+            {renderSwitch('Show Fork Count 🍴', 'showForks')}
+            {renderSwitch('Show License 📜', 'showLicense')}
+            {renderSwitch('Show Topics 🏷️', 'showTopics')}
           </View>
         )}
 
         {/* Filter Section */}
-        {renderSectionHeader('filter', 'Filters', 'filter', 8)}
+        {renderSectionHeader('filter', 'Discovery Filters', 'filter-variant', 8)}
         {expandedSections.has('filter') && (
           <View style={styles.sectionContent}>
-            {renderTextInput('Default Min Stars', 'minStars', '10', 'numeric')}
-            {/* {renderTextInput('Default Language', 'defaultLanguage', 'e.g., JavaScript')} */}
-            {renderSegmentedControl('Default Sort', 'sortBy', [
+            {renderTextInput('Default Min Stars ⭐', 'minStars', '10', 'numeric')}
+            {renderSegmentedControl('Default Sort 🔀', 'sortBy', [
               'stars',
               'forks',
-              // 'updated', // updated not in model, model has date
               'date',
             ])}
-            {renderSwitch('Include Archived', 'includeArchived')}
-            {renderSwitch('Include Forks', 'includeForks')}
-            {/* {renderSwitch('Show Only With License', 'showOnlyWithLicense')} */}
-            {/* {renderSwitch('Show Only With Topics', 'showOnlyWithTopics')} */}
-            {/* {renderTextInput(
-              'Exclude Languages',
-              'excludeLanguages',
-              'e.g., HTML,CSS'
-            )} */}
+            {renderSwitch('Include Archived 🗄️', 'includeArchived')}
+            {renderSwitch('Include Forks 🌿', 'includeForks')}
           </View>
         )}
 
         {/* Privacy Section */}
-        {renderSectionHeader('privacy', 'Privacy', 'shield-lock', 5)}
+        {renderSectionHeader('privacy', 'Privacy & Security', 'security', 5)}
         {expandedSections.has('privacy') && (
           <View style={styles.sectionContent}>
-            {renderSwitch('Analytics', 'enableAnalytics')}
-            {/* {renderSwitch('Crash Reporting', 'crashReporting')} */}
-            {/* {renderSwitch('Save Search History', 'saveSearchHistory')} */}
-            {/* {renderSwitch('Save Browse History', 'saveBrowseHistory')} */}
-            {renderSwitch('Share Usage Data', 'shareUsageData')}
+            {renderSwitch('Usage Analytics 📈', 'enableAnalytics')}
+            {renderSwitch('Share Usage Data 🤝', 'shareUsageData')}
           </View>
         )}
 
         {/* Data Section */}
-        {renderSectionHeader('data', 'Data & Storage', 'database', 7)}
+        {renderSectionHeader('data', 'Memory & Storage', 'database-cog', 7)}
         {expandedSections.has('data') && (
           <View style={styles.sectionContent}>
-            {renderSwitch('Offline Mode', 'enableOfflineMode')}
+            {renderSwitch('Offline Mode 🔌', 'enableOfflineMode')}
             {renderTextInput(
-              'Cache Expiry (hours)',
+              'Cache Expiry (hours) ⌛',
               'cacheExpiryHours',
               '24',
               'numeric',
             )}
             {renderTextInput(
-              'Max Cache Size (MB)',
+              'Max Cache Size (MB) 💾',
               'maxCacheSize',
               '100',
               'numeric',
             )}
-            {renderSwitch('Auto Delete Old Data', 'autoDeleteOldData')}
-            {/* {renderSwitch('Sync on Wi-Fi Only', 'syncOnWifiOnly')} */}
-            {renderSegmentedControl('Export Format', 'preferredExportFormat', [
+            {renderSwitch('Auto Delete Old Data 🧹', 'autoDeleteOldData')}
+            {renderSegmentedControl('Export Format 📄', 'preferredExportFormat', [
               'json',
               'csv',
-              // 'Markdown', // model has 'txt', UI has 'Markdown'. Model has 'json'|'csv'|'txt'.
               'txt',
             ])}
-            {renderSwitch('Include Metadata in Export', 'includeMetadata')}
+            {renderSwitch('Include Metadata in Export 📑', 'includeMetadata')}
           </View>
         )}
 
         {/* Advanced Section */}
-        {renderSectionHeader('advanced', 'Advanced', 'cog', 8)}
+        {renderSectionHeader('advanced', 'Advanced Protocols', 'console', 9)}
         {expandedSections.has('advanced') && (
           <View style={styles.sectionContent}>
-            {renderSwitch('Debug Mode', 'enableDebugMode')}
-            {/* {renderSwitch('Show Debug Info', 'showDebugInfo')} */}
+            {renderSwitch('Auto Check for Updates 🔄', 'autoCheckForUpdates')}
+            {renderSwitch('Debug Mode 🛠️', 'enableDebugMode')}
             {renderTextInput(
-              'API Request Timeout (seconds)',
+              'API Request Timeout (sec) 📡',
               'requestTimeout',
               '30',
               'numeric',
             )}
-            {/* {renderTextInput(
-              'Max Retry Attempts',
-              'maxRetryAttempts',
-              '3',
-              'numeric'
-            )} */}
-            {renderSwitch('Enable Beta Features', 'enableBetaFeatures')}
+            {renderSwitch('Beta Features 🧪', 'enableBetaFeatures')}
             {renderTextInput(
-              'GitHub Personal Access Token',
+              'GitHub Personal Access Token 🔑',
               'githubToken',
               'ghp_...',
             )}
             {renderTextInput(
-              'NPM Auth Token',
+              'NPM Auth Token 🔑',
               'npmToken',
               'npm_...',
             )}
-            {/* {renderSwitch('Verbose Logging', 'verboseLogging')} */}
           </View>
         )}
 

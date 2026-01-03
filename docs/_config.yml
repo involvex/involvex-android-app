@@ -1,7 +1,12 @@
 title: Involvex User Guide
-description: Mobile app for tracking trending GitHub repos and npm packages
+description: Neural-link dashboard for trending open-source protocols.
 theme: jekyll-theme-hacker
 baseurl: "/involvex-android-app"
-# remote_theme: pages-themes/hacker@v0.2.0
-# plugins:
-#   - jekyll-remote-theme
+# Ensure the theme is loaded from GitHub
+remote_theme: pages-themes/hacker@v0.2.0
+plugins:
+  - jekyll-remote-theme
+  - jekyll-relative-links
+relative_links:
+  enabled: true
+  collections: true

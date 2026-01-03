@@ -76,6 +76,7 @@ export interface UserSettingsData {
   enableBetaFeatures: boolean;
   apiEndpoint: string;
   requestTimeout: number; // seconds
+  autoCheckForUpdates: boolean;
 }
 
 export class UserSettings implements UserSettingsData {
@@ -150,6 +151,7 @@ export class UserSettings implements UserSettingsData {
   enableBetaFeatures: boolean;
   apiEndpoint: string;
   requestTimeout: number;
+  autoCheckForUpdates: boolean;
 
   constructor(data?: Partial<UserSettingsData>) {
     // Theme Settings
@@ -225,6 +227,7 @@ export class UserSettings implements UserSettingsData {
     this.enableBetaFeatures = data?.enableBetaFeatures ?? false;
     this.apiEndpoint = data?.apiEndpoint ?? 'https://api.github.com';
     this.requestTimeout = data?.requestTimeout ?? 30;
+    this.autoCheckForUpdates = data?.autoCheckForUpdates ?? true;
   }
 
   /**
@@ -284,6 +287,7 @@ export class UserSettings implements UserSettingsData {
       enableBetaFeatures: json.enableBetaFeatures,
       apiEndpoint: json.apiEndpoint,
       requestTimeout: json.requestTimeout,
+      autoCheckForUpdates: json.autoCheckForUpdates,
     });
   }
 
@@ -392,6 +396,7 @@ export class UserSettings implements UserSettingsData {
       enableBetaFeatures: this.enableBetaFeatures,
       apiEndpoint: this.apiEndpoint,
       requestTimeout: this.requestTimeout,
+      autoCheckForUpdates: this.autoCheckForUpdates,
     };
   }
 

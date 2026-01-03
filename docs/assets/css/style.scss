@@ -1,68 +1,53 @@
 ---
 ---
-
 @import "jekyll-theme-hacker";
 
+/* Involvex Neural Link Overrides */
 :root {
-  --color-primary: #00ff41;
-  --color-secondary: #39ff14;
-  --color-dark-green: #0a3d0a;
-  --color-darker-green: #051a05;
-  --color-accent-green: #1aff66;
+  --color-primary: #00FF41;
+  --color-secondary: #39FF14;
+  --color-dark-green: #0A3D0A;
+  --color-darker-green: #051A05;
+  --color-accent-green: #1AFF66;
   --color-pure-black: #000000;
-  --color-text-grey: #b8b8b8;
+  --color-text-grey: #B8B8B8;
 }
 
 body {
-  background-color: var(--color-pure-black) !important;
-  color: var(--color-primary) !important;
-  font-family: "Courier New", Courier, monospace !important;
-  background-image:
-    linear-gradient(rgba(0, 255, 65, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 255, 65, 0.05) 1px, transparent 1px) !important;
-  background-size: 20px 20px !important;
+  background-color: #000 !important;
+  color: #00FF41 !important;
+  font-family: 'Courier New', Courier, monospace !important;
+  background-image: radial-gradient(circle at 2px 2px, rgba(0, 255, 65, 0.05) 1px, transparent 0) !important;
+  background-size: 24px 24px !important;
 }
 
-h1,
-h2,
-h3 {
-  color: var(--color-primary) !important;
-  text-transform: uppercase !important;
-  letter-spacing: 2px !important;
+header {
+  background: #051A05 !important;
+  border-bottom: 1px solid #00FF41 !important;
 }
 
-.btn {
-  border: 1px solid var(--color-primary) !important;
-  background: transparent !important;
-  color: var(--color-primary) !important;
-  font-family: "Courier New", Courier, monospace !important;
-}
-
-.btn:hover {
-  background: var(--color-primary) !important;
-  color: var(--color-pure-black) !important;
+#header h1, #header h2 {
+  color: #00FF41 !important;
+  text-shadow: 0 0 10px #00FF41 !important;
 }
 
 a {
-  color: var(--color-accent-green) !important;
+  color: #1AFF66 !important;
+  text-decoration: none !important;
 }
 
 a:hover {
-  color: var(--color-secondary) !important;
+  color: #39FF14 !important;
+  text-decoration: underline !important;
 }
 
-.inner {
-  max-width: 900px !important;
-}
-
-code,
-pre {
-  background-color: var(--color-dark-green) !important;
-  color: var(--color-secondary) !important;
-  border: 1px solid var(--color-primary) !important;
+code, pre {
+  background: #0A3D0A !important;
+  color: #39FF14 !important;
+  border: 1px solid #00FF41 !important;
 }
 
 footer {
-  border-top: 1px solid var(--color-dark-green) !important;
-  color: var(--color-text-grey) !important;
+  border-top: 1px solid #0A3D0A !important;
+  color: #B8B8B8 !important;
 }

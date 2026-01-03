@@ -1,25 +1,25 @@
-# Installation Guide
+---
+layout: default
+title: Installation
+---
+# > System Deployment Guide_
 
 Involvex is currently available as an Android application (APK) and a Web dashboard.
 
-## Android Installation
+## > Android Protocol
 
 Since Involvex is in early access, you can install it by downloading the APK directly from our GitHub releases.
 
-### Steps to Install
+### Protocol Steps
+1. **Download APK:** Access the [Releases](https://github.com/involvex/involvex-android-app/releases) page on your device.
+2. **Select Build:** Download the `involvex-vX.X.X-debug.apk` file.
+3. **Override Security:** Allow your browser to "Install unknown apps".
+4. **Execute:** Run the file and confirm installation.
+5. **Connect:** Find the Involvex icon in your console.
 
-1. **Download the APK:** Go to the [Releases](https://github.com/involvex/trending-hub-rn/releases) page on your Android device.
-2. **Select the latest version:** Download the `involvex-vX.X.X-debug.apk` file.
-3. **Enable Unknown Sources:** If prompted, allow your browser or file manager to "Install unknown apps".
-4. **Install:** Open the downloaded file and tap "Install".
-5. **Open:** Once installed, find the Involvex icon in your app drawer.
+> **Note:** Requires Android 7.0 or higher.
 
-> **Note:** Involvex requires Android 7.0 or higher.
+## > Web Access
 
-## Web Dashboard
+The web dashboard is available at [involvex-app.pages.dev](https://involvex-app.pages.dev/). No installation is required.
 
-The web dashboard is available at [app.involvex.workers.dev](https://app.involvex.workers.dev/). No installation is required; simply open the URL in any modern web browser.
-
-## Desktop (Coming Soon)
-
-We are working on bringing Involvex to Windows, macOS, and Linux using Electron or Tauri. Stay tuned!

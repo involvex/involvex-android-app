@@ -3,7 +3,7 @@
  * Advanced search for GitHub repos and npm packages with filters
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -22,6 +23,7 @@ import { githubService } from '../api/github/githubService';
 import { npmService } from '../api/npm/npmService';
 import { GitHubRepository } from '../models/GitHubRepository';
 import { NpmPackage } from '../models/NpmPackage';
+import { subscriptionsRepository } from '../database/repositories/subscriptionsRepository';
 
 type TabType = 'github' | 'npm';
 type SortType = 'stars' | 'forks' | 'updated' | 'downloads';
@@ -42,11 +44,57 @@ export const SearchScreen: React.FC = () => {
   const [githubResults, setGithubResults] = useState<GitHubRepository[]>([]);
   const [npmResults, setNpmResults] = useState<NpmPackage[]>([]);
   const [showFilters, setShowFilters] = useState(false);
+  const [subscribedItems, setSubscribedItems] = useState<Set<string>>(new Set());
 
   // Filters
   const [selectedLanguage, setSelectedLanguage] = useState<string>('');
   const [minStars, setMinStars] = useState<number>(0);
   const [sortBy, setSortBy] = useState<SortType>('stars');
+
+  useEffect(() => {
+    loadSubscriptions();
+  }, []);
+
+  const loadSubscriptions = async () => {
+    try {
+      const subs = await subscriptionsRepository.getAll();
+      setSubscribedItems(new Set(subs.map(s => s.itemId)));
+    } catch (error) {
+      console.error('Failed to load subscriptions:', error);
+    }
+  };
+
+  const handleToggleSubscription = async (item: GitHubRepository | NpmPackage, type: 'github' | 'npm') => {
+    const itemId = type === 'github' ? String((item as GitHubRepository).id) : (item as NpmPackage).name;
+    const isSubscribed = subscribedItems.has(itemId);
+
+    try {
+      if (isSubscribed) {
+        await subscriptionsRepository.removeByItemId(itemId);
+        setSubscribedItems(prev => {
+          const next = new Set(prev);
+          next.delete(itemId);
+          return next;
+        });
+      } else {
+        await subscriptionsRepository.add({
+          id: Math.random().toString(36).substring(7),
+          type: type === 'github' ? 'repository' : 'package',
+          itemId,
+          name: item.name,
+          fullName: type === 'github' ? (item as GitHubRepository).fullName : undefined,
+          data: JSON.stringify(item),
+          subscribedAt: Date.now(),
+          isActive: true,
+        });
+        setSubscribedItems(prev => new Set(prev).add(itemId));
+        Alert.alert('Subscribed', `${item.name} added to your personal subscriptions.`);
+      }
+    } catch (error) {
+      console.error('Subscription toggle error:', error);
+      Alert.alert('Error', 'Failed to update subscription.');
+    }
+  };
 
   const handleSearch = useCallback(async () => {
     if (!searchQuery.trim()) return;
@@ -235,48 +283,76 @@ export const SearchScreen: React.FC = () => {
     );
   };
 
-  const renderGitHubItem = ({ item }: { item: GitHubRepository }) => (
-    <View style={styles.card}>
-      <Text style={styles.cardTitle}>{item.name}</Text>
-      <Text style={styles.cardSubtitle}>{item.fullName}</Text>
-      {item.description && (
-        <Text style={styles.cardDescription} numberOfLines={2}>
-          {item.description}
-        </Text>
-      )}
-      <View style={styles.statsRow}>
-        <Text style={styles.statText}>⭐ {item.formattedStars}</Text>
-        <Text style={styles.statText}>🍴 {item.formattedForks}</Text>
-        {item.language && (
-          <View style={styles.languageBadge}>
-            <View
-              style={[
-                styles.languageDot,
-                { backgroundColor: item.languageColor },
-              ]}
-            />
-            <Text style={styles.languageText}>{item.language}</Text>
+  const renderGitHubItem = ({ item }: { item: GitHubRepository }) => {
+    const isSubscribed = subscribedItems.has(String(item.id));
+    return (
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.cardTitle}>{item.name}</Text>
+            <Text style={styles.cardSubtitle}>{item.fullName}</Text>
           </View>
+          <TouchableOpacity onPress={() => handleToggleSubscription(item, 'github')}>
+            <Icon 
+              name={isSubscribed ? "star" : "star-outline"} 
+              size={28} 
+              color={isSubscribed ? HackerTheme.secondary : HackerTheme.lightGrey} 
+            />
+          </TouchableOpacity>
+        </View>
+        {item.description && (
+          <Text style={styles.cardDescription} numberOfLines={2}>
+            {item.description}
+          </Text>
         )}
+        <View style={styles.statsRow}>
+          <Text style={styles.statText}>⭐ {item.formattedStars}</Text>
+          <Text style={styles.statText}>🍴 {item.formattedForks}</Text>
+          {item.language && (
+            <View style={styles.languageBadge}>
+              <View
+                style={[
+                  styles.languageDot,
+                  { backgroundColor: item.languageColor },
+                ]}
+              />
+              <Text style={styles.languageText}>{item.language}</Text>
+            </View>
+          )}
+        </View>
       </View>
-    </View>
-  );
+    );
+  };
 
-  const renderNpmItem = ({ item }: { item: NpmPackage }) => (
-    <View style={styles.card}>
-      <Text style={styles.cardTitle}>{item.name}</Text>
-      <Text style={styles.cardSubtitle}>v{item.version}</Text>
-      {item.description && (
-        <Text style={styles.cardDescription} numberOfLines={2}>
-          {item.description}
-        </Text>
-      )}
-      <View style={styles.statsRow}>
-        <Text style={styles.statText}>📦 {item.formattedDownloads}</Text>
-        {item.stars > 0 && <Text style={styles.statText}>⭐ {item.stars}</Text>}
+  const renderNpmItem = ({ item }: { item: NpmPackage }) => {
+    const isSubscribed = subscribedItems.has(item.name);
+    return (
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.cardTitle}>{item.name}</Text>
+            <Text style={styles.cardSubtitle}>v{item.version}</Text>
+          </View>
+          <TouchableOpacity onPress={() => handleToggleSubscription(item, 'npm')}>
+            <Icon 
+              name={isSubscribed ? "star" : "star-outline"} 
+              size={28} 
+              color={isSubscribed ? HackerTheme.secondary : HackerTheme.lightGrey} 
+            />
+          </TouchableOpacity>
+        </View>
+        {item.description && (
+          <Text style={styles.cardDescription} numberOfLines={2}>
+            {item.description}
+          </Text>
+        )}
+        <View style={styles.statsRow}>
+          <Text style={styles.statText}>📦 {item.formattedDownloads}</Text>
+          {item.stars > 0 && <Text style={styles.statText}>⭐ {item.stars}</Text>}
+        </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
@@ -484,6 +560,12 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
     borderWidth: 1,
     borderColor: HackerTheme.primary + '20',
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: Spacing.xs,
   },
   cardTitle: {
     ...Typography.heading3,

@@ -13,6 +13,7 @@ import { Database } from './src/database/schema';
 import { useAuthStore } from './src/store/authStore';
 import { useSettingsStore } from './src/store/settingsStore';
 import { HackerTheme } from './src/theme/colors';
+import { updateService } from './src/api/github/updateService';
 
 function App() {
   const [isInitialized, setIsInitialized] = useState(false);
@@ -35,6 +36,12 @@ function App() {
         // Load user settings
         await loadSettings();
         console.log('Settings loaded');
+
+        // Check for updates if enabled
+        const settings = useSettingsStore.getState().settings;
+        if (settings.autoCheckForUpdates) {
+          updateService.checkForUpdates();
+        }
 
         // Clean expired cache
         await Database.cleanExpiredCache();
