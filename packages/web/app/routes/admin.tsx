@@ -30,7 +30,12 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 
   const [users, stats] = await Promise.all([getAllUsers(db), getStats(db)]);
 
-  return json({ user, users, stats });
+  const processedUsers = users.map((u) => ({
+    ...u,
+    created_at_formatted: new Date(u.created_at).toLocaleString(),
+  }));
+
+  return json({ user, users: processedUsers, stats });
 }
 
 export async function action({ request, context }: ActionFunctionArgs) {
@@ -220,7 +225,7 @@ export default function Admin() {
                     color: "var(--color-text-grey)",
                   }}
                 >
-                  {new Date(u.created_at).toLocaleString()}
+                  {u.created_at_formatted}
                 </td>
                 <td
                   style={{

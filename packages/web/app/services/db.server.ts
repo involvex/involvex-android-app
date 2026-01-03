@@ -9,6 +9,7 @@ export interface User {
   github_id: string | null;
   created_at: number;
   updated_at: number;
+  created_at_formatted?: string;
 }
 
 export async function getUserByEmail(
