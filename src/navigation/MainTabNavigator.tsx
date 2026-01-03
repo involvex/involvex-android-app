@@ -22,12 +22,10 @@ export type MainTabParamList = {
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-const TabBarIcon = ({
-  name,
+const TabBarIcon = (name: string) => ({
   color,
   size,
 }: {
-  name: string;
   color: string;
   size: number;
 }) => <Icon name={name} size={size} color={color} />;
@@ -68,9 +66,7 @@ export const MainTabNavigator: React.FC = () => {
         options={{
           title: 'Trending Hub',
           tabBarLabel: 'Trending',
-          tabBarIcon: ({ color, size }) => (
-            <TabBarIcon name="fire" size={size} color={color} />
-          ),
+          tabBarIcon: TabBarIcon('fire'),
         }}
       />
       <Tab.Screen
@@ -78,9 +74,7 @@ export const MainTabNavigator: React.FC = () => {
         component={SearchScreen}
         options={{
           title: 'Search',
-          tabBarIcon: ({ color, size }) => (
-            <TabBarIcon name="magnify" size={size} color={color} />
-          ),
+          tabBarIcon: TabBarIcon('magnify'),
         }}
       />
       <Tab.Screen
@@ -89,9 +83,7 @@ export const MainTabNavigator: React.FC = () => {
         options={{
           title: 'Subscriptions',
           tabBarLabel: 'Subs',
-          tabBarIcon: ({ color, size }) => (
-            <TabBarIcon name="star" size={size} color={color} />
-          ),
+          tabBarIcon: TabBarIcon('star'),
         }}
       />
       <Tab.Screen
@@ -99,9 +91,7 @@ export const MainTabNavigator: React.FC = () => {
         component={SettingsScreen}
         options={{
           title: 'Settings',
-          tabBarIcon: ({ color, size }) => (
-            <TabBarIcon name="cog" size={size} color={color} />
-          ),
+          tabBarIcon: TabBarIcon('cog'),
         }}
       />
     </Tab.Navigator>
