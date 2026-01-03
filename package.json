@@ -2,8 +2,10 @@
   "name": "involvexapp",
   "version": "0.0.3",
   "author": {
-    "name": "Involvex"
+    "name": "Involvex",
+    "url": "https://involvex.github.io/Involvex/"
   },
+  "repository": "https://github.com/involvex/involvex-android-app.git",
   "private": true,
   "scripts": {
     "android": "react-native run-android",
@@ -34,6 +36,7 @@
     "immer": "^11.1.3",
     "react": "19.2.0",
     "react-native": "0.83.1",
+    "react-native-a": "^1.0.1",
     "react-native-app-auth": "^8.1.0",
     "react-native-fs": "^2.20.0",
     "react-native-gesture-handler": "^2.30.0",

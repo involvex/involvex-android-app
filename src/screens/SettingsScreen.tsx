@@ -23,6 +23,8 @@ import { Spacing } from '../theme/spacing';
 import { useSettingsStore } from '../store/settingsStore';
 import { useAuthStore, DiscordUser, GitHubUser } from '../store/authStore';
 import { UserSettings, UserSettingsData } from '../models/UserSettings';
+import pkg from '../../package.json';
+import A from 'react-native-a';
 
 type Section =
   | 'account'
@@ -139,6 +141,7 @@ export const SettingsScreen: React.FC = () => {
       Alert.alert('Link Error', 'Failed to link GitHub account');
     }
   };
+
 
   const renderSectionHeader = (
     section: Section,
@@ -582,7 +585,19 @@ export const SettingsScreen: React.FC = () => {
         <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
           <Icon name="restore" size={20} color={HackerTheme.errorRed} />
           <Text style={styles.resetButtonText}>Reset to Defaults</Text>
+          
         </TouchableOpacity>
+        
+        <View style={styles.authorContainer}>
+        <Text style={styles.author}>Author: {pkg.author.name}</Text>
+        <A style={styles.authorLink} href={pkg.author.url}>{pkg.author.url}</A>
+        </View>
+
+        <View style={styles.repositoryContainer}>
+          <Text style={styles.versionInfo}>App version: {pkg.version}</Text>
+        <Text style={styles.repositorylabel}>Repository: </Text>
+        <A style={styles.repository} href={pkg.repository}>{pkg.repository}</A>
+        </View>
       </View>
     </View>
   );
@@ -870,6 +885,59 @@ const styles = StyleSheet.create({
     ...Typography.captionText,
     color: HackerTheme.errorRed,
   },
+  versionInfo: {
+    ...Typography.captionText,
+    color: HackerTheme.textGrey,
+    textAlign: 'center',
+    marginTop: Spacing.md,
+  },
+  versionInfoLink: {
+    color: HackerTheme.primary,
+  },
+  authorContainer: {
+    alignItems: 'center',
+    borderStyle: 'solid',
+    borderWidth: 1,
+    borderColor: HackerTheme.accentGreen,
+    backgroundColor: HackerTheme.darkerGreen,
+
+    marginTop: Spacing.sm,
+    marginBottom: Spacing.sm,
+    borderRadius: '5%',
+  },
+  author: {
+    ...Typography.captionText,
+    color: HackerTheme.textGrey,
+    textAlign: 'center',
+    marginTop: Spacing.xs,
+  },
+  authorLink: {
+    color: HackerTheme.primary,
+    textAlign: 'center',
+    marginTop: Spacing.xs,
+    textDecorationLine: 'underline',
+  },
+  repository: {
+    color: HackerTheme.secondary,
+    textAlign: 'center',
+    marginTop: Spacing.xs,
+    textDecorationLine: 'underline',
+  },
+  repositorylabel: {
+    ...Typography.captionText,
+    color: HackerTheme.textGrey,
+    textAlign: 'center',
+    marginTop: Spacing.xs,
+  },
+  repositoryContainer: {
+    alignItems: 'center',
+    borderStyle: 'solid',
+    borderWidth: 1,
+    borderColor: HackerTheme.accentGreen,
+    backgroundColor: HackerTheme.darkerGreen,
+    marginTop: Spacing.sm,
+    borderRadius: '5%',
+  }
 });
 
 export default SettingsScreen;
