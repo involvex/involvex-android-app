@@ -36,4 +36,6 @@ export const onRequest = createPagesFunctionHandler({
 writeFileSync(join(functionsDir, "[[path]].js"), handlerContent.trim());
 
 console.log("Deploying to Cloudflare Pages...");
-run("npx", ["wrangler", "pages", "deploy", "build/client", "--project-name=involvex-app"]);
+// Note: Using 'app' as project name as 'involvex-app' creation failed. 
+// You can rename this in Cloudflare Dashboard if needed.
+run("npx", ["wrangler", "pages", "deploy", "build/client", "--project-name=app"]);

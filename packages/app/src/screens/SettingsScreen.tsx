@@ -365,7 +365,7 @@ export const SettingsScreen: React.FC = () => {
     <View style={styles.container}>
       <ScrollView style={styles.scrollView}>
         {/* Account Section */}
-        {renderSectionHeader('account', 'Account & Identity', 'account-cog', null)}
+        {renderSectionHeader('account', '👤 Account & Identity', 'account', null)}
         {expandedSections.has('account') && (
           <View style={styles.sectionContent}>
             {renderAccountSection()}
@@ -373,7 +373,7 @@ export const SettingsScreen: React.FC = () => {
         )}
 
         {/* Theme Section */}
-        {renderSectionHeader('theme', 'Visual Appearance', 'theme-light-dark', 2)}
+        {renderSectionHeader('theme', '🎨 Visual Appearance', 'palette', 2)}
         {expandedSections.has('theme') && (
           <View style={styles.sectionContent}>
             {renderSwitch('Dark Mode 🌙', 'isDarkMode')}
@@ -386,7 +386,7 @@ export const SettingsScreen: React.FC = () => {
         )}
 
         {/* Trending Section */}
-        {renderSectionHeader('trending', 'Trending Engine', 'trending-up', 5)}
+        {renderSectionHeader('trending', '🔥 Trending Engine', 'fire', 5)}
         {expandedSections.has('trending') && (
           <View style={styles.sectionContent}>
             {renderSegmentedControl('Default Timeframe ⏳', 'trendingTimeframe', [
@@ -405,7 +405,7 @@ export const SettingsScreen: React.FC = () => {
         )}
 
         {/* Notifications Section */}
-        {renderSectionHeader('notifications', 'System Alerts', 'bell-ring', 8)}
+        {renderSectionHeader('notifications', '🔔 System Alerts', 'bell', 8)}
         {expandedSections.has('notifications') && (
           <View style={styles.sectionContent}>
             {renderSwitch(
@@ -429,7 +429,7 @@ export const SettingsScreen: React.FC = () => {
         )}
 
         {/* Display Section */}
-        {renderSectionHeader('display', 'Interface Layout', 'cellphone-cog', 10)}
+        {renderSectionHeader('display', '🖥️ Interface Layout', 'monitor', 10)}
         {expandedSections.has('display') && (
           <View style={styles.sectionContent}>
             {renderSwitch('Compact Card View 📱', 'compactView')}
@@ -441,7 +441,7 @@ export const SettingsScreen: React.FC = () => {
         )}
 
         {/* Filter Section */}
-        {renderSectionHeader('filter', 'Discovery Filters', 'filter-variant', 8)}
+        {renderSectionHeader('filter', '🔍 Discovery Filters', 'filter', 8)}
         {expandedSections.has('filter') && (
           <View style={styles.sectionContent}>
             {renderTextInput('Default Min Stars ⭐', 'minStars', '10', 'numeric')}
@@ -456,7 +456,7 @@ export const SettingsScreen: React.FC = () => {
         )}
 
         {/* Privacy Section */}
-        {renderSectionHeader('privacy', 'Privacy & Security', 'security', 5)}
+        {renderSectionHeader('privacy', '🔒 Privacy & Security', 'shield-lock', 5)}
         {expandedSections.has('privacy') && (
           <View style={styles.sectionContent}>
             {renderSwitch('Usage Analytics 📈', 'enableAnalytics')}
@@ -465,7 +465,7 @@ export const SettingsScreen: React.FC = () => {
         )}
 
         {/* Data Section */}
-        {renderSectionHeader('data', 'Memory & Storage', 'database-cog', 7)}
+        {renderSectionHeader('data', '💾 Memory & Storage', 'database', 7)}
         {expandedSections.has('data') && (
           <View style={styles.sectionContent}>
             {renderSwitch('Offline Mode 🔌', 'enableOfflineMode')}
@@ -492,7 +492,7 @@ export const SettingsScreen: React.FC = () => {
         )}
 
         {/* Advanced Section */}
-        {renderSectionHeader('advanced', 'Advanced Protocols', 'console', 9)}
+        {renderSectionHeader('advanced', '⚙️ Advanced Protocols', 'cog', 9)}
         {expandedSections.has('advanced') && (
           <View style={styles.sectionContent}>
             {renderSwitch('Auto Check for Updates 🔄', 'autoCheckForUpdates')}

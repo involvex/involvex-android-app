@@ -31,7 +31,8 @@
     "deploy:web": "cd packages/web && bun run deploy",
     "deploy:db": "cd packages/database && bun run deploy",
     "gradle:stop": "cd packages/app && bun run gradle:stop",
-    "gradle:clean": "cd packages/app && bun run gradle:clean"
+    "gradle:clean": "cd packages/app && bun run gradle:clean",
+    "app:version:patch": "cd packages/app && bun pm version patch"
   },
   "devDependencies": {
     "@types/bun": "latest",

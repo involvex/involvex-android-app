@@ -1,9 +1,7 @@
 title: Involvex User Guide
 description: Neural-link dashboard for trending open-source protocols.
-theme: jekyll-theme-hacker
-baseurl: "/involvex-android-app"
-# Ensure the theme is loaded from GitHub
 remote_theme: pages-themes/hacker@v0.2.0
+baseurl: "/involvex-android-app"
 plugins:
   - jekyll-remote-theme
   - jekyll-relative-links
