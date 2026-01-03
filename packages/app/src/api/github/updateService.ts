@@ -37,6 +37,14 @@ class UpdateService {
         Alert.alert('No Updates', `You are running the latest version (${currentVersion}).`);
       }
     } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 404) {
+        console.log('No GitHub releases found for this repository.');
+        if (manual) {
+          Alert.alert('No Updates', 'No releases have been published yet.');
+        }
+        return;
+      }
+
       console.error('Failed to check for updates:', error);
       if (manual) {
         Alert.alert('Error', 'Failed to check for updates. Please check your connection.');
