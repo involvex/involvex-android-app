@@ -352,7 +352,7 @@ export const SettingsScreen: React.FC = () => {
         )}
 
         {/* Advanced Section */}
-        {renderSectionHeader('advanced', 'Advanced', 'cog', 6)}
+        {renderSectionHeader('advanced', 'Advanced', 'cog', 8)}
         {expandedSections.has('advanced') && (
           <View style={styles.sectionContent}>
             {renderSwitch('Debug Mode', 'enableDebugMode')}
@@ -370,6 +370,16 @@ export const SettingsScreen: React.FC = () => {
               'numeric'
             )} */}
             {renderSwitch('Enable Beta Features', 'enableBetaFeatures')}
+            {renderTextInput(
+              'GitHub Personal Access Token',
+              'githubToken',
+              'ghp_...',
+            )}
+            {renderTextInput(
+              'NPM Auth Token',
+              'npmToken',
+              'npm_...',
+            )}
             {/* {renderSwitch('Verbose Logging', 'verboseLogging')} */}
           </View>
         )}

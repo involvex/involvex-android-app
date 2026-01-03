@@ -56,13 +56,15 @@ export interface UserSettingsData {
   autoDeleteOldData: boolean;
   maxCacheSize: number; // MB
 
-  // Account Settings (6 fields)
+  // Account Settings (8 fields)
   discordUserId: string | null;
   discordUsername: string | null;
   discordAvatarUrl: string | null;
   discordEmail: string | null;
   isDiscordConnected: boolean;
   lastSync: Date | null;
+  githubToken: string | null;
+  npmToken: string | null;
 
   // Export Settings (3 fields)
   enableDataExport: boolean;
@@ -135,6 +137,8 @@ export class UserSettings implements UserSettingsData {
   discordEmail: string | null;
   isDiscordConnected: boolean;
   lastSync: Date | null;
+  githubToken: string | null;
+  npmToken: string | null;
 
   // Export
   enableDataExport: boolean;
@@ -208,6 +212,8 @@ export class UserSettings implements UserSettingsData {
     this.discordEmail = data?.discordEmail ?? null;
     this.isDiscordConnected = data?.isDiscordConnected ?? false;
     this.lastSync = data?.lastSync ?? null;
+    this.githubToken = data?.githubToken ?? null;
+    this.npmToken = data?.npmToken ?? null;
 
     // Export Settings
     this.enableDataExport = data?.enableDataExport ?? true;
@@ -269,6 +275,8 @@ export class UserSettings implements UserSettingsData {
       discordEmail: json.discordEmail,
       isDiscordConnected: json.isDiscordConnected,
       lastSync: json.lastSync ? new Date(json.lastSync) : null,
+      githubToken: json.githubToken,
+      npmToken: json.npmToken,
       enableDataExport: json.enableDataExport,
       preferredExportFormat: json.preferredExportFormat,
       includeMetadata: json.includeMetadata,
@@ -375,6 +383,8 @@ export class UserSettings implements UserSettingsData {
       discordEmail: this.discordEmail,
       isDiscordConnected: this.isDiscordConnected,
       lastSync: this.lastSync?.toISOString(),
+      githubToken: this.githubToken,
+      npmToken: this.npmToken,
       enableDataExport: this.enableDataExport,
       preferredExportFormat: this.preferredExportFormat,
       includeMetadata: this.includeMetadata,

@@ -5,6 +5,7 @@
 
 import axios, { AxiosInstance } from 'axios';
 import axiosRetry from 'axios-retry';
+import useSettingsStore from '../../store/settingsStore';
 
 class NpmClient {
   private client: AxiosInstance;
@@ -28,6 +29,15 @@ class NpmClient {
           (error.response?.status ?? 0) >= 500
         );
       },
+    });
+
+    // Add request interceptor for NPM Token (if available)
+    this.client.interceptors.request.use(config => {
+      const token = useSettingsStore.getState().settings.npmToken;
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
     });
   }
 
