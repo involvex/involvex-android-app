@@ -13,15 +13,19 @@ import {
   Switch,
   TextInput,
   Alert,
+  ActivityIndicator,
+  Image,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { HackerTheme } from '../theme/colors';
 import { Typography } from '../theme/typography';
 import { Spacing } from '../theme/spacing';
 import { useSettingsStore } from '../store/settingsStore';
+import { useAuthStore } from '../store/authStore';
 import { UserSettings, UserSettingsData } from '../models/UserSettings';
 
 type Section =
+  | 'account'
   | 'theme'
   | 'trending'
   | 'notifications'
@@ -34,8 +38,18 @@ type Section =
 export const SettingsScreen: React.FC = () => {
   const { settings, updateSettings, resetToDefaults, saving } =
     useSettingsStore();
+  const { 
+    signInWithDiscord, 
+    signInWithGitHub, 
+    signOut, 
+    isAuthenticated, 
+    user, 
+    provider, 
+    loading: authLoading 
+  } = useAuthStore();
+
   const [expandedSections, setExpandedSections] = useState<Set<Section>>(
-    new Set(),
+    new Set(['account']),
   );
   const [localSettings, setLocalSettings] = useState<UserSettings>(settings);
   const [hasChanges, setHasChanges] = useState(false);
@@ -89,11 +103,27 @@ export const SettingsScreen: React.FC = () => {
     );
   };
 
+  const handleDiscordLogin = async () => {
+    try {
+      await signInWithDiscord();
+    } catch {
+      Alert.alert('Login Error', 'Failed to sign in with Discord');
+    }
+  };
+
+  const handleGitHubLogin = async () => {
+    try {
+      await signInWithGitHub();
+    } catch {
+      Alert.alert('Login Error', 'Failed to sign in with GitHub');
+    }
+  };
+
   const renderSectionHeader = (
     section: Section,
     title: string,
     icon: string,
-    itemCount: number,
+    itemCount: number | null,
   ) => {
     const isExpanded = expandedSections.has(section);
     return (
@@ -105,7 +135,9 @@ export const SettingsScreen: React.FC = () => {
           <Icon name={icon} size={24} color={HackerTheme.primary} />
           <View>
             <Text style={styles.sectionTitle}>{title}</Text>
-            <Text style={styles.sectionSubtitle}>{itemCount} settings</Text>
+            {itemCount !== null && (
+              <Text style={styles.sectionSubtitle}>{itemCount} settings</Text>
+            )}
           </View>
         </View>
         <Icon
@@ -114,6 +146,69 @@ export const SettingsScreen: React.FC = () => {
           color={HackerTheme.lightGrey}
         />
       </TouchableOpacity>
+    );
+  };
+
+  const renderAccountSection = () => {
+    if (authLoading) {
+      return (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="small" color={HackerTheme.primary} />
+        </View>
+      );
+    }
+
+    if (isAuthenticated && user) {
+      const username = 'username' in user ? user.username : user.login;
+      const avatarUrl = 'avatar' in user 
+        ? user.avatar 
+        : 'avatar_url' in user 
+          ? user.avatar_url 
+          : null;
+
+      return (
+        <View style={styles.accountContainer}>
+          <View style={styles.userInfo}>
+            {avatarUrl ? (
+              <Image source={{ uri: avatarUrl }} style={styles.avatar} />
+            ) : (
+              <View style={styles.avatarPlaceholder}>
+                <Icon name="account" size={32} color={HackerTheme.darkerGreen} />
+              </View>
+            )}
+            <View>
+              <Text style={styles.userName}>{username}</Text>
+              <Text style={styles.userProvider}>
+                Signed in with {provider === 'discord' ? 'Discord' : 'GitHub'}
+              </Text>
+            </View>
+          </View>
+          
+          <TouchableOpacity style={styles.signOutButton} onPress={signOut}>
+            <Text style={styles.signOutText}>Sign Out</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.accountButtons}>
+        <TouchableOpacity 
+          style={[styles.loginButton, styles.discordButton]} 
+          onPress={handleDiscordLogin}
+        >
+          <Icon name="discord" size={20} color="#FFFFFF" />
+          <Text style={styles.loginButtonText}>Sign in with Discord</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.loginButton, styles.githubButton]} 
+          onPress={handleGitHubLogin}
+        >
+          <Icon name="github" size={20} color="#FFFFFF" />
+          <Text style={styles.loginButtonText}>Sign in with GitHub</Text>
+        </TouchableOpacity>
+      </View>
     );
   };
 
@@ -153,7 +248,7 @@ export const SettingsScreen: React.FC = () => {
       <Text style={styles.settingLabel}>{label}</Text>
       <TextInput
         style={styles.textInput}
-        value={String(localSettings[key])}
+        value={String(localSettings[key] || '')}
         onChangeText={value =>
           handleSettingChange(
             key,
@@ -201,6 +296,14 @@ export const SettingsScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <ScrollView style={styles.scrollView}>
+        {/* Account Section */}
+        {renderSectionHeader('account', 'Account', 'account', null)}
+        {expandedSections.has('account') && (
+          <View style={styles.sectionContent}>
+            {renderAccountSection()}
+          </View>
+        )}
+
         {/* Theme Section */}
         {renderSectionHeader('theme', 'Theme', 'palette', 2)}
         {expandedSections.has('theme') && (
@@ -562,6 +665,74 @@ const styles = StyleSheet.create({
   },
   resetButtonText: {
     ...Typography.bodyText,
+    color: HackerTheme.errorRed,
+  },
+  loadingContainer: {
+    padding: Spacing.md,
+    alignItems: 'center',
+  },
+  accountContainer: {
+    padding: Spacing.md,
+  },
+  userInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Spacing.md,
+  },
+  avatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginRight: Spacing.md,
+  },
+  avatarPlaceholder: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: HackerTheme.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: Spacing.md,
+  },
+  userName: {
+    ...Typography.heading3,
+    color: HackerTheme.primary,
+  },
+  userProvider: {
+    ...Typography.captionText,
+    color: HackerTheme.lightGrey,
+  },
+  accountButtons: {
+    padding: Spacing.md,
+    gap: Spacing.sm,
+  },
+  loginButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: Spacing.md,
+    borderRadius: 8,
+    gap: Spacing.sm,
+  },
+  discordButton: {
+    backgroundColor: '#5865F2',
+  },
+  githubButton: {
+    backgroundColor: '#24292e',
+  },
+  loginButtonText: {
+    ...Typography.buttonText,
+    color: '#FFFFFF',
+  },
+  signOutButton: {
+    padding: Spacing.md,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: HackerTheme.errorRed,
+    alignItems: 'center',
+  },
+  signOutText: {
+    ...Typography.buttonText,
     color: HackerTheme.errorRed,
   },
 });
