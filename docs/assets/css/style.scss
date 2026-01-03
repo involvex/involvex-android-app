@@ -1,0 +1,63 @@
+---
+---
+@import "{{ site.theme }}";
+
+:root {
+  --color-primary: #00FF41;
+  --color-secondary: #39FF14;
+  --color-dark-green: #0A3D0A;
+  --color-darker-green: #051A05;
+  --color-accent-green: #1AFF66;
+  --color-pure-black: #000000;
+  --color-text-grey: #B8B8B8;
+}
+
+body {
+  background-color: var(--color-pure-black) !important;
+  color: var(--color-primary) !important;
+  font-family: 'Courier New', Courier, monospace !important;
+  background-image: linear-gradient(rgba(0, 255, 65, 0.05) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(0, 255, 65, 0.05) 1px, transparent 1px) !important;
+  background-size: 20px 20px !important;
+}
+
+h1, h2, h3 {
+  color: var(--color-primary) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 2px !important;
+}
+
+.btn {
+  border: 1px solid var(--color-primary) !important;
+  background: transparent !important;
+  color: var(--color-primary) !important;
+  font-family: 'Courier New', Courier, monospace !important;
+}
+
+.btn:hover {
+  background: var(--color-primary) !important;
+  color: var(--color-pure-black) !important;
+}
+
+a {
+  color: var(--color-accent-green) !important;
+}
+
+a:hover {
+  color: var(--color-secondary) !important;
+}
+
+.inner {
+  max-width: 900px !important;
+}
+
+code, pre {
+  background-color: var(--color-dark-green) !important;
+  color: var(--color-secondary) !important;
+  border: 1px solid var(--color-primary) !important;
+}
+
+footer {
+  border-top: 1px solid var(--color-dark-green) !important;
+  color: var(--color-text-grey) !important;
+}
