@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*'  # Trigger on version tags like v0.0.3, v1.0.0, etc.
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -22,11 +25,10 @@ jobs:
       - name: Install Android SDK (platform 36, build-tools 36.0.0)
         uses: android-actions/setup-android@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: '22'
-          cache: 'npm'
+          bun-version: latest
 
       - name: Install dependencies with Bun
         run: bun install
@@ -51,8 +53,26 @@ jobs:
         working-directory: packages/app/android
         run: ./gradlew assembleDebug --no-daemon --stacktrace --info
 
+      - name: Get version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Prepare APK for Release
+        run: cp packages/app/android/app/build/outputs/apk/debug/app-debug.apk packages/app/android/app/build/outputs/apk/debug/involvex-${{ steps.version.outputs.VERSION }}-debug.apk
+
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: involvexapp-${{ github.ref_name }}-debug
-          path: packages/app/android/app/build/outputs/apk/debug/app-debug.apk
+          name: involvexapp-${{ steps.version.outputs.VERSION }}-debug
+          path: packages/app/android/app/build/outputs/apk/debug/involvex-${{ steps.version.outputs.VERSION }}-debug.apk
+
+      - name: Create GitHub Release (Draft)
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          generate_release_notes: true
+          name: Release ${{ steps.version.outputs.VERSION }}
+          files: |
+            packages/app/android/app/build/outputs/apk/debug/involvex-${{ steps.version.outputs.VERSION }}-debug.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

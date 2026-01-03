@@ -38,7 +38,7 @@ export default function Index() {
           border: '2px solid var(--color-accent-green)',
           display: 'inline-block'
         }}>
-          Dashboard (Coming Soon)
+          Dashboard
         </a>
       </div>
       <div style={{ marginTop: '4rem', padding: '2rem', border: '1px solid var(--color-dark-green)', backgroundColor: 'var(--color-darker-green)' }}>

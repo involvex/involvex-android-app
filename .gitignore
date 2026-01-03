@@ -83,3 +83,5 @@ packages/app/.env
 # Wrangler local development
 .wrangler/
 **/.wrangler/
+
+.claude/lastplan.txt

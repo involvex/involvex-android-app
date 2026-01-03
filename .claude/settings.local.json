@@ -70,7 +70,19 @@
       "Bash(wrangler pages project create:*)",
       "Bash(wrangler pages deploy:*)",
       "WebFetch(domain:involvex-api.involvex.workers.dev)",
-      "WebFetch(domain:baa828f7.app-3p4.pages.dev)"
+      "WebFetch(domain:baa828f7.app-3p4.pages.dev)",
+      "WebFetch(domain:e2a3b320.app-3p4.pages.dev)",
+      "WebFetch(domain:38a717b0.app-3p4.pages.dev)",
+      "WebFetch(domain:dd5fe422.app-3p4.pages.dev)",
+      "Bash(curl -s https://dd5fe422.app-3p4.pages.dev/)",
+      "Bash(curl:*)",
+      "WebFetch(domain:760b59fc.app-3p4.pages.dev)",
+      "Bash(timeout 10 bun run dev:*)",
+      "Bash(git reset:*)",
+      "Bash(git rm:*)",
+      "Bash(del nul)",
+      "Bash(del packageswebnul)",
+      "Bash(test:*)"
     ]
   },
   "hooks": {
