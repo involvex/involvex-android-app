@@ -548,7 +548,10 @@ const styles = StyleSheet.create({
   },
   statText: {
     ...Typography.captionText,
-    color: HackerTheme.lightGrey,
+    ...Typography.bodyText,
+    color: HackerTheme.darkGrey,
+    fontWeight: '800',
+    fontFamily: 'monospace'
   },
   languageBadge: {
     flexDirection: 'row',
@@ -562,7 +565,7 @@ const styles = StyleSheet.create({
   },
   languageText: {
     ...Typography.captionText,
-    color: HackerTheme.lightGrey,
+    color: HackerTheme.darkGrey,
   },
   loadingContainer: {
     flex: 1,
