@@ -20,6 +20,7 @@ interface SettingsState {
   loadSettings: () => Promise<void>;
   updateSettings: (updates: Partial<UserSettings>) => Promise<void>;
   resetToDefaults: () => Promise<void>;
+  ClearCache: () => Promise<void>;
   getSetting: <K extends keyof UserSettings>(key: K) => UserSettings[K];
 }
 
@@ -124,6 +125,18 @@ export const useSettingsStore = create<SettingsState>()(
         console.log('Settings reset to defaults');
       } catch (error) {
         console.error('Error resetting settings:', error);
+        throw error;
+      }
+    },
+    ClearCache: async () => {
+      try {
+        await AsyncStorage.removeItem(SETTINGS_KEY);
+        set(state => {
+          state.settings = new UserSettings();
+        });
+        console.log('Cache cleared');
+      } catch (error) {
+        console.error('Error clearing cache:', error);
         throw error;
       }
     },

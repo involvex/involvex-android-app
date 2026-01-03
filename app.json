@@ -2,5 +2,6 @@
   "name": "InvolvexApp",
   "displayName": "Involvex App",
   "owner": "Involvex",
-  "slug": "InvolvexApp"
+  "slug": "InvolvexApp",
+  "githubUrl": "https://github.com/involvex/involvex-android-app"
 }

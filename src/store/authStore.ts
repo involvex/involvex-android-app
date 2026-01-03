@@ -137,14 +137,16 @@ export const useAuthStore = create<AuthState>()(
         });
 
         const result = await authorize(discordConfig);
-
+        console.log('Discord OAuth result:', result);
         // Fetch user info
         const userResponse = await fetch('https://discord.com/api/users/@me', {
           headers: {
             Authorization: `Bearer ${result.accessToken}`,
           },
         });
+        console.log('Discord user info:', userResponse);
         const discordUser = await userResponse.json();
+        console.log('Discord user info:', discordUser);
 
         const user: DiscordUser = {
           id: discordUser.id,
@@ -174,14 +176,16 @@ export const useAuthStore = create<AuthState>()(
         });
 
         const result = await authorize(githubConfig);
-
+        console.log('GitHub OAuth result:', result);
         // Fetch user info
         const userResponse = await fetch('https://api.github.com/user', {
           headers: {
             Authorization: `Bearer ${result.accessToken}`,
           },
         });
+        console.log('GitHub user info:', userResponse);
         const githubUser = await userResponse.json();
+        console.log('GitHub user info:', githubUser);
 
         const user: GitHubUser = {
           id: githubUser.id,

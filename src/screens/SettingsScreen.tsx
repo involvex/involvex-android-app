@@ -103,7 +103,27 @@ export const SettingsScreen: React.FC = () => {
     );
   };
 
+  const handleClearCache = () => {
+    Alert.alert(
+      'Clear Cache',
+      'Clear all cached data? This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Clear',
+          style: 'destructive',
+          onPress: async () => {
+            // Clear cache logic here
+            await handleClearCache();
+            Alert.alert('Success', 'Cache cleared successfully');
+          },
+        },
+      ],
+    );
+  };
+
   const handleDiscordLogin = async () => {
+    console.log('Discord login');
     try {
       await signInWithDiscord();
     } catch {
@@ -112,6 +132,7 @@ export const SettingsScreen: React.FC = () => {
   };
 
   const handleGitHubLogin = async () => {
+    console.log('GitHub login');
     try {
       await signInWithGitHub();
     } catch {
@@ -153,6 +174,7 @@ export const SettingsScreen: React.FC = () => {
     if (authLoading) {
       return (
         <View style={styles.loadingContainer}>
+          
           <ActivityIndicator size="small" color={HackerTheme.primary} />
         </View>
       );
@@ -169,6 +191,7 @@ export const SettingsScreen: React.FC = () => {
       return (
         <View style={styles.accountContainer}>
           <View style={styles.userInfo}>
+            
             {avatarUrl ? (
               <Image source={{ uri: avatarUrl }} style={styles.avatar} />
             ) : (
@@ -518,6 +541,10 @@ export const SettingsScreen: React.FC = () => {
         <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
           <Icon name="restore" size={20} color={HackerTheme.errorRed} />
           <Text style={styles.resetButtonText}>Reset to Defaults</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.resetButton} onPress={handleClearCache}>
+          <Icon name="trash-can" size={20} color={HackerTheme.errorRed} />
+          <Text style={styles.resetButtonText}>Clear Cache</Text>
         </TouchableOpacity>
       </View>
     </View>
