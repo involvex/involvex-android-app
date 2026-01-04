@@ -128,7 +128,7 @@ export const useInfoCard = create<InfoCardState>()(
         state.loading = false;
       });
     },
-  }))
+  })),
 );
 
 export default useInfoCard;

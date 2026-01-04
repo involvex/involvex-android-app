@@ -1,478 +1,852 @@
-# Implementation Plan: TrendingHub Feature Enhancements
+# Mobile SearchScreen & Web Dashboard Enhancement Plan
 
 ## Overview
 
-This plan covers fixing the Android release build, improving version management, and adding AI-powered chat features to help users understand GitHub repos and npm packages.
-
-## Task 1: Fix release:android Script ⚡ (Quick Fix)
-
-**Problem**: Script uses `--tasks AssembleRelease` but Gradle task is case-sensitive `assembleRelease`
-
-**Solution**:
-
-- Update `packages/app/package.json` line 14
-- Change from: `"release:android": "react-native build-android --tasks AssembleRelease"`
-- Change to: `"release:android": "react-native build-android --mode release"`
-
-**Files Modified**:
-
-- `packages/app/package.json`
-
-**Risk**: Low - This is the recommended React Native CLI approach
+Comprehensive UI/UX improvements across mobile app SearchScreen and web package:
+1. **SearchScreen** - Add AI integration, consolidate filters, improve visual polish
+2. **Web Navigation** - Create shared HackerTheme navigation component
+3. **Web Dashboard** - Add new features and enhance visual design
+4. **Deployment** - Commit, create release, deploy web
 
 ---
 
-## Task 2: Improve Version Management Script 🏷️
+## Part 1: Mobile SearchScreen Enhancements
 
-**Current Issues**:
+### A. Add AI Chat Integration
 
-- No error handling or rollback
-- No validation of clean working directory
-- Creates lightweight tags (no release notes)
-- No remote push automation
-- Only supports patch bumps
+**Goal:** Match HomeScreen's AI integration with FAB and long-press support
 
-**Enhanced Script Design** (`scripts/bump-app-version.js`):
+**Files to modify:**
+- `packages/app/src/screens/SearchScreen.tsx`
 
-### Features to Add:
+**Changes:**
 
-1. **Pre-flight checks**:
+1. **Import AI chat store:**
+```typescript
+import { useAIChatStore } from '../store/aiChatStore';
+import { useInfoCard } from '../store/InfoCard';
+import { useSettingsStore } from '../store/settingsStore';
+```
 
-   - Verify git working directory is clean
-   - Validate current branch (should be on main/monorepo-migration)
-   - Run typecheck before bumping
+2. **Add store hooks in component:**
+```typescript
+const openChat = useAIChatStore(state => state.openChat);
+const openInfoCard = useInfoCard(state => state.openInfoCard);
+const enableInfoCardPreview = useSettingsStore(
+  state => state.settings.enableInfoCardPreview
+);
+```
 
-2. **Safe git operations**:
+3. **Update card press handlers:**
+```typescript
+// In renderGitHubItem
+const handleItemPress = () => {
+  if (enableInfoCardPreview) {
+    openInfoCard(item);
+  } else if (item.htmlUrl) {
+    Linking.openURL(item.htmlUrl);
+  }
+};
 
-   - Create annotated tags with release notes
-   - Rollback on failure
-   - Optional `--push` flag to push commits and tags
-   - Dry-run mode with `--dry-run` flag
+// In renderNpmItem
+const handleItemPress = () => {
+  if (enableInfoCardPreview) {
+    openInfoCard(item);
+  } else if (item.npmUrl) {
+    Linking.openURL(item.npmUrl);
+  }
+};
+```
 
-3. **Version type support**:
+4. **Add long-press support to cards:**
+```typescript
+<TouchableOpacity
+  onPress={handleItemPress}
+  onLongPress={() => openChat(item)}  // NEW
+  activeOpacity={0.9}
+>
+```
 
-   - Support `--patch` (default), `--minor`, `--major` flags
-   - Consistent tag naming: `v{version}` format
+5. **Add Floating Action Button (FAB):**
+```typescript
+// At bottom of render, before closing </View>
+<TouchableOpacity
+  style={styles.fab}
+  onPress={() => openChat(null)}
+  activeOpacity={0.9}
+>
+  <Icon name="robot" size={28} color={HackerTheme.background} />
+</TouchableOpacity>
+```
 
-4. **Better output**:
-   - Show what changed
-   - Confirm before creating tag
-   - Show next steps if not auto-pushing
-
-**Implementation Steps**:
-
-1. Add command-line argument parsing (using process.argv)
-2. Add git status check function
-3. Add typecheck execution
-4. Add rollback capability (git reset --hard)
-5. Add annotated tag creation with template
-6. Add optional push to remote
-7. Add colorized console output
-
-**Files Modified**:
-
-- `scripts/bump-app-version.js` (rewrite with enhanced features)
-
-**New Commands**:
-
-```bash
-bun run app:version:patch           # Bump patch version
-bun run app:version:minor           # Bump minor version (add to package.json)
-bun run app:version:major           # Bump major version (add to package.json)
-bun run app:version:patch --push    # Bump and push to remote
-bun run app:version:patch --dry-run # Preview changes without executing
+6. **Add FAB styles:**
+```typescript
+fab: {
+  position: 'absolute',
+  bottom: Spacing.xl,
+  right: Spacing.xl,
+  width: 64,
+  height: 64,
+  borderRadius: 32,
+  backgroundColor: HackerTheme.primary,
+  justifyContent: 'center',
+  alignItems: 'center',
+  elevation: 8,
+  shadowColor: HackerTheme.primary,
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.3,
+  shadowRadius: 8,
+},
 ```
 
 ---
 
-## Task 3: Add AI Provider API Keys to Settings 🔐
+### B. Consolidate Filter UI
 
-**Providers**: Google Gemini + Local/Ollama
+**Goal:** Unify quick filters, category filters, and advanced filters into clean header
 
-**UserSettings Model Changes** (`packages/app/src/models/UserSettings.ts`):
+**Current Issues:**
+- 3 separate filter systems (quick, category, advanced)
+- Advanced filters hidden in collapsible panel
+- User confusion about which to use
 
-Add new fields in "Advanced Settings" section:
+**Solution:**
 
+1. **Remove advanced filters panel** - integrate into header
+
+2. **Create unified filter header:**
 ```typescript
-// AI Provider Settings (new section, 4 fields)
-geminiApiKey: string | null;
-geminiModel: "gemini-pro" | "gemini-flash";
-ollamaEndpoint: string | null; // e.g., http://localhost:11434
-ollamaModel: string | null; // e.g., llama2, mistral
-enableAIFeatures: boolean;
+const renderFilters = () => (
+  <View style={styles.filterSection}>
+    {/* Active filters display */}
+    {hasActiveFilters && (
+      <View style={styles.activeFilters}>
+        {selectedLanguage && (
+          <Chip label={selectedLanguage} onRemove={() => setSelectedLanguage('')} />
+        )}
+        {minStars > 0 && (
+          <Chip label={`⭐ ${minStars}+`} onRemove={() => setMinStars(0)} />
+        )}
+        <TouchableOpacity onPress={clearAllFilters}>
+          <Text style={styles.clearAll}>Clear all</Text>
+        </TouchableOpacity>
+      </View>
+    )}
+
+    {/* Filter toggle buttons */}
+    <View style={styles.filterButtons}>
+      <TouchableOpacity onPress={() => setShowFilters(!showFilters)}>
+        <Icon name="filter-variant" size={24} color={HackerTheme.primary} />
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => setSortMenuOpen(!sortMenuOpen)}>
+        <Icon name="sort" size={24} color={HackerTheme.primary} />
+      </TouchableOpacity>
+    </View>
+  </View>
+);
 ```
 
-**Security Implementation**:
-
-- Use `react-native-keychain` for encrypted storage (already in dependencies)
-- Store AI keys separately from AsyncStorage
-- Create `src/utils/secureStorage.ts` helper
-- Keys stored with keychain keys: `@secure:gemini_key`, `@secure:ollama_endpoint`
-
-**SettingsScreen UI** (`packages/app/src/screens/SettingsScreen.tsx`):
-
-Add new collapsible section "AI Assistant Settings 🤖" after "Advanced Protocols":
-
-- Enable AI Features toggle
-- Gemini API Key input (secure text)
-- Gemini Model selector (dropdown: gemini-pro, gemini-flash)
-- Ollama Endpoint input
-- Ollama Model input
-- Test connection button
-
-**Files Modified**:
-
-- `packages/app/src/models/UserSettings.ts` (add AI fields)
-- `packages/app/src/screens/SettingsScreen.tsx` (add AI settings section ~50 lines)
-- `packages/app/src/utils/secureStorage.ts` (NEW - keychain wrapper)
+3. **Move npm categories to horizontal scroll below search**
+4. **Show filter count badge on filter icon when filters active**
+5. **Add "Clear all" quick action when filters are active**
 
 ---
 
-## Task 4: Build AI Chat Feature 💬
+### C. Improve Visual Polish
 
-**Architecture**: Bottom sheet that slides up from bottom of screen
+**Changes:**
 
-### 4.1 Create AI Service Layer
-
-**Files to Create**:
-
-1. **`packages/app/src/api/ai/aiClient.ts`**:
-
-   - Gemini API client (using fetch)
-   - Ollama API client (using fetch)
-   - Unified interface for both providers
-   - Token streaming support
-   - Error handling and retry logic
-
-2. **`packages/app/src/api/ai/aiService.ts`**:
-
-   - High-level service methods
-   - `sendMessage(message, context?)` - Send user message
-   - `explainRepo(repo: GitHubRepository)` - Explain what repo does
-   - `explainPackage(pkg: NpmPackage)` - Explain npm package
-   - `compareAlternatives(item, alternatives[])` - Compare packages
-   - Context preparation (format repo/package data for AI)
-
-3. **`packages/app/src/api/ai/prompts.ts`**:
-   - System prompts for each use case
-   - Context formatting templates
-   - Example prompts for users
-
-### 4.2 Create AI Store
-
-**File**: `packages/app/src/store/aiChatStore.ts`
-
-State:
-
+1. **Stats display consistency** - Match HomeScreen bold monospace style:
 ```typescript
-{
-  messages: ChatMessage[];          // Conversation history
-  isOpen: boolean;                  // Bottom sheet open/closed
-  loading: boolean;                 // AI is responding
-  activeProvider: 'gemini' | 'ollama';
-  currentContext: GitHubRepository | NpmPackage | null;
-  error: string | null;
+statsText: {
+  fontSize: 14,
+  color: HackerTheme.primary,
+  fontFamily: 'monospace',
+  fontWeight: '600',  // NEW
+},
+```
+
+2. **Enhanced empty state:**
+```typescript
+renderEmptyState = () => (
+  <View style={styles.emptyContainer}>
+    <Icon name="magnify" size={64} color={HackerTheme.darkGreen} />
+    <Text style={styles.emptyTitle}>No results found</Text>
+    <Text style={styles.emptySubtitle}>
+      Try different keywords or filters
+    </Text>
+  </View>
+);
+```
+
+3. **Error state with retry:**
+```typescript
+{error && (
+  <View style={styles.errorContainer}>
+    <Icon name="alert-circle" size={48} color={HackerTheme.error} />
+    <Text style={styles.errorText}>{error}</Text>
+    <TouchableOpacity onPress={handleRetry} style={styles.retryButton}>
+      <Text style={styles.retryText}>Retry</Text>
+    </TouchableOpacity>
+  </View>
+)}
+```
+
+4. **Add pull-to-refresh:**
+```typescript
+<FlashList
+  refreshControl={
+    <RefreshControl
+      refreshing={loading}
+      onRefresh={handleRefresh}
+      tintColor={HackerTheme.primary}
+      colors={[HackerTheme.primary]}
+    />
+  }
+  // ... other props
+/>
+```
+
+5. **Improve Recently Updated cards:**
+```typescript
+// Increase card width from 140 to 180
+// Add version badge
+// Show update date relative time
+// Add subtle gradient background
+```
+
+---
+
+## Part 2: Web Navigation Component
+
+### A. Create Shared Navigation Component
+
+**New file:** `packages/web/app/components/Navigation.tsx`
+
+**Purpose:** Centralized navigation used across all pages (dashboard, profile, admin, changelog)
+
+**Features:**
+- HackerTheme styling matching existing pages
+- Responsive layout (mobile hamburger menu)
+- Conditional links based on user role/auth state
+- Active route highlighting
+
+**Structure:**
+```tsx
+interface NavigationProps {
+  username?: string;
+  isAdmin?: boolean;
+  currentPath?: string;
+}
+
+export function Navigation({ username, isAdmin, currentPath }: NavigationProps) {
+  return (
+    <nav style={styles.nav}>
+      <div style={styles.navLeft}>
+        <Link to="/" style={styles.logo}>
+          <span className="hacker-text">[ INVOLVEX ]</span>
+        </Link>
+      </div>
+
+      <div style={styles.navRight}>
+        {username ? (
+          <>
+            <Link to="/dashboard" style={currentPath === '/dashboard' ? styles.activeLink : styles.link}>
+              DASHBOARD
+            </Link>
+            <Link to="/changelog" style={currentPath === '/changelog' ? styles.activeLink : styles.link}>
+              CHANGELOG
+            </Link>
+            {isAdmin && (
+              <Link to="/admin" style={styles.link}>
+                ADMIN
+              </Link>
+            )}
+            <Link to="/profile" style={styles.link}>
+              {username}
+            </Link>
+          </>
+        ) : (
+          <>
+            <Link to="/auth/login" style={styles.link}>LOGIN</Link>
+            <Link to="/auth/signup" style={styles.link}>SIGN UP</Link>
+          </>
+        )}
+      </div>
+    </nav>
+  );
 }
 ```
 
-Actions:
-
-- `openChat(context?)` - Open bottom sheet, optionally with repo/package context
-- `closeChat()` - Close bottom sheet
-- `sendMessage(text)` - Send message to AI
-- `clearHistory()` - Clear conversation
-- `switchProvider(provider)` - Change AI provider
-- `loadHistory()` - Load from SQLite
-- `saveHistory()` - Persist to SQLite
-
-### 4.3 Create Database Table
-
-**File**: `packages/app/src/database/schema.ts`
-
-Add new table:
-
-```sql
-CREATE TABLE IF NOT EXISTS ai_chat_messages (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  role TEXT NOT NULL,              -- 'user' | 'assistant' | 'system'
-  content TEXT NOT NULL,
-  context_type TEXT,               -- 'repo' | 'package' | null
-  context_id TEXT,                 -- repo full_name or package name
-  provider TEXT NOT NULL,          -- 'gemini' | 'ollama'
-  model TEXT NOT NULL,
-  created_at TEXT NOT NULL,
-  token_count INTEGER
-);
-
-CREATE INDEX IF NOT EXISTS idx_chat_created ON ai_chat_messages(created_at);
+**Styling:**
+```typescript
+const styles = {
+  nav: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '1rem 2rem',
+    borderBottom: '1px solid var(--color-dark-green)',
+    backgroundColor: 'var(--color-darker-green)',
+  },
+  navLeft: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+  logo: {
+    fontSize: '1.5rem',
+    fontWeight: 'bold',
+    textDecoration: 'none',
+  },
+  navRight: {
+    display: 'flex',
+    gap: '1.5rem',
+    alignItems: 'center',
+  },
+  link: {
+    color: 'var(--color-primary)',
+    textDecoration: 'none',
+    fontSize: '0.9rem',
+    fontWeight: '500',
+    padding: '0.5rem 1rem',
+    border: '1px solid transparent',
+    transition: 'all 0.2s',
+  },
+  activeLink: {
+    color: 'var(--color-primary)',
+    textDecoration: 'none',
+    fontSize: '0.9rem',
+    fontWeight: '500',
+    padding: '0.5rem 1rem',
+    border: '1px solid var(--color-primary)',
+    backgroundColor: 'rgba(0, 255, 65, 0.1)',
+  },
+};
 ```
 
-### 4.4 Create Chat UI Components
+---
 
-**Files to Create**:
+### B. Update Changelog Page
 
-1. **`packages/app/src/components/AIChat/AIChatBottomSheet.tsx`** (Main Component):
+**File:** `packages/web/app/routes/changelog.tsx`
 
-   - Bottom sheet using `react-native-gesture-handler`
-   - Backdrop with blur effect
-   - Draggable handle
-   - Height: 60% of screen, can expand to 90%
-   - Context badge showing current repo/package
-   - Provider selector (Gemini/Ollama badge)
+**Changes:**
 
-2. **`packages/app/src/components/AIChat/MessageList.tsx`**:
+1. **Import Navigation component:**
+```tsx
+import { Navigation } from '~/components/Navigation';
+```
 
-   - FlashList for message rendering
-   - User messages (right-aligned, green bubble)
-   - AI messages (left-aligned, cyan bubble)
-   - System messages (centered, dimmed)
-   - Auto-scroll to bottom on new message
-   - Timestamp and token count display
+2. **Get user context from loader:**
+```tsx
+export async function loader({ request }: LoaderFunctionArgs) {
+  const user = await getUser(request);
+  const changelogs = getChangelogData();
+  return json({ changelogs, user });
+}
+```
 
-3. **`packages/app/src/components/AIChat/MessageInput.tsx`**:
+3. **Add Navigation to page:**
+```tsx
+export default function ChangelogPage() {
+  const { changelogs, user } = useLoaderData<typeof loader>();
 
-   - TextInput with HackerTheme styling
-   - Send button with icon
-   - Loading indicator when AI is responding
-   - Quick action buttons:
-     - "Explain this repo" (if context is repo)
-     - "Compare alternatives" (if context exists)
-     - "Show release notes" (if repo has releases)
+  return (
+    <>
+      <Navigation
+        username={user?.username}
+        isAdmin={user?.role === 'admin'}
+        currentPath="/changelog"
+      />
 
-4. **`packages/app/src/components/AIChat/ContextCard.tsx`**:
-   - Shows current repo/package context
-   - Displays: name, stars, description
-   - Clear context button
+      <div className="container" style={{ padding: '2rem' }}>
+        {/* Existing changelog content */}
+      </div>
+    </>
+  );
+}
+```
 
-### 4.5 Integrate into Existing Screens
+4. **Convert Tailwind styling to HackerTheme:**
+```tsx
+// Replace: className="bg-slate-900 text-slate-100"
+// With: style={{ backgroundColor: 'var(--color-darker-green)', color: 'var(--color-primary)' }}
 
-**HomeScreen Integration** (`packages/app/src/screens/HomeScreen.tsx`):
+// Replace: className="bg-emerald-500"
+// With: style={{ backgroundColor: 'var(--color-primary)' }}
 
-- Add floating action button (FAB) in bottom-right corner
-- On repo/package item long-press → open chat with context
-- FAB opens chat without context (general Q&A)
+// Replace: className="text-emerald-400"
+// With: style={{ color: 'var(--color-primary)' }}
+```
 
-**Files Modified**:
-
-- `packages/app/src/screens/HomeScreen.tsx` (add FAB, long-press handlers)
-- `packages/app/App.tsx` (render AIChatBottomSheet at root level)
-
-### 4.6 Implementation Order
-
-1. Create database table and migration
-2. Create secure storage utility
-3. Add AI settings to UserSettings model
-4. Add AI settings UI to SettingsScreen
-5. Create AI API clients (Gemini + Ollama)
-6. Create AI service with prompts
-7. Create aiChatStore with Zustand
-8. Create UI components (BottomSheet, MessageList, MessageInput, ContextCard)
-9. Integrate FAB into HomeScreen
-10. Add long-press handlers to repo/package items
-11. Render bottom sheet in App.tsx
-12. Test with both providers
-
-**Estimated Files**:
-
-- **New**: 12 files
-- **Modified**: 5 files
-- **Complexity**: Medium-High (new feature with external API integration)
+5. **Update changelog card styling:**
+```tsx
+<div style={{
+  backgroundColor: 'var(--color-darker-green)',
+  border: '1px solid var(--color-dark-green)',
+  borderRadius: '8px',
+  padding: '1.5rem',
+  marginBottom: '1.5rem',
+}}>
+```
 
 ---
 
-## Task 5: Extend App and Web Features 🚀
+## Part 3: Web Dashboard Enhancements
 
-### Mobile App Extensions
+### A. Add New Dashboard Features
 
-1. **SearchScreen Implementation**:
+**File:** `packages/web/app/routes/dashboard.tsx`
 
-   - Search both GitHub repos and npm packages
-   - Filter by language, stars, date range
-   - Recent searches history
-   - Search suggestions
+**New Features to Add:**
 
-2. **SubscriptionsScreen Implementation**:
+1. **Activity Feed Widget**
 
-   - List of subscribed repos/packages
-   - Swipe-to-unsubscribe
-   - Filter by type (repo/package)
-   - Sort by recently added
-   - Sync with cloud (if web deployed)
+New component: `packages/web/app/components/dashboard/ActivityFeed.tsx`
 
-3. **Release Notifications**:
+```tsx
+interface Activity {
+  id: string;
+  type: 'subscription' | 'release' | 'trending';
+  itemName: string;
+  timestamp: string;
+  metadata: string;
+}
 
-   - Background polling for new releases
-   - Push notifications using existing notification system
-   - Mark as read/unread
-   - Open release notes in WebView
+export function ActivityFeed({ activities }: { activities: Activity[] }) {
+  return (
+    <div style={styles.feedContainer}>
+      <h3 className="hacker-text">Recent Activity</h3>
+      <div style={styles.activityList}>
+        {activities.map(activity => (
+          <div key={activity.id} style={styles.activityItem}>
+            <div style={styles.activityIcon}>
+              {getIcon(activity.type)}
+            </div>
+            <div style={styles.activityContent}>
+              <p style={styles.activityName}>{activity.itemName}</p>
+              <p style={styles.activityMeta}>{activity.metadata}</p>
+            </div>
+            <span style={styles.activityTime}>{activity.timestamp}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
 
-4. **Sharing Features**:
-   - Share repo/package link
-   - Share AI chat conversation
-   - Export chat as text/markdown
+2. **Quick Actions Panel**
 
-### Web Platform Extensions (`packages/web`)
+```tsx
+export function QuickActions() {
+  return (
+    <div style={styles.quickActionsContainer}>
+      <h3 className="hacker-text">Quick Actions</h3>
+      <div style={styles.actionGrid}>
+        <ActionButton
+          icon="magnify"
+          label="Search"
+          onClick={() => window.location.href = '/search'}
+        />
+        <ActionButton
+          icon="star"
+          label="Trending"
+          onClick={() => scrollTo('#trending')}
+        />
+        <ActionButton
+          icon="cog"
+          label="Settings"
+          onClick={() => window.location.href = '/profile'}
+        />
+        <ActionButton
+          icon="chart-line"
+          label="Analytics"
+          onClick={() => alert('Coming soon')}
+        />
+      </div>
+    </div>
+  );
+}
+```
 
-1. **Landing Page Features**:
+3. **Notifications Widget**
 
-   - Hero section with demo
-   - Feature showcase
-   - Download links (Play Store placeholder)
-   - Trending repos widget (live data)
+```tsx
+export function NotificationsWidget({ notifications }: { notifications: Notification[] }) {
+  return (
+    <div style={styles.notificationContainer}>
+      <div style={styles.notificationHeader}>
+        <h3 className="hacker-text">Notifications</h3>
+        <span style={styles.badge}>{notifications.length}</span>
+      </div>
+      <div style={styles.notificationList}>
+        {notifications.slice(0, 5).map(notif => (
+          <div key={notif.id} style={styles.notificationItem}>
+            <div style={styles.notificationDot} />
+            <p style={styles.notificationText}>{notif.message}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
 
-2. **Dashboard Features** (if authentication added):
+4. **Update Dashboard Layout:**
 
-   - View subscriptions across devices
-   - Analytics (most viewed repos, engagement)
-   - Sync settings with mobile app
-   - Export user data
+```tsx
+// Add new sections to dashboard.tsx
+<div style={styles.dashboardGrid}>
+  {/* Row 1: Stats cards */}
+  <div style={styles.statsRow}>
+    <StatsCard title="Trending Repos" value={githubCount} icon="code" />
+    <StatsCard title="Trending Packages" value={npmCount} icon="npm" />
+    <StatsCard title="Subscriptions" value={subscriptions.length} icon="star" />
+  </div>
 
-3. **Public Repo/Package Pages**:
-   - SEO-friendly pages for trending items
-   - Server-side rendering with Remix
-   - Share links that preview with Open Graph tags
-   - Comments/discussion (future feature)
+  {/* Row 2: Activity + Quick Actions */}
+  <div style={styles.contentRow}>
+    <ActivityFeed activities={recentActivity} />
+    <QuickActions />
+  </div>
 
-### Shared Package Utilities
+  {/* Row 3: Notifications */}
+  <NotificationsWidget notifications={notifications} />
 
-Add to `packages/shared`:
+  {/* Row 4: Existing trending lists */}
+  <div style={styles.trendingRow}>
+    <TrendingList items={githubRepos} type="github" />
+    <TrendingList items={npmPackages} type="npm" />
+  </div>
 
-- AI prompt templates (shared between mobile and web)
-- Markdown parser for release notes
-- Date/time utilities (shared formatting)
-- Validation schemas for API responses
-
----
-
-## Implementation Priorities
-
-### Phase 1 (Quick Wins):
-
-1. ✅ Fix release:android script (5 min)
-2. ✅ Improve version management script (1-2 hours)
-
-### Phase 2 (AI Foundation):
-
-3. ✅ Add secure storage utility (30 min)
-4. ✅ Add AI settings to model and UI (1 hour)
-5. ✅ Create AI API clients (2-3 hours)
-
-### Phase 3 (AI Chat Core):
-
-6. ✅ Create database table for messages (30 min)
-7. ✅ Create aiChatStore (1 hour)
-8. ✅ Build bottom sheet UI components (3-4 hours)
-9. ✅ Integrate into HomeScreen (1 hour)
-
-### Phase 4 (Polish & Test):
-
-10. ✅ Test with Gemini API (1 hour)
-11. ✅ Test with Ollama locally (1 hour)
-12. ✅ Error handling and edge cases (2 hours)
-
-### Phase 5 (Extended Features - Future):
-
-13. 🔄 Implement SearchScreen
-14. 🔄 Implement SubscriptionsScreen
-15. 🔄 Add web dashboard features
-
----
-
-## Critical Files Reference
-
-### Files to Modify:
-
-1. `packages/app/package.json` - Fix release script
-2. `scripts/bump-app-version.js` - Enhanced version management
-3. `packages/app/src/models/UserSettings.ts` - Add AI fields
-4. `packages/app/src/screens/SettingsScreen.tsx` - Add AI settings UI
-5. `packages/app/src/screens/HomeScreen.tsx` - Add FAB and long-press
-6. `packages/app/src/database/schema.ts` - Add chat messages table
-7. `packages/app/App.tsx` - Render bottom sheet
-
-### Files to Create:
-
-1. `packages/app/src/utils/secureStorage.ts` - Keychain wrapper
-2. `packages/app/src/api/ai/aiClient.ts` - API clients
-3. `packages/app/src/api/ai/aiService.ts` - Business logic
-4. `packages/app/src/api/ai/prompts.ts` - System prompts
-5. `packages/app/src/store/aiChatStore.ts` - Chat state
-6. `packages/app/src/components/AIChat/AIChatBottomSheet.tsx` - Main UI
-7. `packages/app/src/components/AIChat/MessageList.tsx` - Message display
-8. `packages/app/src/components/AIChat/MessageInput.tsx` - Input field
-9. `packages/app/src/components/AIChat/ContextCard.tsx` - Context display
-10. `packages/app/src/models/ChatMessage.ts` - Message model
-11. `packages/app/src/database/repositories/aiChatRepository.ts` - DB operations
-12. `packages/app/src/api/ai/index.ts` - Exports
-
----
-
-## Testing Checklist
-
-- [ ] release:android builds APK successfully
-- [ ] Version bump script with dry-run works
-- [ ] Version bump script creates proper git tag
-- [ ] Gemini API key stored securely in keychain
-- [ ] Ollama connection works with local endpoint
-- [ ] Bottom sheet opens/closes smoothly
-- [ ] Chat messages persist in SQLite
-- [ ] AI responds correctly to repo explanations
-- [ ] AI compares packages accurately
-- [ ] Long-press on repo opens chat with context
-- [ ] FAB opens chat without context
-- [ ] Chat history loads on app restart
-- [ ] Error handling shows user-friendly messages
-- [ ] Works offline (shows cached messages)
-- [ ] Android build succeeds with new features
-- [ ] iOS compatibility (if applicable)
+  {/* Row 5: Subscriptions */}
+  <SubscriptionsList subscriptions={subscriptions} />
+</div>
+```
 
 ---
 
-## Security Considerations
+### B. Enhance Dashboard Component Visuals
 
-1. **API Keys**:
+**Files to modify:**
+- `packages/web/app/components/dashboard/StatsCard.tsx`
+- `packages/web/app/components/dashboard/TrendingList.tsx`
+- `packages/web/app/components/dashboard/SubscriptionsList.tsx`
 
-   - Never log API keys
-   - Use keychain (encrypted) not AsyncStorage
-   - Validate key format before saving
-   - Show masked keys in UI (•••••)
+**Enhancements:**
 
-2. **AI Responses**:
+1. **StatsCard improvements:**
+```tsx
+// Add hover effect with glow
+<div
+  style={{
+    ...styles.card,
+    transition: 'all 0.3s ease',
+  }}
+  onMouseEnter={(e) => {
+    e.currentTarget.style.boxShadow = '0 0 20px rgba(0, 255, 65, 0.3)';
+    e.currentTarget.style.borderColor = 'var(--color-primary)';
+  }}
+  onMouseLeave={(e) => {
+    e.currentTarget.style.boxShadow = 'none';
+    e.currentTarget.style.borderColor = 'var(--color-dark-green)';
+  }}
+>
+  {/* Add animated counter */}
+  <CountUp end={value} duration={1.5} style={styles.value} />
 
-   - Sanitize AI output before rendering
-   - Don't send sensitive user data to AI
-   - Add disclaimer that AI can make mistakes
-   - Rate limiting to prevent abuse
+  {/* Add icon with glow effect */}
+  <div className="hacker-text" style={styles.icon}>
+    {icon}
+  </div>
+</div>
+```
 
-3. **Local AI (Ollama)**:
-   - Validate endpoint URL format
-   - Add timeout for requests (30s)
-   - Handle connection refused gracefully
-   - Don't expose user's local IP
+2. **TrendingList improvements:**
+```tsx
+// Add alternating row backgrounds
+// Add hover states with smooth transitions
+// Add language badges with colors
+// Add star/download trend indicators (↑ ↓)
+// Add "View more" link at bottom
+
+{items.map((item, index) => (
+  <div
+    key={item.id}
+    style={{
+      ...styles.listItem,
+      backgroundColor: index % 2 === 0
+        ? 'rgba(0, 255, 65, 0.03)'
+        : 'transparent',
+    }}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.backgroundColor = 'rgba(0, 255, 65, 0.08)';
+    }}
+  >
+    {/* Enhanced item display */}
+  </div>
+))}
+```
+
+3. **SubscriptionsList improvements:**
+```tsx
+// Add unsubscribe button on hover
+// Add last updated timestamp
+// Add action menu (view, share, remove)
+// Improve card spacing and shadows
+// Add loading skeleton for async operations
+
+<div style={styles.subscriptionCard}>
+  <div style={styles.cardHeader}>
+    <h4>{subscription.name}</h4>
+    <div style={styles.actions}>
+      <button onClick={() => handleView(subscription)}>View</button>
+      <button onClick={() => handleRemove(subscription)}>×</button>
+    </div>
+  </div>
+  <p style={styles.meta}>
+    {subscription.type} • Subscribed {formatDate(subscription.date)}
+  </p>
+  <span style={styles.badge}>ACTIVE</span>
+</div>
+```
 
 ---
 
-## Next Steps After Implementation
+## Part 4: Deployment & Release
 
-1. Add analytics to track AI feature usage
-2. Implement conversation branching (multiple threads)
-3. Add voice input for messages
-4. Export conversations to share with others
-5. Add AI-generated summaries for long conversations
-6. Integrate with web dashboard for cross-platform sync
-7. Add support for more AI providers (OpenAI, Claude)
-8. Fine-tune prompts based on user feedback
+### A. Version Bump & Changelog
+
+**Files to update:**
+
+1. **Mobile app version** - `packages/app/package.json`:
+```json
+{
+  "version": "0.0.16"
+}
+```
+
+2. **Web package version** - `packages/web/package.json`:
+```json
+{
+  "version": "0.0.16"
+}
+```
+
+3. **Root package version** - `package.json`:
+```json
+{
+  "version": "0.0.16"
+}
+```
+
+4. **Add changelog entry** - `packages/web/app/routes/changelog.tsx`:
+
+```typescript
+{
+  version: "0.0.16",
+  releaseDate: "2025-01-04",
+  status: "Latest" as const,
+  highlights: [
+    "Enhanced SearchScreen with AI chat integration and consolidated filters",
+    "Added shared navigation component across web platform",
+    "New dashboard widgets: Activity Feed, Quick Actions, Notifications",
+    "Visual improvements to dashboard components with animations",
+    "Changelog page now uses HackerTheme for consistency",
+  ],
+  changes: {
+    "Mobile - SearchScreen": [
+      "Added floating action button for AI chat",
+      "Enabled long-press on items to open AI chat context",
+      "Integrated InfoCard preview mode matching HomeScreen",
+      "Consolidated filter UI into unified header",
+      "Added pull-to-refresh capability",
+      "Improved stats display with bold monospace styling",
+      "Enhanced empty and error states with retry functionality",
+      "Improved Recently Updated cards with better design",
+    ],
+    "Web - Navigation": [
+      "Created shared Navigation component with HackerTheme",
+      "Added active route highlighting",
+      "Implemented responsive navigation menu",
+      "Added navigation to Changelog page",
+    ],
+    "Web - Dashboard": [
+      "Added Activity Feed widget showing recent actions",
+      "Added Quick Actions panel for common tasks",
+      "Added Notifications widget with badge counter",
+      "Enhanced StatsCard with hover effects and animations",
+      "Improved TrendingList with alternating row backgrounds",
+      "Enhanced SubscriptionsList with action menus",
+    ],
+    "Web - Changelog": [
+      "Converted from Tailwind to HackerTheme styling",
+      "Added navigation header for easy site navigation",
+      "Improved visual consistency with rest of platform",
+    ],
+  },
+  features: [
+    {
+      title: "AI Chat Integration in Search",
+      description: "Search results now support AI chat via FAB and long-press gestures",
+      category: "Mobile",
+    },
+    {
+      title: "Unified Navigation",
+      description: "Shared navigation component provides consistent experience across web pages",
+      category: "Web",
+    },
+    {
+      title: "Dashboard Widgets",
+      description: "Activity Feed, Quick Actions, and Notifications enhance dashboard functionality",
+      category: "Web",
+    },
+  ],
+  technicalDetails: {
+    dependencies: [],
+    breakingChanges: [],
+    migrations: [],
+    compatibility: {
+      mobile: "React Native 0.83.1+",
+      web: "Remix 2.15+, Cloudflare Pages",
+    },
+  },
+}
+```
 
 ---
 
-## Estimated Total Time
+### B. Git Commit & Tag
 
-- **Quick fixes** (Tasks 1-2): 2-3 hours
-- **AI settings** (Task 3): 2 hours
-- **AI chat feature** (Task 4): 10-12 hours
-- **Testing & polish**: 3-4 hours
-- **Total**: ~18-21 hours of focused development
+**Commands:**
+
+```bash
+# Stage all changes
+git add .
+
+# Commit with detailed message
+git commit -m "feat: v0.0.16 - SearchScreen enhancements and web dashboard improvements
+
+Mobile Changes:
+- Add AI chat integration to SearchScreen (FAB + long-press)
+- Consolidate filter UI into unified header
+- Add pull-to-refresh and improve visual polish
+- Integrate InfoCard preview mode
+
+Web Changes:
+- Create shared Navigation component with HackerTheme
+- Add navigation to Changelog page
+- Convert Changelog from Tailwind to HackerTheme
+- Add Activity Feed, Quick Actions, and Notifications widgets
+- Enhance dashboard component visuals with animations
+
+🤖 Generated with Claude Code
+Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
+
+# Create version tag
+git tag -a v0.0.16 -m "Release v0.0.16: SearchScreen enhancements and web dashboard improvements"
+
+# Push commit and tag
+git push origin main
+git push origin v0.0.16
+```
 
 ---
 
-This plan follows existing codebase patterns, maintains TypeScript strict typing, uses HackerTheme for UI consistency, and prioritizes security for API key management.
+### C. Deploy Web to Cloudflare Pages
+
+**Commands:**
+
+```bash
+# Navigate to web package
+cd packages/web
+
+# Build for production
+bun run build
+
+# Deploy to Cloudflare Pages
+bun run deploy
+
+# Or manually with wrangler
+wrangler pages deploy build/client --project-name=app
+```
+
+**Verification:**
+- Check deployment URL
+- Verify navigation works across all pages
+- Test new dashboard widgets
+- Confirm changelog styling matches theme
+
+---
+
+## Implementation Order
+
+1. **Mobile SearchScreen** (60 min)
+   - Add AI chat integration (20 min)
+   - Consolidate filter UI (20 min)
+   - Visual polish improvements (20 min)
+
+2. **Web Navigation Component** (30 min)
+   - Create Navigation.tsx (15 min)
+   - Update Changelog page (10 min)
+   - Convert Changelog styling (5 min)
+
+3. **Web Dashboard Features** (45 min)
+   - Create ActivityFeed component (15 min)
+   - Create QuickActions component (10 min)
+   - Create NotificationsWidget (10 min)
+   - Update dashboard layout (10 min)
+
+4. **Web Dashboard Visual Enhancements** (30 min)
+   - Enhance StatsCard (10 min)
+   - Enhance TrendingList (10 min)
+   - Enhance SubscriptionsList (10 min)
+
+5. **Version Bump & Changelog** (15 min)
+   - Update package.json versions (5 min)
+   - Add changelog entry (10 min)
+
+6. **Deployment** (15 min)
+   - Git commit and tag (5 min)
+   - Deploy web (10 min)
+
+**Total: ~3 hours**
+
+---
+
+## Critical Files Summary
+
+### Mobile (packages/app)
+- `src/screens/SearchScreen.tsx` - Main file with all SearchScreen changes
+
+### Web (packages/web)
+- `app/components/Navigation.tsx` - NEW shared navigation component
+- `app/components/dashboard/ActivityFeed.tsx` - NEW activity feed widget
+- `app/components/dashboard/QuickActions.tsx` - NEW quick actions panel
+- `app/components/dashboard/NotificationsWidget.tsx` - NEW notifications widget
+- `app/components/dashboard/StatsCard.tsx` - Enhanced with animations
+- `app/components/dashboard/TrendingList.tsx` - Enhanced with hover states
+- `app/components/dashboard/SubscriptionsList.tsx` - Enhanced with actions
+- `app/routes/dashboard.tsx` - Updated layout with new widgets
+- `app/routes/changelog.tsx` - Add navigation, convert styling
+
+### Version Files
+- `packages/app/package.json`
+- `packages/web/package.json`
+- `package.json`
+
+---
+
+## Success Criteria
+
+- ✅ SearchScreen has AI chat FAB and long-press support
+- ✅ SearchScreen filters consolidated into clean UI
+- ✅ SearchScreen visual quality matches HomeScreen
+- ✅ Navigation component used across all web pages
+- ✅ Changelog has HackerTheme styling and navigation
+- ✅ Dashboard has 3 new widgets (Activity, Quick Actions, Notifications)
+- ✅ Dashboard components have smooth animations and hover effects
+- ✅ Version bumped to 0.0.16 with complete changelog
+- ✅ Changes committed and tagged
+- ✅ Web deployed to Cloudflare Pages

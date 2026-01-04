@@ -170,7 +170,8 @@ export class GitHubRepository implements GitHubRepositoryData {
       ownerAvatarUrl: getNestedString(json, 'owner', 'avatar_url'),
       ownerHtmlUrl: getNestedString(json, 'owner', 'html_url'),
       topics: getStringArrayJoined(json, 'topics'),
-      homepage: getStringOrNull(json, 'homepage') || getStringOrNull(json, 'html_url'),
+      homepage:
+        getStringOrNull(json, 'homepage') || getStringOrNull(json, 'html_url'),
       trendingScore,
       trendingPeriod: 'daily',
       lastReleaseDate: null,

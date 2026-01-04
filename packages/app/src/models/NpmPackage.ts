@@ -117,14 +117,23 @@ export class NpmPackage implements NpmPackageData {
       latestVersion: latestTag || getString(json, 'version') || null,
       license: getStringOrNull(json, 'license'),
       dependencies: NpmPackage.extractDependencies(
-        getNestedObject(getNestedObject(versions || {}, 'latest') || {}, 'dependencies'),
+        getNestedObject(
+          getNestedObject(versions || {}, 'latest') || {},
+          'dependencies',
+        ),
       ),
       devDependencies: NpmPackage.extractDependencies(
-        getNestedObject(getNestedObject(versions || {}, 'latest') || {}, 'devDependencies'),
+        getNestedObject(
+          getNestedObject(versions || {}, 'latest') || {},
+          'devDependencies',
+        ),
       ),
       openIssues: 0, // Placeholder - would need GitHub API
       openPullRequests: 0, // Placeholder - would need GitHub API
-      hasSecurityVulnerabilities: getBoolean(json, 'hasSecurityVulnerabilities'),
+      hasSecurityVulnerabilities: getBoolean(
+        json,
+        'hasSecurityVulnerabilities',
+      ),
       securityPolicyUrl: getStringOrNull(json, 'securityPolicy'),
       trendingScore,
       trendingPeriod: 'daily',
@@ -146,7 +155,9 @@ export class NpmPackage implements NpmPackageData {
       .map(m => {
         if (typeof m === 'object' && m !== null) {
           const obj = m as Record<string, unknown>;
-          return getString(obj, 'username') || getString(obj, 'email') || 'Unknown';
+          return (
+            getString(obj, 'username') || getString(obj, 'email') || 'Unknown'
+          );
         }
         return 'Unknown';
       })
@@ -156,7 +167,9 @@ export class NpmPackage implements NpmPackageData {
   /**
    * Extract dependencies from version object
    */
-  private static extractDependencies(deps: Record<string, unknown> | null): string[] {
+  private static extractDependencies(
+    deps: Record<string, unknown> | null,
+  ): string[] {
     if (!deps || typeof deps !== 'object') return [];
     return Object.keys(deps);
   }

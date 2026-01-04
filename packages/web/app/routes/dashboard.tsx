@@ -1,19 +1,19 @@
-import { json, redirect, type LoaderFunctionArgs } from "@remix-run/cloudflare";
-import { useLoaderData, Form, Link } from "@remix-run/react";
-import { Navigation } from "~/components/Navigation";
-import { StatsCard } from "../components/dashboard/StatsCard";
-import { TrendingList } from "../components/dashboard/TrendingList";
-import { SubscriptionsList } from "../components/dashboard/SubscriptionsList";
-import { ActivityFeed } from "~/components/dashboard/ActivityFeed";
-import { QuickActions } from "~/components/dashboard/QuickActions";
-import { NotificationsWidget } from "~/components/dashboard/NotificationsWidget";
 import type {
   GitHubRepository,
   NpmPackage,
   Subscription,
 } from "@involvex/shared";
-import { getSession } from "../services/session.server";
+import { json, redirect, type LoaderFunctionArgs } from "@remix-run/cloudflare";
+import { Form, useLoaderData } from "@remix-run/react";
+import { ActivityFeed } from "../components/dashboard/ActivityFeed";
+import { NotificationsWidget } from "../components/dashboard/NotificationsWidget";
+import { QuickActions } from "../components/dashboard/QuickActions";
+import { Navigation } from "../components/Navigation";
+import { StatsCard } from "../components/dashboard/StatsCard";
+import { SubscriptionsList } from "../components/dashboard/SubscriptionsList";
+import { TrendingList } from "../components/dashboard/TrendingList";
 import { getUserById } from "../services/db.server";
+import { getSession } from "../services/session.server";
 import type { Env } from "../types/env";
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
@@ -64,7 +64,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       type: "subscription" as const,
       itemName: sub.name,
       timestamp: new Date(Date.now() - index * 3600000).toISOString(),
-      metadata: sub.type === "repository" ? "GitHub Repo" : "npm Package",
+      metadata: sub.type === "github" ? "GitHub Repo" : "npm Package",
     }));
 
     // Generate sample notifications (in production, fetch from database)
@@ -117,8 +117,15 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 }
 
 export default function Dashboard() {
-  const { user, github, npm, subscriptions, recentActivity, notifications, stats } =
-    useLoaderData<typeof loader>();
+  const {
+    user,
+    github,
+    npm,
+    subscriptions,
+    recentActivity,
+    notifications,
+    stats,
+  } = useLoaderData<typeof loader>();
 
   return (
     <>
@@ -157,66 +164,66 @@ export default function Dashboard() {
           </Form>
         </div>
 
-      {/* Row 1: Stats Cards */}
-      <div
-        style={{
-          display: "flex",
-          gap: "1rem",
-          flexWrap: "wrap",
-          marginBottom: "2rem",
-        }}
-      >
-        <StatsCard
-          title="Trending Repos"
-          value={stats.totalGithubRepos}
-          icon="code"
-        />
-        <StatsCard
-          title="Trending Packages"
-          value={stats.totalNpmPackages}
-          icon="package"
-        />
-        <StatsCard
-          title="Your Subs"
-          value={stats.totalSubscriptions}
-          icon="star"
-        />
-      </div>
+        {/* Row 1: Stats Cards */}
+        <div
+          style={{
+            display: "flex",
+            gap: "1rem",
+            flexWrap: "wrap",
+            marginBottom: "2rem",
+          }}
+        >
+          <StatsCard
+            title="Trending Repos"
+            value={stats.totalGithubRepos}
+            icon="code"
+          />
+          <StatsCard
+            title="Trending Packages"
+            value={stats.totalNpmPackages}
+            icon="package"
+          />
+          <StatsCard
+            title="Your Subs"
+            value={stats.totalSubscriptions}
+            icon="star"
+          />
+        </div>
 
-      {/* Row 2: Activity Feed + Quick Actions */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(350px, 1fr))",
-          gap: "2rem",
-          marginBottom: "2rem",
-        }}
-      >
-        <ActivityFeed activities={recentActivity} />
-        <QuickActions />
-      </div>
+        {/* Row 2: Activity Feed + Quick Actions */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(350px, 1fr))",
+            gap: "2rem",
+            marginBottom: "2rem",
+          }}
+        >
+          <ActivityFeed activities={recentActivity} />
+          <QuickActions />
+        </div>
 
-      {/* Row 3: Notifications */}
-      <NotificationsWidget notifications={notifications} />
+        {/* Row 3: Notifications */}
+        <NotificationsWidget notifications={notifications} />
 
-      {/* Row 4: Subscriptions */}
-      <div style={{ marginBottom: "3rem" }} id="subscriptions">
-        <h2 className="hacker-text">Active Protocols (Subscriptions)</h2>
-        <SubscriptionsList subscriptions={subscriptions} />
-      </div>
+        {/* Row 4: Subscriptions */}
+        <div style={{ marginBottom: "3rem" }} id="subscriptions">
+          <h2 className="hacker-text">Active Protocols (Subscriptions)</h2>
+          <SubscriptionsList subscriptions={subscriptions} />
+        </div>
 
-      {/* Row 5: Trending Lists */}
-      <div
-        id="trending"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))",
-          gap: "2rem",
-        }}
-      >
-        <TrendingList type="github" items={github} />
-        <TrendingList type="npm" items={npm} />
-      </div>
+        {/* Row 5: Trending Lists */}
+        <div
+          id="trending"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))",
+            gap: "2rem",
+          }}
+        >
+          <TrendingList type="github" items={github} />
+          <TrendingList type="npm" items={npm} />
+        </div>
 
         <footer
           style={{

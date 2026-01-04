@@ -58,9 +58,7 @@ export function NotificationsWidget({
         <h3 className="hacker-text" style={styles.title}>
           Notifications
         </h3>
-        {unreadCount > 0 && (
-          <span style={styles.badge}>{unreadCount}</span>
-        )}
+        {unreadCount > 0 && <span style={styles.badge}>{unreadCount}</span>}
       </div>
       {notifications.length === 0 ? (
         <div style={styles.emptyState}>

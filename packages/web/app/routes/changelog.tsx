@@ -1,15 +1,14 @@
 import {
   json,
-  redirect,
-  type MetaFunction,
   type LoaderFunctionArgs,
+  type MetaFunction,
 } from "@remix-run/cloudflare";
 import { useLoaderData } from "@remix-run/react";
-import type { Changelog } from "~/types/changelog";
-import { Navigation } from "~/components/Navigation";
-import { getSession } from "~/services/session.server";
-import { getUserById } from "~/services/db.server";
-import type { Env } from "~/types/env";
+import { Navigation } from "../components/Navigation";
+import { getUserById } from "../services/db.server";
+import { getSession } from "../services/session.server";
+import type { Changelog } from "../types/changelog";
+import type { Env } from "../types/env";
 
 export const meta: MetaFunction = () => [
   { title: "Changelog - Involvex" },
@@ -73,7 +72,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
           "Web: Dashboard layout reorganized with new widget sections",
         ],
         Fixed: [],
-      ],
+      },
       features: [
         {
           title: "SearchScreen AI Integration",

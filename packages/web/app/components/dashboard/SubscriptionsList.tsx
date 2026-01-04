@@ -3,8 +3,8 @@
  * Displays user subscriptions with action menus
  */
 
-import { useState } from "react";
 import type { Subscription } from "@involvex/shared";
+import { useState } from "react";
 
 interface SubscriptionsListProps {
   subscriptions: Subscription[];
@@ -47,7 +47,7 @@ function SubscriptionCard({ sub }: { sub: Subscription }) {
             {sub.name}
           </div>
           <div style={styles.cardMeta}>
-            {sub.type === "repository" ? "📦 GitHub" : "📦 npm"} • Subscribed{" "}
+            {sub.type === "github" ? "📦 GitHub" : "📦 npm"} • Subscribed{" "}
             {new Date(sub.subscribed_at).toLocaleDateString("en-US", {
               month: "short",
               day: "numeric",
@@ -55,11 +55,7 @@ function SubscriptionCard({ sub }: { sub: Subscription }) {
             })}
           </div>
         </div>
-        {sub.is_active && (
-          <span style={styles.activeBadge}>
-            ACTIVE
-          </span>
-        )}
+        {sub.is_active && <span style={styles.activeBadge}>ACTIVE</span>}
       </div>
 
       {/* Action Menu (appears on hover) */}

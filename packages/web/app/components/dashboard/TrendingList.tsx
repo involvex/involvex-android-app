@@ -25,9 +25,7 @@ function GitHubItem({
       style={{
         ...styles.itemContainer,
         backgroundColor:
-          index % 2 === 0
-            ? "rgba(0, 255, 65, 0.03)"
-            : "rgba(0, 255, 65, 0.01)",
+          index % 2 === 0 ? "rgba(0, 255, 65, 0.03)" : "rgba(0, 255, 65, 0.01)",
         ...(isHovered && {
           backgroundColor: "rgba(0, 255, 65, 0.08)",
           borderLeft: "3px solid var(--color-primary)",
@@ -47,15 +45,13 @@ function GitHubItem({
         >
           {repo.full_name}
         </a>
-        <span style={styles.metric}>★ {repo.stargazers_count.toLocaleString()}</span>
+        <span style={styles.metric}>
+          ★ {repo.stargazers_count.toLocaleString()}
+        </span>
       </div>
-      {repo.description && (
-        <p style={styles.description}>{repo.description}</p>
-      )}
+      {repo.description && <p style={styles.description}>{repo.description}</p>}
       <div style={styles.itemFooter}>
-        {repo.language && (
-          <span style={styles.language}>{repo.language}</span>
-        )}
+        {repo.language && <span style={styles.language}>{repo.language}</span>}
         <span style={styles.forks}>🍴 {repo.forks_count.toLocaleString()}</span>
       </div>
     </div>
@@ -70,9 +66,7 @@ function NpmItem({ pkg, index }: { pkg: NpmPackage; index: number }) {
       style={{
         ...styles.itemContainer,
         backgroundColor:
-          index % 2 === 0
-            ? "rgba(0, 255, 65, 0.03)"
-            : "rgba(0, 255, 65, 0.01)",
+          index % 2 === 0 ? "rgba(0, 255, 65, 0.03)" : "rgba(0, 255, 65, 0.01)",
         ...(isHovered && {
           backgroundColor: "rgba(0, 255, 65, 0.08)",
           borderLeft: "3px solid var(--color-primary)",

@@ -68,7 +68,7 @@ export function getDate(
   if (value instanceof Date) return value;
   if (typeof value === 'string' || typeof value === 'number') {
     const date = new Date(value);
-    return isNaN(date.getTime()) ? (defaultValue || new Date()) : date;
+    return isNaN(date.getTime()) ? defaultValue || new Date() : date;
   }
   return defaultValue || new Date();
 }

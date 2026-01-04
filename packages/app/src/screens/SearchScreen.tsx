@@ -453,16 +453,20 @@ export const SearchScreen: React.FC = () => {
                 {pkg.name}
               </Text>
               <View style={styles.recentlyUpdatedVersionBadge}>
-                <Text style={styles.recentlyUpdatedVersion}>v{pkg.version}</Text>
+                <Text style={styles.recentlyUpdatedVersion}>
+                  v{pkg.version}
+                </Text>
               </View>
               <Text style={styles.recentlyUpdatedDownloads}>
                 📦 {pkg.formattedDownloads}
               </Text>
               <Text style={styles.recentlyUpdatedDate}>
-                {new Date(pkg.lastPublish).toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                })}
+                {pkg.lastReleaseDate
+                  ? pkg.lastReleaseDate.toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                    })
+                  : 'N/A'}
               </Text>
             </TouchableOpacity>
           ))}
@@ -656,7 +660,7 @@ export const SearchScreen: React.FC = () => {
 
   const renderErrorState = () => (
     <View style={styles.errorContainer}>
-      <Icon name="alert-circle" size={64} color={HackerTheme.error} />
+      <Icon name="alert-circle" size={64} color={HackerTheme.errorRed} />
       <Text style={styles.errorTitle}>Search Failed</Text>
       <Text style={styles.errorText}>{error}</Text>
       <TouchableOpacity style={styles.retryButton} onPress={handleSearch}>
@@ -673,6 +677,7 @@ export const SearchScreen: React.FC = () => {
       {renderTabSelector()}
       {renderSearchBar()}
       {renderActiveFilters()}
+      {activeTab === 'github' && renderQuickFilters()}
       {renderNpmCategoryFilters()}
       {renderRecentlyUpdated()}
       {renderAdvancedFilters()}
@@ -719,7 +724,7 @@ export const SearchScreen: React.FC = () => {
       {/* Floating Action Button for AI Chat */}
       <TouchableOpacity
         style={styles.fab}
-        onPress={() => openChat(null)}
+        onPress={() => openChat()}
         activeOpacity={0.9}
       >
         <Icon name="robot" size={28} color={HackerTheme.background} />
@@ -802,7 +807,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -4,
     right: -4,
-    backgroundColor: HackerTheme.error,
+    backgroundColor: HackerTheme.errorRed,
     borderRadius: 10,
     minWidth: 20,
     height: 20,
@@ -852,7 +857,7 @@ const styles = StyleSheet.create({
   },
   clearAllText: {
     ...Typography.captionText,
-    color: HackerTheme.error,
+    color: HackerTheme.errorRed,
     fontWeight: '600',
     textDecorationLine: 'underline',
   },
@@ -954,6 +959,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: Spacing.md,
+    paddingBottom: 64 + Spacing.xl * 2, // FAB height (64) + FAB bottom margin (xl) + extra space (xl)
   },
   card: {
     backgroundColor: HackerTheme.darkGreen,
@@ -1052,7 +1058,7 @@ const styles = StyleSheet.create({
   },
   errorTitle: {
     ...Typography.heading2,
-    color: HackerTheme.error,
+    color: HackerTheme.errorRed,
     marginTop: Spacing.lg,
     textAlign: 'center',
   },
