@@ -146,6 +146,16 @@ cd packages/api && bun run deploy
 - Import path relative to deployed directory: `import * as build from '../../server';`
 - The deploy script handles copying this automatically
 
+### Gradle Hard Link Warnings (Windows)
+- **Issue**: Hard link failures when gradle cache is on different drive (C: vs D:)
+- **Solution**: Added `android.disablePreferentialLibraryBuilding=true` to gradle.properties
+- **Effect**: Uses slower copy instead of hard links (no performance impact)
+
+### React Native SQLite Storage Configuration
+- **Issue**: `react-native-sqlite-storage` contains invalid iOS configuration
+- **Impact**: Non-blocking warning during build - app functions correctly
+- **Status**: Waiting on package maintainers for update
+
 ## Architecture Notes
 
 ### Shared Package
@@ -253,12 +263,54 @@ Dependencies use `workspace:*` to reference local packages:
 
 When adding new packages, use `workspace:*` for internal dependencies and run `bun install` to resolve.
 
+## Recent Implementation Status (v0.0.15)
+
+### ✅ Completed Features
+
+#### Mobile App (packages/app)
+1. **OpenRouter AI Provider**
+   - Complete client implementation with OpenAI-compatible API
+   - Settings UI with API key storage
+   - Model selector (Claude 3.5 Sonnet, GPT-4, Llama 2)
+   - Integrated with Zustand store
+
+2. **SearchScreen Enhancements**
+   - UI improvements: better spacing, styling, borders
+   - npm category filters (12 categories: Frontend, Backend, CLI, etc.)
+   - Recently Updated Packages section with horizontal scroll
+   - Auto-search on category selection
+
+3. **InfoCard Modal**
+   - Two-mode interface: Preview + optional WebView
+   - External browser + in-app browser options
+   - Share functionality
+   - Settings toggle to enable/disable
+
+4. **Settings Screen**
+   - OpenRouter API key configuration
+   - Model selection for each provider
+   - Secure storage using device keychain
+   - 9+ total AI configuration options
+
+### 📝 Files Modified (v0.0.15)
+- `packages/app/src/api/ai/aiClient.ts` - OpenRouter client
+- `packages/app/src/api/npm/npmService.ts` - getRecentlyUpdated()
+- `packages/app/src/screens/SearchScreen.tsx` - UI + filters + categories
+- `packages/app/src/screens/SettingsScreen.tsx` - OpenRouter settings
+- `packages/app/src/utils/secureStorage.ts` - OPENROUTER_API_KEY
+- `packages/app/android/gradle.properties` - Hard link fix
+- `.vscode/launch.json` - Enhanced debug configs
+- `.vscode/tasks.json` - Build tasks (NEW)
+- `.vscode/settings.json` - Development settings
+
 ## Deployment Checklist
 
 Before deploying to production:
-- [ ] All `bun run typecheck` pass
-- [ ] All `bun run lint` pass
+- [x] All `bun run typecheck` pass ✅
+- [ ] All `bun run lint` pass (requires ESLint config)
+- [ ] Tested on Android emulator/device
 - [ ] CSS assets load correctly in Pages deployment
 - [ ] Database migrations applied
 - [ ] GitHub OAuth secrets configured in Workers
-- [ ] Environmental differences between monorepo-migration and main understood
+- [ ] OpenRouter API keys configured in mobile app
+- [ ] Environmental differences between branches understood

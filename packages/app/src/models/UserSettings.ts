@@ -78,12 +78,18 @@ export interface UserSettingsData {
   requestTimeout: number; // seconds
   autoCheckForUpdates: boolean;
 
-  // AI Assistant Settings (5 fields)
+  // AI Assistant Settings (8 fields)
   enableAIFeatures: boolean;
   geminiModel: 'gemini-pro' | 'gemini-flash';
   ollamaModel: string | null; // e.g., 'llama2', 'mistral'
-  preferredAIProvider: 'gemini' | 'ollama';
+  openRouterApiKey: string | null;
+  openRouterModel: string | null; // e.g., 'anthropic/claude-3-sonnet'
+  preferredAIProvider: 'gemini' | 'ollama' | 'openrouter';
   aiResponseMaxTokens: number;
+
+  // UI Features (2 fields)
+  enableInfoCardPreview: boolean;
+  defaultBrowserAction: 'external' | 'inapp'; // default action when tapping item
 }
 
 export class UserSettings implements UserSettingsData {
@@ -164,8 +170,14 @@ export class UserSettings implements UserSettingsData {
   enableAIFeatures: boolean;
   geminiModel: 'gemini-pro' | 'gemini-flash';
   ollamaModel: string | null;
-  preferredAIProvider: 'gemini' | 'ollama';
+  openRouterApiKey: string | null;
+  openRouterModel: string | null;
+  preferredAIProvider: 'gemini' | 'ollama' | 'openrouter';
   aiResponseMaxTokens: number;
+
+  // UI Features
+  enableInfoCardPreview: boolean;
+  defaultBrowserAction: 'external' | 'inapp';
 
   constructor(data?: Partial<UserSettingsData>) {
     // Theme Settings
@@ -247,8 +259,14 @@ export class UserSettings implements UserSettingsData {
     this.enableAIFeatures = data?.enableAIFeatures ?? false;
     this.geminiModel = data?.geminiModel ?? 'gemini-flash';
     this.ollamaModel = data?.ollamaModel ?? null;
+    this.openRouterApiKey = data?.openRouterApiKey ?? null;
+    this.openRouterModel = data?.openRouterModel ?? 'anthropic/claude-3-5-sonnet';
     this.preferredAIProvider = data?.preferredAIProvider ?? 'gemini';
     this.aiResponseMaxTokens = data?.aiResponseMaxTokens ?? 2048;
+
+    // UI Features
+    this.enableInfoCardPreview = data?.enableInfoCardPreview ?? true;
+    this.defaultBrowserAction = data?.defaultBrowserAction ?? 'external';
   }
 
   /**
@@ -312,8 +330,12 @@ export class UserSettings implements UserSettingsData {
       enableAIFeatures: json.enableAIFeatures,
       geminiModel: json.geminiModel,
       ollamaModel: json.ollamaModel,
+      openRouterApiKey: json.openRouterApiKey,
+      openRouterModel: json.openRouterModel,
       preferredAIProvider: json.preferredAIProvider,
       aiResponseMaxTokens: json.aiResponseMaxTokens,
+      enableInfoCardPreview: json.enableInfoCardPreview,
+      defaultBrowserAction: json.defaultBrowserAction,
     });
   }
 
@@ -426,8 +448,12 @@ export class UserSettings implements UserSettingsData {
       enableAIFeatures: this.enableAIFeatures,
       geminiModel: this.geminiModel,
       ollamaModel: this.ollamaModel,
+      openRouterApiKey: this.openRouterApiKey,
+      openRouterModel: this.openRouterModel,
       preferredAIProvider: this.preferredAIProvider,
       aiResponseMaxTokens: this.aiResponseMaxTokens,
+      enableInfoCardPreview: this.enableInfoCardPreview,
+      defaultBrowserAction: this.defaultBrowserAction,
     };
   }
 

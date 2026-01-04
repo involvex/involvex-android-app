@@ -72,7 +72,9 @@ export const SettingsScreen: React.FC = () => {
   // State for secure API keys
   const [geminiApiKey, setGeminiApiKey] = useState<string>('');
   const [ollamaEndpoint, setOllamaEndpoint] = useState<string>('');
+  const [openRouterApiKey, setOpenRouterApiKey] = useState<string>('');
   const [showGeminiKey, setShowGeminiKey] = useState(false);
+  const [showOpenRouterKey, setShowOpenRouterKey] = useState(false);
   const [testingConnection, setTestingConnection] = useState(false);
 
   useEffect(() => {
@@ -84,9 +86,11 @@ export const SettingsScreen: React.FC = () => {
     const loadSecureKeys = async () => {
       const geminiKey = await getSecureValue(SecureKeys.GEMINI_API_KEY);
       const ollamaUrl = await getSecureValue(SecureKeys.OLLAMA_ENDPOINT);
+      const openRouterKey = await getSecureValue(SecureKeys.OPENROUTER_API_KEY);
 
       if (geminiKey) setGeminiApiKey(geminiKey);
       if (ollamaUrl) setOllamaEndpoint(ollamaUrl);
+      if (openRouterKey) setOpenRouterApiKey(openRouterKey);
     };
 
     loadSecureKeys();
@@ -203,6 +207,23 @@ export const SettingsScreen: React.FC = () => {
       Alert.alert('Success', 'Ollama endpoint saved securely');
     } else {
       Alert.alert('Error', 'Failed to save Ollama endpoint');
+    }
+  };
+
+  const handleSaveOpenRouterKey = async () => {
+    if (!openRouterApiKey || openRouterApiKey.trim().length === 0) {
+      Alert.alert('Invalid API Key', 'OpenRouter API key cannot be empty');
+      return;
+    }
+
+    const success = await setSecureValue(
+      SecureKeys.OPENROUTER_API_KEY,
+      openRouterApiKey,
+    );
+    if (success) {
+      Alert.alert('Success', 'OpenRouter API key saved securely');
+    } else {
+      Alert.alert('Error', 'Failed to save OpenRouter API key');
     }
   };
 
@@ -679,7 +700,7 @@ export const SettingsScreen: React.FC = () => {
         )}
 
         {/* AI Assistant Section */}
-        {renderSectionHeader('ai', '🤖 AI Assistant', 'robot-outline', 5)}
+        {renderSectionHeader('ai', '🤖 AI Assistant', 'robot-outline', 9)}
         {expandedSections.has('ai') && (
           <View style={styles.sectionContent}>
             {renderSwitch(
@@ -821,11 +842,59 @@ export const SettingsScreen: React.FC = () => {
               </View>
             </View>
 
+            {/* OpenRouter Configuration */}
+            <View style={styles.aiProviderCard}>
+              <View style={styles.aiProviderHeader}>
+                <Icon name="router-wireless" size={20} color={HackerTheme.accent} />
+                <Text style={styles.aiProviderTitle}>OpenRouter</Text>
+              </View>
+              <View style={styles.settingRow}>
+                <Text style={styles.settingLabel}>API Key 🔑</Text>
+                <View style={styles.secureInputContainer}>
+                  <TextInput
+                    style={[styles.textInput, styles.secureInput]}
+                    value={openRouterApiKey}
+                    onChangeText={setOpenRouterApiKey}
+                    placeholder="sk-..."
+                    placeholderTextColor={HackerTheme.lightGrey}
+                    secureTextEntry={!showOpenRouterKey}
+                  />
+                  <TouchableOpacity
+                    onPress={() => setShowOpenRouterKey(!showOpenRouterKey)}
+                  >
+                    <Icon
+                      name={showOpenRouterKey ? 'eye-off' : 'eye'}
+                      size={20}
+                      color={HackerTheme.primary}
+                    />
+                  </TouchableOpacity>
+                </View>
+              </View>
+              {renderSegmentedControl('Model 🎯', 'openRouterModel', [
+                'anthropic/claude-3-5-sonnet',
+                'gpt-4-turbo',
+                'meta-llama/llama-2-70b-chat',
+              ])}
+              <View style={styles.aiActionButtons}>
+                <TouchableOpacity
+                  style={styles.aiSecondaryButton}
+                  onPress={handleSaveOpenRouterKey}
+                >
+                  <Icon
+                    name="content-save"
+                    size={16}
+                    color={HackerTheme.primary}
+                  />
+                  <Text style={styles.aiSecondaryButtonText}>Save Key</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
             {/* AI Preferences */}
             {renderSegmentedControl(
               'Preferred Provider ⚡',
               'preferredAIProvider',
-              ['gemini', 'ollama'],
+              ['gemini', 'ollama', 'openrouter'],
             )}
             {renderTextInput(
               'Max Response Tokens 📊',
@@ -835,14 +904,15 @@ export const SettingsScreen: React.FC = () => {
             )}
           </View>
         )}
-
-        <View style={styles.resetContainer}>
+        <View style={styles.container}>
+        
+        <View style={styles.container}>
           <View style={styles.authorContainer}>
             <Text style={styles.author}>Author: {pkg.author.name}</Text>
-            <A style={styles.authorLink} href={pkg.author.url}>
-              {pkg.author.url}
+            <A style={styles.authorLink} href="https://involvex.github.io/Involvex/">
+              https://involvex.github.io/Involvex/
             </A>
-          </View>
+          
 
           <View style={styles.repositoryContainer}>
             <Text style={styles.versionInfo}>App version: {pkg.version}</Text>
@@ -850,13 +920,17 @@ export const SettingsScreen: React.FC = () => {
               {pkg.homepage}
             </A>
           </View>
-
-          <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
-            <Icon name="restore" size={20} color={HackerTheme.errorRed} />
-            <Text style={styles.resetButtonText}>Reset to Defaults</Text>
-          </TouchableOpacity>
+          </View>
+          
+        <View style={styles.resetContainer}>
+                  
+                  <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
+                    <Icon name="restore" size={20} color={HackerTheme.errorRed} />
+                    <Text style={styles.resetButtonText}>Reset to Defaults</Text>
+                  </TouchableOpacity>
+                </View>
         </View>
-
+</View>
         <View style={styles.bottomPadding} />
       </ScrollView>
 
@@ -1185,8 +1259,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: HackerTheme.accentGreen,
     backgroundColor: HackerTheme.darkerGreen,
-
-    marginTop: Spacing.sm,
+    marginLeft: Spacing.md,
+    marginRight: Spacing.md,
+    marginTop: Spacing.xl,
     marginBottom: Spacing.sm,
     borderRadius: '5%',
   },
@@ -1220,12 +1295,10 @@ const styles = StyleSheet.create({
   repositoryContainer: {
     alignItems: 'center',
     borderStyle: 'solid',
-    borderWidth: 1,
-    borderColor: HackerTheme.accentGreen,
+
     backgroundColor: HackerTheme.darkerGreen,
     marginTop: Spacing.sm,
     marginBottom: Spacing.xs,
-    borderRadius: '5%',
   },
   updateButton: {
     flexDirection: 'row',
@@ -1253,8 +1326,8 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
     paddingVertical: Spacing.md,
     marginHorizontal: Spacing.md,
-    marginTop: Spacing.md,
-    marginBottom: Spacing.md,
+    marginTop: Spacing.xl,
+    marginBottom: Spacing.xs,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: HackerTheme.warningOrange,

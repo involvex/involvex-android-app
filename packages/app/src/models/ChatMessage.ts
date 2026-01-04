@@ -5,7 +5,7 @@
 
 export type MessageRole = 'user' | 'assistant' | 'system';
 export type ContextType = 'repo' | 'package' | null;
-export type AIProvider = 'gemini' | 'ollama';
+export type AIProvider = 'gemini' | 'ollama' | 'openrouter';
 
 export interface ChatMessageData {
   id: string;

@@ -162,6 +162,44 @@ class NpmService {
       return [];
     }
   }
+
+  /**
+   * Get recently updated packages
+   */
+  async getRecentlyUpdated(
+    limit: number = 20
+  ): Promise<NpmPackage[]> {
+    try {
+      const response = await npmClient.getInstance().get('/-/v1/search', {
+        params: {
+          text: 'boost-exact:false',
+          size: limit,
+          from: 0,
+          quality: 0.5,
+          popularity: 0.8,
+          maintenance: 0.9, // Prioritize well-maintained packages
+        },
+      });
+
+      if (!response.data || !response.data.objects) {
+        return [];
+      }
+
+      // Sort by modified date (most recent first)
+      const sortedObjects = response.data.objects.sort((a: any, b: any) => {
+        const dateA = new Date(a.package.date).getTime();
+        const dateB = new Date(b.package.date).getTime();
+        return dateB - dateA;
+      });
+
+      return sortedObjects
+        .slice(0, limit)
+        .map((obj: any) => NpmPackage.fromJSON(obj.package));
+    } catch (error) {
+      console.error('Error fetching recently updated packages:', error);
+      throw error;
+    }
+  }
 }
 
 // Export singleton instance

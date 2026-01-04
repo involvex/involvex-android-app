@@ -17,6 +17,7 @@ export const SecureKeys = {
   GEMINI_MODEL: '@secure:gemini_model',
   OLLAMA_ENDPOINT: '@secure:ollama_endpoint',
   OLLAMA_MODEL: '@secure:ollama_model',
+  OPENROUTER_API_KEY: '@secure:openrouter_api_key',
 } as const;
 
 export type SecureKeyType = (typeof SecureKeys)[keyof typeof SecureKeys];

@@ -22,10 +22,12 @@ import { Typography } from '../theme/typography';
 import { Spacing } from '../theme/spacing';
 import { useTrendingStore } from '../store/trendingStore';
 import { useAIChatStore } from '../store/aiChatStore';
+import { useSettingsStore } from '../store/settingsStore';
 import { TimeframeType } from '../api/github/githubClient';
 import { GitHubRepository } from '../models/GitHubRepository';
 import { NpmPackage } from '../models/NpmPackage';
 import { subscriptionsRepository } from '../database/repositories/subscriptionsRepository';
+import { useInfoCard } from '../store/InfoCard';
 
 type TabType = 'github' | 'npm';
 
@@ -54,6 +56,14 @@ export const HomeScreen: React.FC = () => {
 
   // AI Chat store
   const openChat = useAIChatStore(state => state.openChat);
+
+  // InfoCard store
+  const openInfoCard = useInfoCard(state => state.openInfoCard);
+
+  // Settings store
+  const enableInfoCardPreview = useSettingsStore(
+    state => state.settings.enableInfoCardPreview
+  );
 
   useEffect(() => {
     // Initial data fetch
@@ -253,7 +263,6 @@ export const HomeScreen: React.FC = () => {
   const renderHeader = () => (
     <View style={styles.header}>
       <View style={styles.headerTop}>
-        <Text style={styles.headerTitle}>TRENDING_DATA</Text>
         <TouchableOpacity
           style={styles.filterToggleButton}
           onPress={() => setShowFilters(!showFilters)}
@@ -264,17 +273,31 @@ export const HomeScreen: React.FC = () => {
             color={showFilters ? HackerTheme.primary : HackerTheme.lightGrey}
           />
         </TouchableOpacity>
-      </View>
-      {renderTimeframeSelector()}
+        {renderTimeframeSelector()}
       {renderFilterOptions()}
+      </View>
+      
       {renderTabSelector()}
     </View>
   );
 
   const renderGitHubItem = ({ item }: { item: GitHubRepository }) => {
     const isSubscribed = subscribedItems.has(String(item.id));
+
+    const handleItemPress = () => {
+      if (enableInfoCardPreview) {
+        openInfoCard(item);
+      } else {
+        item.htmlUrl && Linking.openURL(item.htmlUrl);
+      }
+    };
+
     return (
-      <TouchableOpacity onLongPress={() => openChat(item)} activeOpacity={0.9}>
+      <TouchableOpacity
+        onPress={handleItemPress}
+        onLongPress={() => openChat(item)}
+        activeOpacity={0.9}
+      >
         <View style={styles.card}>
           <View style={styles.cardHeader}>
             <TouchableOpacity
@@ -323,8 +346,21 @@ export const HomeScreen: React.FC = () => {
 
   const renderNpmItem = ({ item }: { item: NpmPackage }) => {
     const isSubscribed = subscribedItems.has(item.name);
+
+    const handleItemPress = () => {
+      if (enableInfoCardPreview) {
+        openInfoCard(item);
+      } else {
+        item.npmUrl && Linking.openURL(item.npmUrl);
+      }
+    };
+
     return (
-      <TouchableOpacity onLongPress={() => openChat(item)} activeOpacity={0.9}>
+      <TouchableOpacity
+        onPress={handleItemPress}
+        onLongPress={() => openChat(item)}
+        activeOpacity={0.9}
+      >
         <View style={styles.card}>
           <View style={styles.cardHeader}>
             <TouchableOpacity
@@ -434,27 +470,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: Spacing.md,
-    paddingTop: Spacing.md,
+    paddingHorizontal: Spacing.sm,
   },
   headerTitle: {
     ...Typography.heading3,
     color: HackerTheme.primary,
-    letterSpacing: 2,
-    fontSize: 12,
+    letterSpacing: 1,
+    fontSize: 10,
   },
   filterToggleButton: {
     padding: Spacing.xs,
   },
   timeframeContainer: {
     flexDirection: 'row',
-    padding: Spacing.md,
-    gap: Spacing.sm,
+    gap: Spacing.xs,
+    marginRight: Spacing.xxl,
   },
   timeframeButton: {
     flex: 1,
     paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.md,
+    paddingHorizontal: Spacing.xs,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: HackerTheme.darkGreen,
@@ -481,7 +516,7 @@ const styles = StyleSheet.create({
   },
   tabButton: {
     flex: 1,
-    paddingVertical: Spacing.md,
+    paddingVertical: Spacing.sm,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: HackerTheme.darkGreen,
@@ -498,23 +533,25 @@ const styles = StyleSheet.create({
   },
   tabTextActive: {
     color: HackerTheme.primary,
-    fontWeight: '600',
+    fontWeight: '400',
   },
   filtersPanel: {
     paddingHorizontal: Spacing.md,
-    paddingBottom: Spacing.md,
-    gap: Spacing.sm,
+    paddingBottom: Spacing.sm,
+    gap: Spacing.xs,
+    marginRight: Spacing.xs,
+    
   },
   filterRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: Spacing.md,
+    justifyContent: 'flex-start',
+    gap: Spacing.sm,
   },
   filterLabel: {
     ...Typography.captionText,
     color: HackerTheme.primary,
-    width: 80,
+    width: 50,
   },
   filterInput: {
     flex: 1,
@@ -523,7 +560,6 @@ const styles = StyleSheet.create({
     backgroundColor: HackerTheme.darkGreen,
     borderRadius: 8,
     paddingHorizontal: Spacing.md,
-    paddingVertical: 4,
     borderWidth: 1,
     borderColor: HackerTheme.primary + '20',
   },
@@ -531,14 +567,18 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     gap: Spacing.xs,
+    
+    marginRight: Spacing.xs,
   },
   sortButton: {
     flex: 1,
-    paddingVertical: 4,
+    paddingVertical: 1,
     borderRadius: 6,
     borderWidth: 1,
     borderColor: HackerTheme.darkGreen,
     alignItems: 'center',
+    
+    marginRight: Spacing.xs,
   },
   sortButtonActive: {
     backgroundColor: HackerTheme.primary + '20',

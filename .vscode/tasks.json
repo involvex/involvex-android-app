@@ -1,0 +1,244 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "android-clean-build",
+      "type": "shell",
+      "command": "bun",
+      "args": [
+        "run",
+        "gradle:clean"
+      ],
+      "cwd": "${workspaceFolder}/packages/app",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "group": "build"
+    },
+    {
+      "label": "android-start-metro",
+      "type": "shell",
+      "command": "bun",
+      "args": [
+        "start"
+      ],
+      "cwd": "${workspaceFolder}/packages/app",
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "^.*$",
+          "file": 1,
+          "location": 2,
+          "message": 3
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^.*Metro bundler ready.*",
+          "endsPattern": "^.*Metro bundler ready.*"
+        }
+      },
+      "presentation": {
+        "reveal": "silent",
+        "panel": "new"
+      },
+      "group": "build"
+    },
+    {
+      "label": "🚀 Build Android Release",
+      "type": "shell",
+      "command": "bun",
+      "args": [
+        "run",
+        "release:android"
+      ],
+      "cwd": "${workspaceFolder}/packages/app",
+      "problemMatcher": [
+        "$gradle"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      }
+    },
+    {
+      "label": "📱 Build Android Debug",
+      "type": "shell",
+      "command": "bun",
+      "args": [
+        "run",
+        "build:android"
+      ],
+      "cwd": "${workspaceFolder}/packages/app",
+      "problemMatcher": [
+        "$gradle"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "group": "build"
+    },
+    {
+      "label": "🔍 TypeCheck App",
+      "type": "shell",
+      "command": "bun",
+      "args": [
+        "run",
+        "typecheck"
+      ],
+      "cwd": "${workspaceFolder}/packages/app",
+      "problemMatcher": [
+        "$tsc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "group": "test"
+    },
+    {
+      "label": "🔍 TypeCheck All",
+      "type": "shell",
+      "command": "bun",
+      "args": [
+        "run",
+        "typecheck"
+      ],
+      "cwd": "${workspaceFolder}",
+      "problemMatcher": [
+        "$tsc"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "group": "test"
+    },
+    {
+      "label": "✨ Format Code (App)",
+      "type": "shell",
+      "command": "bun",
+      "args": [
+        "run",
+        "format"
+      ],
+      "cwd": "${workspaceFolder}/packages/app",
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      },
+      "group": "build"
+    },
+    {
+      "label": "📋 Lint App",
+      "type": "shell",
+      "command": "bun",
+      "args": [
+        "run",
+        "lint"
+      ],
+      "cwd": "${workspaceFolder}/packages/app",
+      "problemMatcher": [
+        "$eslint-compact"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "group": "test"
+    },
+    {
+      "label": "🔧 Gradle Clean",
+      "type": "shell",
+      "command": "bun",
+      "args": [
+        "run",
+        "gradle:clean"
+      ],
+      "cwd": "${workspaceFolder}/packages/app",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "group": "build"
+    },
+    {
+      "label": "📦 Install Dependencies",
+      "type": "shell",
+      "command": "bun",
+      "args": [
+        "install"
+      ],
+      "cwd": "${workspaceFolder}",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "group": "build"
+    },
+    {
+      "label": "🌐 Start Web Dev",
+      "type": "shell",
+      "command": "bun",
+      "args": [
+        "run",
+        "web"
+      ],
+      "cwd": "${workspaceFolder}",
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "^.*Local:.*",
+          "file": 1,
+          "location": 2,
+          "message": 3
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^.*Local:.*",
+          "endsPattern": "^.*Local:.*"
+        }
+      },
+      "presentation": {
+        "reveal": "silent",
+        "panel": "new"
+      },
+      "group": "build"
+    },
+    {
+      "label": "🔌 Start API Dev",
+      "type": "shell",
+      "command": "bun",
+      "args": [
+        "run",
+        "api"
+      ],
+      "cwd": "${workspaceFolder}",
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "^.*Listening on.*",
+          "file": 1,
+          "location": 2,
+          "message": 3
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^.*Listening on.*",
+          "endsPattern": "^.*Listening on.*"
+        }
+      },
+      "presentation": {
+        "reveal": "silent",
+        "panel": "new"
+      },
+      "group": "build"
+    }
+  ]
+}

@@ -39,7 +39,6 @@ interface AIChatState {
   loadHistory: (contextType?: ContextType, contextId?: string) => Promise<void>;
   setContext: (context: GitHubRepository | NpmPackage | null) => void;
   clearContext: () => void;
-
   // Quick actions
   explainContext: () => Promise<void>;
   compareWith: (

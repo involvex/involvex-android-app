@@ -38,6 +38,21 @@ const QUICK_FILTERS = [
   'Vue',
 ];
 
+const NPM_CATEGORIES = [
+  { id: 'frontend', label: 'Front-end', keywords: 'react vue angular svelte' },
+  { id: 'backend', label: 'Back-end', keywords: 'express fastify koa nest' },
+  { id: 'cli', label: 'CLI', keywords: 'cli command-line terminal' },
+  { id: 'docs', label: 'Documentation', keywords: 'documentation docs markdown' },
+  { id: 'css', label: 'CSS', keywords: 'css styles tailwind sass' },
+  { id: 'testing', label: 'Testing', keywords: 'test jest mocha vitest' },
+  { id: 'iot', label: 'IoT', keywords: 'iot arduino raspberry-pi mqtt' },
+  { id: 'coverage', label: 'Coverage', keywords: 'coverage istanbul nyc' },
+  { id: 'mobile', label: 'Mobile', keywords: 'mobile ios android react-native' },
+  { id: 'frameworks', label: 'Frameworks', keywords: 'framework next nuxt remix' },
+  { id: 'robotics', label: 'Robotics', keywords: 'robotics robot automation' },
+  { id: 'math', label: 'Math', keywords: 'math mathematics algebra' },
+];
+
 export const SearchScreen: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('github');
   const [searchQuery, setSearchQuery] = useState('');
@@ -48,6 +63,8 @@ export const SearchScreen: React.FC = () => {
   const [subscribedItems, setSubscribedItems] = useState<Set<string>>(
     new Set(),
   );
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [recentlyUpdated, setRecentlyUpdated] = useState<NpmPackage[]>([]);
 
   // Filters
   const [selectedLanguage, setSelectedLanguage] = useState<string>('');
@@ -58,12 +75,27 @@ export const SearchScreen: React.FC = () => {
     loadSubscriptions();
   }, []);
 
+  useEffect(() => {
+    if (activeTab === 'npm' && recentlyUpdated.length === 0) {
+      loadRecentlyUpdated();
+    }
+  }, [activeTab]);
+
   const loadSubscriptions = async () => {
     try {
       const subs = await subscriptionsRepository.getAll();
       setSubscribedItems(new Set(subs.map(s => s.itemId)));
     } catch (error) {
       console.error('Failed to load subscriptions:', error);
+    }
+  };
+
+  const loadRecentlyUpdated = async () => {
+    try {
+      const packages = await npmService.getRecentlyUpdated(10);
+      setRecentlyUpdated(packages);
+    } catch (error) {
+      console.error('Failed to load recently updated packages:', error);
     }
   };
 
@@ -238,6 +270,85 @@ export const SearchScreen: React.FC = () => {
     </ScrollView>
   );
 
+  const renderNpmCategoryFilters = () => {
+    if (activeTab !== 'npm') return null;
+
+    return (
+      <View style={styles.categoryFiltersContainer}>
+        <Text style={styles.categoryTitle}>Categories</Text>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoryFiltersContent}
+        >
+          {NPM_CATEGORIES.map(category => (
+            <TouchableOpacity
+              key={category.id}
+              style={[
+                styles.categoryChip,
+                selectedCategory === category.id && styles.categoryChipActive,
+              ]}
+              onPress={() => {
+                setSelectedCategory(
+                  selectedCategory === category.id ? null : category.id
+                );
+                const selected = NPM_CATEGORIES.find(c => c.id === category.id);
+                if (selected) {
+                  setSearchQuery(selected.keywords);
+                  setTimeout(handleSearch, 100);
+                }
+              }}
+            >
+              <Text
+                style={[
+                  styles.categoryText,
+                  selectedCategory === category.id && styles.categoryTextActive,
+                ]}
+              >
+                {category.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+    );
+  };
+
+  const renderRecentlyUpdated = () => {
+    if (activeTab !== 'npm' || recentlyUpdated.length === 0) return null;
+
+    return (
+      <View style={styles.recentlyUpdatedContainer}>
+        <View style={styles.recentlyUpdatedHeader}>
+          <Icon name="update" size={20} color={HackerTheme.primary} />
+          <Text style={styles.recentlyUpdatedTitle}>Recently Updated</Text>
+        </View>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.recentlyUpdatedContent}
+        >
+          {recentlyUpdated.map(pkg => (
+            <TouchableOpacity
+              key={pkg.name}
+              style={styles.recentlyUpdatedCard}
+              onPress={() => pkg.npmUrl && Linking.openURL(pkg.npmUrl)}
+            >
+              <Icon name="npm" size={24} color={HackerTheme.primary} />
+              <Text style={styles.recentlyUpdatedName} numberOfLines={1}>
+                {pkg.name}
+              </Text>
+              <Text style={styles.recentlyUpdatedVersion}>v{pkg.version}</Text>
+              <Text style={styles.recentlyUpdatedDownloads}>
+                {pkg.formattedDownloads}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+    );
+  };
+
   const renderAdvancedFilters = () => {
     if (!showFilters) return null;
 
@@ -401,6 +512,8 @@ export const SearchScreen: React.FC = () => {
       {renderTabSelector()}
       {renderSearchBar()}
       {renderQuickFilters()}
+      {renderNpmCategoryFilters()}
+      {renderRecentlyUpdated()}
       {renderAdvancedFilters()}
 
       {loading ? (
@@ -460,19 +573,25 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     flexDirection: 'row',
-    paddingHorizontal: Spacing.md,
-    gap: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    gap: Spacing.md,
+    backgroundColor: HackerTheme.darkerGreen,
+    borderBottomWidth: 1,
+    borderBottomColor: HackerTheme.primary + '20',
   },
   searchInputContainer: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: HackerTheme.darkGreen,
-    borderRadius: 8,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: HackerTheme.primary + '20',
-    paddingHorizontal: Spacing.md,
+    borderColor: HackerTheme.primary + '40',
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.xs,
     gap: Spacing.sm,
+    height: 48,
   },
   searchInput: {
     flex: 1,
@@ -491,24 +610,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   quickFiltersContainer: {
-    marginTop: Spacing.md,
+    paddingVertical: Spacing.md,
+    backgroundColor: HackerTheme.darkerGreen,
+    borderBottomWidth: 1,
+    borderBottomColor: HackerTheme.primary + '20',
   },
   quickFiltersContent: {
-    paddingHorizontal: Spacing.md,
+    paddingHorizontal: Spacing.lg,
     gap: Spacing.sm,
   },
   quickFilterChip: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderRadius: 16,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: HackerTheme.darkGreen,
-    backgroundColor: HackerTheme.darkerGreen,
-    marginRight: Spacing.sm,
+    borderColor: HackerTheme.primary + '40',
+    backgroundColor: HackerTheme.darkGreen,
+    marginRight: Spacing.md,
   },
   quickFilterChipActive: {
-    backgroundColor: HackerTheme.darkGreen,
+    backgroundColor: HackerTheme.primary + '20',
     borderColor: HackerTheme.primary,
+    borderWidth: 2,
   },
   quickFilterText: {
     ...Typography.captionText,
@@ -520,17 +643,20 @@ const styles = StyleSheet.create({
   },
   filtersPanel: {
     backgroundColor: HackerTheme.darkGreen,
-    margin: Spacing.md,
-    padding: Spacing.md,
-    borderRadius: 12,
+    marginHorizontal: Spacing.lg,
+    marginVertical: Spacing.md,
+    padding: Spacing.lg,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: HackerTheme.primary + '20',
+    borderColor: HackerTheme.primary + '40',
+    gap: Spacing.md,
   },
   filterLabel: {
     ...Typography.bodyText,
     color: HackerTheme.primary,
-    marginBottom: Spacing.xs,
-    marginTop: Spacing.sm,
+    fontWeight: '600',
+    marginBottom: Spacing.sm,
+    marginTop: 0,
   },
   filterInput: {
     ...Typography.bodyText,
@@ -660,6 +786,90 @@ const styles = StyleSheet.create({
     color: HackerTheme.lightGrey,
     marginTop: Spacing.md,
     textAlign: 'center',
+  },
+  categoryFiltersContainer: {
+    paddingVertical: Spacing.md,
+    backgroundColor: HackerTheme.darkerGreen,
+    borderBottomWidth: 1,
+    borderBottomColor: HackerTheme.primary + '20',
+  },
+  categoryTitle: {
+    ...Typography.heading3,
+    color: HackerTheme.primary,
+    paddingHorizontal: Spacing.lg,
+    marginBottom: Spacing.sm,
+  },
+  categoryFiltersContent: {
+    paddingHorizontal: Spacing.lg,
+    gap: Spacing.sm,
+  },
+  categoryChip: {
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: HackerTheme.primary + '40',
+    backgroundColor: HackerTheme.darkGreen,
+    marginRight: Spacing.md,
+  },
+  categoryChipActive: {
+    backgroundColor: HackerTheme.primary + '20',
+    borderColor: HackerTheme.primary,
+    borderWidth: 2,
+  },
+  categoryText: {
+    ...Typography.bodyText,
+    color: HackerTheme.lightGrey,
+    fontWeight: '600',
+  },
+  categoryTextActive: {
+    color: HackerTheme.primary,
+    fontWeight: 'bold',
+  },
+  recentlyUpdatedContainer: {
+    paddingVertical: Spacing.md,
+    backgroundColor: HackerTheme.darkerGreen,
+    borderBottomWidth: 1,
+    borderBottomColor: HackerTheme.primary + '20',
+  },
+  recentlyUpdatedHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
+    marginBottom: Spacing.sm,
+  },
+  recentlyUpdatedTitle: {
+    ...Typography.heading3,
+    color: HackerTheme.primary,
+  },
+  recentlyUpdatedContent: {
+    paddingHorizontal: Spacing.lg,
+    gap: Spacing.md,
+  },
+  recentlyUpdatedCard: {
+    width: 140,
+    backgroundColor: HackerTheme.darkGreen,
+    borderRadius: 12,
+    padding: Spacing.md,
+    borderWidth: 1,
+    borderColor: HackerTheme.primary + '40',
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  recentlyUpdatedName: {
+    ...Typography.bodyText,
+    color: HackerTheme.primary,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  recentlyUpdatedVersion: {
+    ...Typography.captionText,
+    color: HackerTheme.accent,
+  },
+  recentlyUpdatedDownloads: {
+    ...Typography.captionText,
+    color: HackerTheme.lightGrey,
   },
 });
 

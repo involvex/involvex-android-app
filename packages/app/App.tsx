@@ -15,6 +15,7 @@ import { useSettingsStore } from './src/store/settingsStore';
 import { HackerTheme } from './src/theme/colors';
 import { updateService } from './src/api/github/updateService';
 import AIChatBottomSheet from './src/components/AIChat/AIChatBottomSheet';
+import { InfoCardModal } from './src/components/InfoCard';
 
 function App() {
   const [isInitialized, setIsInitialized] = useState(false);
@@ -86,6 +87,9 @@ function App() {
 
         {/* AI Chat Bottom Sheet - renders on top of everything */}
         <AIChatBottomSheet />
+
+        {/* Info Card Modal - WebView browser for repos/packages */}
+        <InfoCardModal />
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

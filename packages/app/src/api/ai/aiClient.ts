@@ -14,11 +14,11 @@ export interface AIResponse {
   content: string;
   tokenCount?: number;
   model: string;
-  provider: 'gemini' | 'ollama';
+  provider: 'gemini' | 'ollama' | 'openrouter';
 }
 
 export interface AIClientConfig {
-  provider: 'gemini' | 'ollama';
+  provider: 'gemini' | 'ollama' | 'openrouter';
   model: string;
   maxTokens?: number;
   temperature?: number;
@@ -241,11 +241,99 @@ class OllamaClient {
 }
 
 /**
+ * OpenRouter API Client
+ */
+class OpenRouterClient {
+  private apiKey: string | null = null;
+  private baseUrl = 'https://openrouter.ai/api/v1';
+
+  async initialize(): Promise<void> {
+    this.apiKey = await getSecureValue(SecureKeys.OPENROUTER_API_KEY);
+    if (!this.apiKey) {
+      throw new Error('OpenRouter API key not configured');
+    }
+  }
+
+  async sendMessage(
+    messages: AIMessage[],
+    model: string = 'anthropic/claude-3-5-sonnet',
+    maxTokens: number = 2048,
+    temperature: number = 0.7,
+  ): Promise<AIResponse> {
+    if (!this.apiKey) {
+      await this.initialize();
+    }
+
+    // Convert messages to OpenAI format (OpenRouter uses OpenAI-compatible API)
+    const openAIMessages = messages.map(msg => ({
+      role: msg.role,
+      content: msg.content,
+    }));
+
+    const requestBody = {
+      model,
+      messages: openAIMessages,
+      max_tokens: maxTokens,
+      temperature,
+    };
+
+    const response = await fetch(`${this.baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://involvex.app', // Required by OpenRouter
+        'X-Title': 'Involvex App', // Optional
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(
+        `OpenRouter API error: ${error.error?.message || response.statusText}`,
+      );
+    }
+
+    const data = await response.json();
+
+    if (!data.choices || data.choices.length === 0) {
+      throw new Error('No response from OpenRouter API');
+    }
+
+    const content = data.choices[0].message.content;
+    const tokenCount = data.usage?.total_tokens;
+
+    return {
+      content,
+      tokenCount,
+      model,
+      provider: 'openrouter',
+    };
+  }
+
+  async testConnection(): Promise<boolean> {
+    try {
+      await this.initialize();
+      const testMessages: AIMessage[] = [
+        { role: 'user', content: 'Hello, please respond with OK' },
+      ];
+      const response = await this.sendMessage(testMessages);
+      return response.content.length > 0;
+    } catch (error) {
+      console.error('OpenRouter connection test failed:', error);
+      return false;
+    }
+  }
+}
+
+/**
  * Unified AI Client
  */
 export class AIClient {
   private gemini = new GeminiClient();
   private ollama = new OllamaClient();
+  private openRouter = new OpenRouterClient();
 
   /**
    * Send a message using the specified provider
@@ -256,21 +344,31 @@ export class AIClient {
   ): Promise<AIResponse> {
     const { provider, model, maxTokens = 2048, temperature = 0.7 } = config;
 
-    if (provider === 'gemini') {
-      return this.gemini.sendMessage(messages, model, maxTokens, temperature);
-    } else {
-      return this.ollama.sendMessage(messages, model, maxTokens, temperature);
+    switch (provider) {
+      case 'gemini':
+        return this.gemini.sendMessage(messages, model, maxTokens, temperature);
+      case 'ollama':
+        return this.ollama.sendMessage(messages, model, maxTokens, temperature);
+      case 'openrouter':
+        return this.openRouter.sendMessage(messages, model, maxTokens, temperature);
+      default:
+        throw new Error(`Unknown AI provider: ${provider}`);
     }
   }
 
   /**
    * Test connection to a provider
    */
-  async testConnection(provider: 'gemini' | 'ollama'): Promise<boolean> {
-    if (provider === 'gemini') {
-      return this.gemini.testConnection();
-    } else {
-      return this.ollama.testConnection();
+  async testConnection(provider: 'gemini' | 'ollama' | 'openrouter'): Promise<boolean> {
+    switch (provider) {
+      case 'gemini':
+        return this.gemini.testConnection();
+      case 'ollama':
+        return this.ollama.testConnection();
+      case 'openrouter':
+        return this.openRouter.testConnection();
+      default:
+        return false;
     }
   }
 

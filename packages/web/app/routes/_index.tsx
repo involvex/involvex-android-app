@@ -1,6 +1,6 @@
+import { HackerTheme } from "@involvex/shared";
 import { json } from "@remix-run/cloudflare";
 import { useLoaderData } from "@remix-run/react";
-import { HackerTheme } from "@involvex/shared";
 
 export async function loader() {
   return json({
@@ -87,7 +87,7 @@ export default function Index() {
             justifyContent: "center",
           }}
           target="_blank"
-          rel="noreferrer"
+          rel="noopener"
         >
           Documentation
         </a>
@@ -108,7 +108,7 @@ export default function Index() {
         <a
           href="https://github.com/involvex/involvex-android-app/releases/latest"
           target="_blank"
-          rel="noreferrer"
+          rel="noopener"
           style={{
             padding: "0.75rem 1.5rem",
             backgroundColor: "var(--color-primary)",
@@ -122,6 +122,20 @@ export default function Index() {
         >
           Download APK
         </a>
+        <br />
+        <br />
+        <p style={{ margin: "1rem 0", color: "var(--color-text-grey)" }}>
+          <a
+            href="./changelog"
+            rel="noreferrer"
+            style={{
+              textDecoration: "none",
+              color: "var(--color-accent-green)",
+            }}
+          >
+            See Changelog here
+          </a>
+        </p>
       </div>
     </div>
   );

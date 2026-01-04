@@ -1,18 +1,115 @@
 {
-    "cSpell.words": [
-        "cmdline",
-        "elif",
-        "gradlew",
-        "involvexapp",
-        "repositorylabel",
-        "sdkmanager",
-        "temurin",
-        "worklets"
-    ],
-    "files.watcherExclude": {
-        
-        "**/.hg/store/**": true,
-        "**/.dart_tool": true,
-        "**/node_modules/**": true
+  "cSpell.words": [
+    "cmdline",
+    "elif",
+    "gradlew",
+    "involvexapp",
+    "repositorylabel",
+    "sdkmanager",
+    "temurin",
+    "worklets",
+    "Involvex",
+    "openrouter",
+    "ollama",
+    "hermesEnabled",
+    "newArchEnabled",
+    "hermes",
+    "android",
+    "androidx"
+  ],
+  "files.watcherExclude": {
+    "**/.hg/store/**": true,
+    "**/.dart_tool": true,
+    "**/node_modules/**": true,
+    "**/.gradle/**": true,
+    "**/android/build/**": true,
+    "**/build/**": true,
+    "**/.meteor/**": true,
+    "**/coverage/**": true,
+    "**/.expo/**": true
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": true,
+      "source.organizeImports": true
     }
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": true,
+      "source.organizeImports": true
+    }
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": true
+    }
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "editor.rulers": [
+    80,
+    120
+  ],
+  "editor.wordWrap": "on",
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "search.exclude": {
+    "**/.git": true,
+    "**/.gradle": true,
+    "**/node_modules": true,
+    "**/build": true,
+    "**/.expo": true,
+    "**/.next": true
+  },
+  "debug.internalConsoleOptions": "neverOpen",
+  "debug.showInStatusBar": "always",
+  "react-native.showNewDebuggerWarning": false,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true,
+    "source.organizeImports": true
+  },
+  "extensions.ignoreRecommendations": false,
+  "git.ignoreLimitWarning": true,
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+  "terminal.integrated.profiles.windows": {
+    "PowerShell": {
+      "source": "PowerShell",
+      "icon": "terminal-powershell"
+    },
+    "Command Prompt": {
+      "path": [
+        "${env:windir}\\System32\\cmd.exe"
+      ],
+      "icon": "terminal-cmd"
+    },
+    "Git Bash": {
+      "source": "Git Bash"
+    }
+  },
+  "terminal.integrated.env.windows": {
+    "ANDROID_HOME": "${env:ANDROID_HOME}",
+    "JAVA_HOME": "${env:JAVA_HOME}"
+  },
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": true,
+  "workbench.colorCustomizations": {
+    "editorBracketHighlight.foreground1": "#00ff41",
+    "editorBracketHighlight.foreground2": "#00d9ff",
+    "editorBracketHighlight.foreground3": "#ffa500",
+    "editorBracketHighlight.unexpectedBracket.foreground": "#ff0000"
+  },
+  "[gradle]": {
+    "editor.defaultFormatter": "nwolverson.vscode-gradle"
+  }
 }
