@@ -426,7 +426,11 @@ export const SearchScreen: React.FC = () => {
   };
 
   const renderRecentlyUpdated = () => {
-    if (activeTab !== 'npm' || recentlyUpdated.length === 0) return null;
+    // Only show Recently Updated when:
+    // 1. On npm tab
+    // 2. Have recently updated packages to show
+    // 3. No active search results (to avoid cluttering search results)
+    if (activeTab !== 'npm' || recentlyUpdated.length === 0 || npmResults.length > 0) return null;
 
     return (
       <View style={styles.recentlyUpdatedContainer}>
