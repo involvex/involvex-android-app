@@ -3,31 +3,31 @@
  * Displays trending GitHub repos and npm packages with dual tabs
  */
 
+import { FlashList } from '@shopify/flash-list';
 import React, { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
   ActivityIndicator,
-  RefreshControl,
-  TextInput,
   Alert,
   Linking,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { FlashList } from '@shopify/flash-list';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { HackerTheme } from '../theme/colors';
-import { Typography } from '../theme/typography';
-import { Spacing } from '../theme/spacing';
-import { useTrendingStore } from '../store/trendingStore';
-import { useAIChatStore } from '../store/aiChatStore';
-import { useSettingsStore } from '../store/settingsStore';
 import { TimeframeType } from '../api/github/githubClient';
+import { subscriptionsRepository } from '../database/repositories/subscriptionsRepository';
 import { GitHubRepository } from '../models/GitHubRepository';
 import { NpmPackage } from '../models/NpmPackage';
-import { subscriptionsRepository } from '../database/repositories/subscriptionsRepository';
+import { useAIChatStore } from '../store/aiChatStore';
 import { useInfoCard } from '../store/InfoCard';
+import { useSettingsStore } from '../store/settingsStore';
+import { useTrendingStore } from '../store/trendingStore';
+import { HackerTheme } from '../theme/colors';
+import { Spacing } from '../theme/spacing';
+import { Typography } from '../theme/typography';
 
 type TabType = 'github' | 'npm';
 
@@ -62,14 +62,8 @@ export const HomeScreen: React.FC = () => {
 
   // Settings store
   const enableInfoCardPreview = useSettingsStore(
-    state => state.settings.enableInfoCardPreview
+    state => state.settings.enableInfoCardPreview,
   );
-
-  useEffect(() => {
-    // Initial data fetch
-    refreshAll();
-    loadSubscriptions();
-  }, [refreshAll]);
 
   const loadSubscriptions = async () => {
     try {
@@ -79,6 +73,15 @@ export const HomeScreen: React.FC = () => {
       console.error('Failed to load subscriptions:', loadError);
     }
   };
+
+  useEffect(() => {
+    // Initial data fetch
+    const init = async () => {
+      refreshAll();
+      await loadSubscriptions();
+    };
+    void init();
+  }, [refreshAll]);
 
   const handleRefresh = () => {
     refreshAll();
@@ -274,9 +277,9 @@ export const HomeScreen: React.FC = () => {
           />
         </TouchableOpacity>
         {renderTimeframeSelector()}
-      {renderFilterOptions()}
+        {renderFilterOptions()}
       </View>
-      
+
       {renderTabSelector()}
     </View>
   );
@@ -287,8 +290,8 @@ export const HomeScreen: React.FC = () => {
     const handleItemPress = () => {
       if (enableInfoCardPreview) {
         openInfoCard(item);
-      } else {
-        item.htmlUrl && Linking.openURL(item.htmlUrl);
+      } else if (item.htmlUrl) {
+        Linking.openURL(item.htmlUrl);
       }
     };
 
@@ -350,8 +353,8 @@ export const HomeScreen: React.FC = () => {
     const handleItemPress = () => {
       if (enableInfoCardPreview) {
         openInfoCard(item);
-      } else {
-        item.npmUrl && Linking.openURL(item.npmUrl);
+      } else if (item.npmUrl) {
+        Linking.openURL(item.npmUrl);
       }
     };
 
@@ -422,15 +425,23 @@ export const HomeScreen: React.FC = () => {
         </View>
       ) : (
         <FlashList
-          data={data as any}
+          data={data}
           renderItem={
             activeTab === 'github'
-              ? (renderGitHubItem as any)
-              : (renderNpmItem as any)
+              ? (renderGitHubItem as unknown as import('@shopify/flash-list').ListRenderItem<
+                  GitHubRepository | NpmPackage
+                >)
+              : (renderNpmItem as unknown as import('@shopify/flash-list').ListRenderItem<
+                  GitHubRepository | NpmPackage
+                >)
           }
-          // @ts-ignore
+          // @ts-expect-error - estimatedItemSize exists in runtime but missing from FlashList type definitions
           estimatedItemSize={150}
-          keyExtractor={(item: any) => item.id?.toString() || item.name}
+          keyExtractor={item =>
+            activeTab === 'github'
+              ? String((item as GitHubRepository).id)
+              : (item as NpmPackage).name
+          }
           contentContainerStyle={styles.listContent}
           refreshControl={
             <RefreshControl
@@ -540,7 +551,6 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.sm,
     gap: Spacing.xs,
     marginRight: Spacing.xs,
-    
   },
   filterRow: {
     flexDirection: 'row',
@@ -567,7 +577,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     gap: Spacing.xs,
-    
+
     marginRight: Spacing.xs,
   },
   sortButton: {
@@ -577,7 +587,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: HackerTheme.darkGreen,
     alignItems: 'center',
-    
+
     marginRight: Spacing.xs,
   },
   sortButtonActive: {

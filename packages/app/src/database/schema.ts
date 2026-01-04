@@ -9,15 +9,17 @@ import SQLite from 'react-native-sqlite-storage';
 SQLite.DEBUG(true);
 SQLite.enablePromise(true);
 
+// Type alias for SQLite database - react-native-sqlite-storage has incomplete type exports
+type SQLiteDatabase = Awaited<ReturnType<typeof SQLite.openDatabase>>;
+
 export class Database {
-  private static db: any | null = null;
+  private static db: SQLiteDatabase | null = null;
 
   /**
    * Initialize database and create tables
    */
   static async init(): Promise<void> {
     if (this.db) {
-      console.log('Database already initialized');
       return;
     }
 
@@ -27,12 +29,8 @@ export class Database {
         location: 'default',
       });
 
-      console.log('Database opened successfully');
-
       // Create tables
       await this.createTables();
-
-      console.log('Database tables created successfully');
     } catch (error) {
       console.error('Error initializing database:', error);
       throw error;
@@ -156,7 +154,7 @@ export class Database {
   /**
    * Get database instance
    */
-  static getDB(): any {
+  static getDB(): SQLiteDatabase {
     if (!this.db) throw new Error('Database not initialized');
     return this.db;
   }
@@ -168,7 +166,6 @@ export class Database {
     if (this.db) {
       await this.db.close();
       this.db = null;
-      console.log('Database closed');
     }
   }
 
@@ -183,8 +180,6 @@ export class Database {
     await this.db.executeSql('DELETE FROM notifications;');
     await this.db.executeSql('DELETE FROM cache;');
     await this.db.executeSql('DELETE FROM ai_chat_messages;');
-
-    console.log('All data cleared');
   }
 
   /**
@@ -193,7 +188,6 @@ export class Database {
   static async clearCache(): Promise<void> {
     if (!this.db) throw new Error('Database not initialized');
     await this.db.executeSql('DELETE FROM cache;');
-    console.log('Cache cleared');
   }
 
   /**
@@ -204,8 +198,6 @@ export class Database {
 
     const now = Date.now();
     await this.db.executeSql('DELETE FROM cache WHERE expires_at < ?;', [now]);
-
-    console.log('Expired cache entries cleaned');
   }
 }
 

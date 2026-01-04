@@ -3,8 +3,8 @@
  * Handles all subscription database operations
  */
 
-import { Database } from '../schema';
 import { Subscription } from '../../models';
+import { Database } from '../schema';
 
 class SubscriptionsRepository {
   /**
@@ -80,8 +80,6 @@ class SubscriptionsRepository {
         now,
       ],
     );
-
-    console.log('Subscription added:', subscription.name);
   }
 
   /**
@@ -95,8 +93,6 @@ class SubscriptionsRepository {
       'UPDATE subscriptions SET is_active = 0, updated_at = ? WHERE id = ?;',
       [now, id],
     );
-
-    console.log('Subscription removed:', id);
   }
 
   /**
@@ -110,8 +106,6 @@ class SubscriptionsRepository {
       'UPDATE subscriptions SET is_active = 0, updated_at = ? WHERE item_id = ?;',
       [now, itemId],
     );
-
-    console.log('Subscription removed by item ID:', itemId);
   }
 
   /**
@@ -125,8 +119,6 @@ class SubscriptionsRepository {
       'UPDATE subscriptions SET is_active = 0, updated_at = ?;',
       [now],
     );
-
-    console.log('All subscriptions cleared');
   }
 
   /**

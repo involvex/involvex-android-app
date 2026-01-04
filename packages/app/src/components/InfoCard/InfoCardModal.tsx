@@ -5,28 +5,24 @@
 
 import React, { useRef } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  Modal,
-  TouchableOpacity,
   ActivityIndicator,
-  Alert,
   Linking,
-  Dimensions,
+  Modal,
   ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { WebView, WebViewNavigation } from 'react-native-webview';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Share from 'react-native-share';
-import { HackerTheme } from '../../theme/colors';
-import { Typography } from '../../theme/typography';
-import { Spacing } from '../../theme/spacing';
-import { useInfoCard } from '../../store/InfoCard';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { WebView, WebViewNavigation } from 'react-native-webview';
 import { GitHubRepository } from '../../models/GitHubRepository';
 import { NpmPackage } from '../../models/NpmPackage';
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+import { useInfoCard } from '../../store/InfoCard';
+import { HackerTheme } from '../../theme/colors';
+import { Spacing } from '../../theme/spacing';
+import { Typography } from '../../theme/typography';
 
 export const InfoCardModal: React.FC = () => {
   const {
@@ -101,10 +97,10 @@ export const InfoCardModal: React.FC = () => {
         message: `Check out ${title}:\n${currentUrl}`,
         url: currentUrl,
       });
-    } catch (shareError: any) {
+    } catch (error) {
       // User cancelled share - not an error
-      if (shareError.message !== 'User did not share') {
-        console.error('Share error:', shareError);
+      if (error instanceof Error && error.message !== 'User did not share') {
+        console.error('Share error:', error);
       }
     }
   };
@@ -128,7 +124,10 @@ export const InfoCardModal: React.FC = () => {
   // Render preview card
   const renderPreviewCard = () => (
     <View style={styles.previewContainer}>
-      <ScrollView style={styles.previewScroll} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.previewScroll}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Header */}
         <View style={styles.previewHeader}>
           <Icon
@@ -148,7 +147,9 @@ export const InfoCardModal: React.FC = () => {
         {currentItem.description && (
           <View style={styles.descriptionSection}>
             <Text style={styles.sectionTitle}>Description</Text>
-            <Text style={styles.descriptionText}>{currentItem.description}</Text>
+            <Text style={styles.descriptionText}>
+              {currentItem.description}
+            </Text>
           </View>
         )}
 
@@ -164,7 +165,11 @@ export const InfoCardModal: React.FC = () => {
                   <Text style={styles.statValue}>{repo.formattedStars}</Text>
                 </View>
                 <View style={styles.statItem}>
-                  <Icon name="source-fork" size={20} color={HackerTheme.accent} />
+                  <Icon
+                    name="source-fork"
+                    size={20}
+                    color={HackerTheme.accent}
+                  />
                   <Text style={styles.statLabel}>Forks</Text>
                   <Text style={styles.statValue}>{repo.formattedForks}</Text>
                 </View>
@@ -197,7 +202,11 @@ export const InfoCardModal: React.FC = () => {
                   </View>
                 )}
                 <View style={styles.statItem}>
-                  <Icon name="package-variant" size={20} color={HackerTheme.accent} />
+                  <Icon
+                    name="package-variant"
+                    size={20}
+                    color={HackerTheme.accent}
+                  />
                   <Text style={styles.statLabel}>Version</Text>
                   <Text style={styles.statValue}>v{pkg.version}</Text>
                 </View>
@@ -251,9 +260,12 @@ export const InfoCardModal: React.FC = () => {
     <View style={styles.webViewContainer}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => {
-          closeInfoCard();
-        }} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => {
+            closeInfoCard();
+          }}
+          style={styles.backButton}
+        >
           <Icon name="arrow-left" size={24} color={HackerTheme.primary} />
         </TouchableOpacity>
 
@@ -275,10 +287,7 @@ export const InfoCardModal: React.FC = () => {
       {loading && (
         <View style={styles.progressBarContainer}>
           <View
-            style={[
-              styles.progressBar,
-              { width: `${loadingProgress * 100}%` },
-            ]}
+            style={[styles.progressBar, { width: `${loadingProgress * 100}%` }]}
           />
         </View>
       )}
@@ -300,10 +309,7 @@ export const InfoCardModal: React.FC = () => {
         <TouchableOpacity
           onPress={handleGoForward}
           disabled={!canGoForward}
-          style={[
-            styles.navButton,
-            !canGoForward && styles.navButtonDisabled,
-          ]}
+          style={[styles.navButton, !canGoForward && styles.navButtonDisabled]}
         >
           <Icon
             name="arrow-right"
@@ -322,10 +328,7 @@ export const InfoCardModal: React.FC = () => {
           <Icon name="share-variant" size={20} color={HackerTheme.accent} />
         </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={handleOpenExternal}
-          style={styles.navButton}
-        >
+        <TouchableOpacity onPress={handleOpenExternal} style={styles.navButton}>
           <Icon name="open-in-new" size={20} color={HackerTheme.accent} />
         </TouchableOpacity>
       </View>
@@ -333,11 +336,7 @@ export const InfoCardModal: React.FC = () => {
       {/* Error Banner */}
       {error && (
         <View style={styles.errorBanner}>
-          <Icon
-            name="alert-circle"
-            size={16}
-            color={HackerTheme.errorRed}
-          />
+          <Icon name="alert-circle" size={16} color={HackerTheme.errorRed} />
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity onPress={handleRefresh}>
             <Text style={styles.retryText}>Retry</Text>
@@ -381,7 +380,10 @@ export const InfoCardModal: React.FC = () => {
       <View style={styles.container}>
         {!showWebView && (
           <View style={styles.modalHeader}>
-            <TouchableOpacity onPress={closeInfoCard} style={styles.closeButton}>
+            <TouchableOpacity
+              onPress={closeInfoCard}
+              style={styles.closeButton}
+            >
               <Icon name="close" size={24} color={HackerTheme.lightGrey} />
             </TouchableOpacity>
           </View>

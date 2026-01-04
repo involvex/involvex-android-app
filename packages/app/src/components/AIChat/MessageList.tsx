@@ -3,13 +3,13 @@
  * Displays chat messages with FlashList for performance
  */
 
-import React, { useRef, useEffect } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
-import { HackerTheme } from '../../theme/colors';
-import { Typography } from '../../theme/typography';
-import { Spacing } from '../../theme/spacing';
+import React, { useEffect, useRef } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 import ChatMessage from '../../models/ChatMessage';
+import { HackerTheme } from '../../theme/colors';
+import { Spacing } from '../../theme/spacing';
+import { Typography } from '../../theme/typography';
 
 interface MessageListProps {
   messages: ChatMessage[];
@@ -20,6 +20,8 @@ export const MessageList: React.FC<MessageListProps> = ({
   messages,
   loading = false,
 }) => {
+  // FlashList is a component value, not a type - using any for ref typing
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const listRef = useRef<any>(null);
 
   // Auto-scroll to bottom when new messages arrive
@@ -109,7 +111,7 @@ export const MessageList: React.FC<MessageListProps> = ({
           data={messages}
           renderItem={renderMessage}
           keyExtractor={item => item.id}
-          // @ts-ignore
+          // @ts-expect-error - estimatedItemSize exists in runtime but missing from FlashList type definitions
           estimatedItemSize={100}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}

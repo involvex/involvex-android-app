@@ -32,23 +32,23 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
-      "source.fixAll.eslint": true,
-      "source.organizeImports": true
+      "source.fixAll.eslint": "explicit",
+      "source.organizeImports": "explicit"
     }
   },
   "[typescriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
-      "source.fixAll.eslint": true,
-      "source.organizeImports": true
+      "source.fixAll.eslint": "explicit",
+      "source.organizeImports": "explicit"
     }
   },
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
-      "source.fixAll.eslint": true
+      "source.fixAll.eslint": "explicit"
     }
   },
   "[json]": {
@@ -74,8 +74,8 @@
   "debug.showInStatusBar": "always",
   "react-native.showNewDebuggerWarning": false,
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true,
-    "source.organizeImports": true
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit"
   },
   "extensions.ignoreRecommendations": false,
   "git.ignoreLimitWarning": true,

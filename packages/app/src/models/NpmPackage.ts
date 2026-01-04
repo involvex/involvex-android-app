@@ -4,6 +4,18 @@
  * Complete model with 30+ fields and helper methods
  */
 
+import {
+  getString,
+  getStringOrNull,
+  getNumber,
+  getBoolean,
+  getDate,
+  getDateOrNull,
+  getArray,
+  getNestedString,
+  getNestedObject,
+} from '../utils/typeGuards';
+
 export interface NpmPackageData {
   name: string;
   version: string;
@@ -35,7 +47,7 @@ export interface NpmPackageData {
   latestReleaseName: string | null;
   isSubscribed: boolean;
   subscribedAt: Date;
-  metrics: Record<string, any> | null;
+  metrics: Record<string, unknown> | null;
 }
 
 export class NpmPackage implements NpmPackageData {
@@ -69,7 +81,7 @@ export class NpmPackage implements NpmPackageData {
   latestReleaseName: string | null;
   isSubscribed: boolean;
   subscribedAt: Date;
-  metrics: Record<string, any> | null;
+  metrics: Record<string, unknown> | null;
 
   constructor(data: NpmPackageData) {
     Object.assign(this, data);
@@ -78,86 +90,100 @@ export class NpmPackage implements NpmPackageData {
   /**
    * Create from npm API JSON response
    */
-  static fromJSON(json: any): NpmPackage {
+  static fromJSON(json: Record<string, unknown>): NpmPackage {
     const trendingScore = NpmPackage.calculateTrendingScore(json);
+    const name = getString(json, 'name');
+    const versions = getNestedObject(json, 'versions');
+    const versionKeys = versions ? Object.keys(versions) : [];
+    const distTags = getNestedObject(json, 'dist-tags');
+    const latestTag = distTags ? getString(distTags, 'latest') : null;
 
     return new NpmPackage({
-      name: json.name || '',
-      version: json.version || '',
-      description: json.description || '',
-      npmUrl: `https://www.npmjs.com/package/${json.name || ''}`,
-      homepage: json.homepage || '',
-      repositoryUrl: json.repository?.url || '',
-      readme: json.readme || null,
-      modified: json.modified ? new Date(json.modified) : new Date(),
-      keywords: Array.isArray(json.keywords) ? json.keywords : [],
-      downloads: json.dist?.unpackedSize || 0,
-      stars: json.githubStars || 0,
-      publisher: json.publisher?.username || '',
-      publisherAvatarUrl: json.publisher?.email || null,
-      maintainers: NpmPackage.formatMaintainers(json.maintainers || []),
-      versions:
-        json.versions && typeof json.versions === 'object'
-          ? Object.keys(json.versions)
-          : [],
-      latestVersion: json['dist-tags']?.latest || json.version || null,
-      license: json.license || null,
+      name,
+      version: getString(json, 'version'),
+      description: getString(json, 'description'),
+      npmUrl: `https://www.npmjs.com/package/${name}`,
+      homepage: getString(json, 'homepage'),
+      repositoryUrl: getNestedString(json, 'repository', 'url'),
+      readme: getStringOrNull(json, 'readme'),
+      modified: getDate(json, 'modified'),
+      keywords: getArray<string>(json, 'keywords'),
+      downloads: getNumber(getNestedObject(json, 'dist') || {}, 'unpackedSize'),
+      stars: getNumber(json, 'githubStars'),
+      publisher: getNestedString(json, 'publisher', 'username'),
+      publisherAvatarUrl: getNestedString(json, 'publisher', 'email') || null,
+      maintainers: NpmPackage.formatMaintainers(getArray(json, 'maintainers')),
+      versions: versionKeys,
+      latestVersion: latestTag || getString(json, 'version') || null,
+      license: getStringOrNull(json, 'license'),
       dependencies: NpmPackage.extractDependencies(
-        json.versions?.latest?.dependencies,
+        getNestedObject(getNestedObject(versions || {}, 'latest') || {}, 'dependencies'),
       ),
       devDependencies: NpmPackage.extractDependencies(
-        json.versions?.latest?.devDependencies,
+        getNestedObject(getNestedObject(versions || {}, 'latest') || {}, 'devDependencies'),
       ),
       openIssues: 0, // Placeholder - would need GitHub API
       openPullRequests: 0, // Placeholder - would need GitHub API
-      hasSecurityVulnerabilities: json.hasSecurityVulnerabilities || false,
-      securityPolicyUrl: json.securityPolicy || null,
+      hasSecurityVulnerabilities: getBoolean(json, 'hasSecurityVulnerabilities'),
+      securityPolicyUrl: getStringOrNull(json, 'securityPolicy'),
       trendingScore,
       trendingPeriod: 'daily',
       lastReleaseDate: NpmPackage.extractLatestReleaseDate(json),
-      latestReleaseTag: json['dist-tags']?.latest || json.version || null,
-      latestReleaseName: json.name || null,
+      latestReleaseTag: latestTag || getString(json, 'version') || null,
+      latestReleaseName: name || null,
       isSubscribed: false,
       subscribedAt: new Date(),
-      metrics: json.metrics || null,
+      metrics: getNestedObject(json, 'metrics'),
     });
   }
 
   /**
    * Format maintainers as string
    */
-  private static formatMaintainers(maintainers: any[]): string {
+  private static formatMaintainers(maintainers: unknown[]): string {
     if (!maintainers || maintainers.length === 0) return 'No maintainers';
-    return maintainers.map(m => m.username || m.email || 'Unknown').join(', ');
+    return maintainers
+      .map(m => {
+        if (typeof m === 'object' && m !== null) {
+          const obj = m as Record<string, unknown>;
+          return getString(obj, 'username') || getString(obj, 'email') || 'Unknown';
+        }
+        return 'Unknown';
+      })
+      .join(', ');
   }
 
   /**
    * Extract dependencies from version object
    */
-  private static extractDependencies(deps?: Record<string, string>): string[] {
-    if (!deps) return [];
+  private static extractDependencies(deps: Record<string, unknown> | null): string[] {
+    if (!deps || typeof deps !== 'object') return [];
     return Object.keys(deps);
   }
 
   /**
    * Extract latest release date
    */
-  private static extractLatestReleaseDate(json: any): Date | null {
-    const latest = json.versions?.latest;
-    if (latest?.time) {
-      return new Date(latest.time);
-    }
-    return null;
+  private static extractLatestReleaseDate(
+    json: Record<string, unknown>,
+  ): Date | null {
+    const versions = getNestedObject(json, 'versions');
+    if (!versions) return null;
+
+    const latest = getNestedObject(versions, 'latest');
+    if (!latest) return null;
+
+    return getDateOrNull(latest, 'time');
   }
 
   /**
    * Calculate trending score (40% downloads, 40% stars, 20% activity)
    */
-  private static calculateTrendingScore(json: any): number {
-    const downloads = json.dist?.unpackedSize || 0;
-    const stars = json.githubStars || 0;
-
-    const modifiedDate = json.modified ? new Date(json.modified) : new Date();
+  private static calculateTrendingScore(json: Record<string, unknown>): number {
+    const dist = getNestedObject(json, 'dist');
+    const downloads = dist ? getNumber(dist, 'unpackedSize') : 0;
+    const stars = getNumber(json, 'githubStars');
+    const modifiedDate = getDate(json, 'modified');
     const recentActivity = this.calculateRecentActivity(modifiedDate);
 
     return downloads * 0.4 + stars * 0.4 + recentActivity * 0.2;
@@ -298,7 +324,7 @@ export class NpmPackage implements NpmPackageData {
   /**
    * Convert to JSON
    */
-  toJSON(): Record<string, any> {
+  toJSON(): Record<string, unknown> {
     return {
       name: this.name,
       version: this.version,

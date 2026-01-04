@@ -4,9 +4,9 @@
  * Ported from Flutter app: lib/data/services/npm_service.dart
  */
 
-import { npmClient } from './npmClient';
 import { NpmPackage } from '../../models/NpmPackage';
 import { TimeframeType } from '../github/githubClient';
+import { npmClient } from './npmClient';
 
 export interface NpmSearchOptions {
   quality?: number; // 0-1
@@ -45,11 +45,13 @@ class NpmService {
       });
 
       // Parse and return packages
-      const packages = response.data.objects.map((obj: any) => {
-        const pkg = NpmPackage.fromJSON(obj.package);
-        pkg.trendingPeriod = timeframe;
-        return pkg;
-      });
+      const packages = response.data.objects.map(
+        (obj: { package: Record<string, unknown> }) => {
+          const pkg = NpmPackage.fromJSON(obj.package);
+          pkg.trendingPeriod = timeframe;
+          return pkg;
+        },
+      );
 
       return packages;
     } catch (error) {
@@ -83,8 +85,9 @@ class NpmService {
         },
       });
 
-      return response.data.objects.map((obj: any) =>
-        NpmPackage.fromJSON(obj.package),
+      return response.data.objects.map(
+        (obj: { package: Record<string, unknown> }) =>
+          NpmPackage.fromJSON(obj.package),
       );
     } catch (error) {
       console.error('Error searching packages:', error);
@@ -154,8 +157,9 @@ class NpmService {
         },
       });
 
-      return response.data.objects.map((obj: any) =>
-        NpmPackage.fromJSON(obj.package),
+      return response.data.objects.map(
+        (obj: { package: Record<string, unknown> }) =>
+          NpmPackage.fromJSON(obj.package),
       );
     } catch (error) {
       console.error('Error searching by keyword:', error);
@@ -166,9 +170,7 @@ class NpmService {
   /**
    * Get recently updated packages
    */
-  async getRecentlyUpdated(
-    limit: number = 20
-  ): Promise<NpmPackage[]> {
+  async getRecentlyUpdated(limit: number = 20): Promise<NpmPackage[]> {
     try {
       const response = await npmClient.getInstance().get('/-/v1/search', {
         params: {
@@ -186,15 +188,22 @@ class NpmService {
       }
 
       // Sort by modified date (most recent first)
-      const sortedObjects = response.data.objects.sort((a: any, b: any) => {
-        const dateA = new Date(a.package.date).getTime();
-        const dateB = new Date(b.package.date).getTime();
-        return dateB - dateA;
-      });
+      const sortedObjects = response.data.objects.sort(
+        (
+          a: { package: { date: string } },
+          b: { package: { date: string } },
+        ) => {
+          const dateA = new Date(a.package.date).getTime();
+          const dateB = new Date(b.package.date).getTime();
+          return dateB - dateA;
+        },
+      );
 
       return sortedObjects
         .slice(0, limit)
-        .map((obj: any) => NpmPackage.fromJSON(obj.package));
+        .map((obj: { package: Record<string, unknown> }) =>
+          NpmPackage.fromJSON(obj.package),
+        );
     } catch (error) {
       console.error('Error fetching recently updated packages:', error);
       throw error;

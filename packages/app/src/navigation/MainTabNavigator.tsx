@@ -3,15 +3,15 @@
  * Bottom tab navigation with 4 main screens
  */
 
-import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import React from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { HackerTheme } from '../theme/colors';
-import { Typography } from '../theme/typography';
 import HomeScreen from '../screens/HomeScreen';
 import SearchScreen from '../screens/SearchScreen';
-import SubscriptionsScreen from '../screens/SubscriptionsScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import SubscriptionsScreen from '../screens/SubscriptionsScreen';
+import { HackerTheme } from '../theme/colors';
+import { Typography } from '../theme/typography';
 
 export type MainTabParamList = {
   Home: undefined;
@@ -22,11 +22,13 @@ export type MainTabParamList = {
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-const TabBarIcon =
-  (name: string) =>
-  ({ color, size }: { color: string; size: number }) => (
+const TabBarIcon = (name: string) => {
+  const IconComponent = ({ color, size }: { color: string; size: number }) => (
     <Icon name={name} size={size} color={color} />
   );
+  IconComponent.displayName = `TabBarIcon(${name})`;
+  return IconComponent;
+};
 
 export const MainTabNavigator: React.FC = () => {
   return (

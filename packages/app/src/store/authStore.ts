@@ -4,10 +4,10 @@
  * Uses Zustand for state management
  */
 
-import { create } from 'zustand';
-import { immer } from 'zustand/middleware/immer';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authorize } from 'react-native-app-auth';
+import { create } from 'zustand';
+import { immer } from 'zustand/middleware/immer';
 import { ENV } from '../config/env';
 
 const AUTH_ACTIVE_USER_KEY = '@auth:active_user';
@@ -144,11 +144,6 @@ export const useAuthStore = create<AuthState>()(
             state.accessToken = accessToken;
             state.loading = false;
           });
-
-          console.log(
-            'Active user authenticated:',
-            'username' in activeUser ? activeUser.username : activeUser.login,
-          );
         } else {
           set(state => {
             state.loading = false;
@@ -304,8 +299,6 @@ export const useAuthStore = create<AuthState>()(
           state.provider = null;
           state.accessToken = null;
         });
-
-        console.log('User signed out');
       } catch (error) {
         console.error('Error signing out:', error);
         throw error;
@@ -326,8 +319,6 @@ export const useAuthStore = create<AuthState>()(
           state.provider = null;
           state.accessToken = null;
         });
-
-        console.log('Guest mode enabled');
       } catch (error) {
         console.error('Error enabling guest mode:', error);
         throw error;
@@ -356,11 +347,6 @@ export const useAuthStore = create<AuthState>()(
           state.accessToken = token;
           state.loading = false;
         });
-
-        console.log(
-          'Active user set:',
-          'username' in user ? user.username : user.login,
-        );
       } catch (error) {
         console.error('Error setting active user:', error);
         throw error;

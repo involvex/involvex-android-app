@@ -148,7 +148,10 @@ export function validateApiKey(
       // Ollama endpoint is a URL
       try {
         const url = new URL(value);
-        const protocol = (url as any).protocol || (url.href ? url.href.split(':')[0] + ':' : '');
+        // Extract protocol from URL - TypeScript may not recognize .protocol in React Native
+        const protocol =
+          (url as { protocol?: string }).protocol ||
+          (url.href ? url.href.split(':')[0] + ':' : '');
         if (protocol && !protocol.startsWith('http')) {
           return { valid: false, error: 'URL must use http or https' };
         }

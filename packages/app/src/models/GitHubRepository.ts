@@ -5,6 +5,15 @@
  */
 
 import { getLanguageColor } from '../theme/colors';
+import {
+  getString,
+  getStringOrNull,
+  getNumber,
+  getBoolean,
+  getDate,
+  getNestedString,
+  getStringArrayJoined,
+} from '../utils/typeGuards';
 
 export interface GitHubRepositoryData {
   id: string;
@@ -128,40 +137,40 @@ export class GitHubRepository implements GitHubRepositoryData {
   /**
    * Create from GitHub API JSON response
    */
-  static fromJSON(json: any): GitHubRepository {
+  static fromJSON(json: Record<string, unknown>): GitHubRepository {
     const trendingScore = GitHubRepository.calculateTrendingScore(json);
 
     return new GitHubRepository({
-      id: json.id?.toString() || '',
-      name: json.name || '',
-      fullName: json.full_name || '',
-      description: json.description || '',
-      htmlUrl: json.html_url || '',
-      cloneUrl: json.clone_url || '',
-      sshUrl: json.ssh_url || '',
-      stars: json.stargazers_count || 0,
-      forks: json.forks_count || 0,
-      issues: json.open_issues_count || 0,
-      watchers: json.watchers_count || 0,
-      language: json.language || 'Unknown',
-      license: json.license?.name || null,
-      createdAt: new Date(json.created_at || Date.now()),
-      updatedAt: new Date(json.updated_at || Date.now()),
-      pushedAt: new Date(json.pushed_at || Date.now()),
-      size: json.size || 0,
-      isPrivate: json.private || false,
-      isFork: json.fork || false,
-      defaultBranch: json.default_branch || null,
-      openIssuesCount: json.open_issues_count || 0,
-      hasDownloads: json.has_downloads || false,
-      hasIssues: json.has_issues || false,
-      hasPages: json.has_pages || false,
-      hasWiki: json.has_wiki || false,
-      ownerLogin: json.owner?.login || '',
-      ownerAvatarUrl: json.owner?.avatar_url || '',
-      ownerHtmlUrl: json.owner?.html_url || '',
-      topics: json.topics?.join(',') || null,
-      homepage: json.homepage || json.html_url || null,
+      id: getString(json, 'id'),
+      name: getString(json, 'name'),
+      fullName: getString(json, 'full_name'),
+      description: getString(json, 'description'),
+      htmlUrl: getString(json, 'html_url'),
+      cloneUrl: getString(json, 'clone_url'),
+      sshUrl: getString(json, 'ssh_url'),
+      stars: getNumber(json, 'stargazers_count'),
+      forks: getNumber(json, 'forks_count'),
+      issues: getNumber(json, 'open_issues_count'),
+      watchers: getNumber(json, 'watchers_count'),
+      language: getString(json, 'language', 'Unknown'),
+      license: getNestedString(json, 'license', 'name') || null,
+      createdAt: getDate(json, 'created_at'),
+      updatedAt: getDate(json, 'updated_at'),
+      pushedAt: getDate(json, 'pushed_at'),
+      size: getNumber(json, 'size'),
+      isPrivate: getBoolean(json, 'private'),
+      isFork: getBoolean(json, 'fork'),
+      defaultBranch: getStringOrNull(json, 'default_branch'),
+      openIssuesCount: getNumber(json, 'open_issues_count'),
+      hasDownloads: getBoolean(json, 'has_downloads'),
+      hasIssues: getBoolean(json, 'has_issues'),
+      hasPages: getBoolean(json, 'has_pages'),
+      hasWiki: getBoolean(json, 'has_wiki'),
+      ownerLogin: getNestedString(json, 'owner', 'login'),
+      ownerAvatarUrl: getNestedString(json, 'owner', 'avatar_url'),
+      ownerHtmlUrl: getNestedString(json, 'owner', 'html_url'),
+      topics: getStringArrayJoined(json, 'topics'),
+      homepage: getStringOrNull(json, 'homepage') || getStringOrNull(json, 'html_url'),
       trendingScore,
       trendingPeriod: 'daily',
       lastReleaseDate: null,
@@ -175,10 +184,11 @@ export class GitHubRepository implements GitHubRepositoryData {
   /**
    * Calculate trending score based on stars, forks, and recent activity
    */
-  private static calculateTrendingScore(json: any): number {
-    const stars = json.stargazers_count || 0;
-    const forks = json.forks_count || 0;
-    const recentActivity = this.calculateRecentActivity(json.pushed_at);
+  private static calculateTrendingScore(json: Record<string, unknown>): number {
+    const stars = getNumber(json, 'stargazers_count');
+    const forks = getNumber(json, 'forks_count');
+    const pushedAt = getStringOrNull(json, 'pushed_at');
+    const recentActivity = this.calculateRecentActivity(pushedAt || undefined);
 
     // Weighted scoring algorithm (60% stars, 30% forks, 10% activity)
     return stars * 0.6 + forks * 0.3 + recentActivity * 0.1;
@@ -288,7 +298,7 @@ export class GitHubRepository implements GitHubRepositoryData {
   /**
    * Convert to JSON
    */
-  toJSON(): Record<string, any> {
+  toJSON(): Record<string, unknown> {
     return {
       id: this.id,
       name: this.name,

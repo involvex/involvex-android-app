@@ -232,7 +232,7 @@ class OllamaClient {
       }
 
       const data = await response.json();
-      return data.models?.map((m: any) => m.name) || [];
+      return data.models?.map((m: { name: string }) => m.name) || [];
     } catch (error) {
       console.error('Failed to list Ollama models:', error);
       return [];
@@ -280,7 +280,7 @@ class OpenRouterClient {
     const response = await fetch(`${this.baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${this.apiKey}`,
+        Authorization: `Bearer ${this.apiKey}`,
         'Content-Type': 'application/json',
         'HTTP-Referer': 'https://involvex.app', // Required by OpenRouter
         'X-Title': 'Involvex App', // Optional
@@ -350,7 +350,12 @@ export class AIClient {
       case 'ollama':
         return this.ollama.sendMessage(messages, model, maxTokens, temperature);
       case 'openrouter':
-        return this.openRouter.sendMessage(messages, model, maxTokens, temperature);
+        return this.openRouter.sendMessage(
+          messages,
+          model,
+          maxTokens,
+          temperature,
+        );
       default:
         throw new Error(`Unknown AI provider: ${provider}`);
     }
@@ -359,7 +364,9 @@ export class AIClient {
   /**
    * Test connection to a provider
    */
-  async testConnection(provider: 'gemini' | 'ollama' | 'openrouter'): Promise<boolean> {
+  async testConnection(
+    provider: 'gemini' | 'ollama' | 'openrouter',
+  ): Promise<boolean> {
     switch (provider) {
       case 'gemini':
         return this.gemini.testConnection();

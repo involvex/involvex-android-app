@@ -87,7 +87,9 @@
       "Bash(npm run build:android:*)",
       "Bash(npm run release:android:*)",
       "Bash(git tag:*)",
-      "Bash(bun add:*)"
+      "Bash(bun add:*)",
+      "Bash(npm run typecheck:*)",
+      "Bash(tree:*)"
     ]
   },
   "hooks": {

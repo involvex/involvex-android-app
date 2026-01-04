@@ -3,10 +3,8 @@
  * Database operations for chat messages
  */
 
+import ChatMessage, { ContextType } from '../../models/ChatMessage';
 import { Database } from '../schema';
-import ChatMessage, {
-  ContextType,
-} from '../../models/ChatMessage';
 
 export class AIChatRepository {
   /**
@@ -45,7 +43,7 @@ export class AIChatRepository {
     const db = Database.getDB();
 
     let query = 'SELECT * FROM ai_chat_messages';
-    const params: any[] = [];
+    const params: (string | number | null)[] = [];
 
     if (contextType && contextId) {
       query += ' WHERE context_type = ? AND context_id = ?';

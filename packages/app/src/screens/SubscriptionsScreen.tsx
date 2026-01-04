@@ -3,24 +3,24 @@
  * Manages user subscriptions with SQLite persistence
  */
 
-import React, { useEffect, useState, useCallback } from 'react';
+import { FlashList } from '@shopify/flash-list';
+import { encode } from 'base-64';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
   ActivityIndicator,
   Alert,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { FlashList } from '@shopify/flash-list';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Share from 'react-native-share';
-import { encode } from 'base-64';
-import { HackerTheme } from '../theme/colors';
-import { Typography } from '../theme/typography';
-import { Spacing } from '../theme/spacing';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { subscriptionsRepository } from '../database/repositories/subscriptionsRepository';
 import { Subscription } from '../models';
+import { HackerTheme } from '../theme/colors';
+import { Spacing } from '../theme/spacing';
+import { Typography } from '../theme/typography';
 
 type TabType = 'repository' | 'package';
 
@@ -268,7 +268,7 @@ export const SubscriptionsScreen: React.FC = () => {
       <FlashList
         data={subscriptions}
         renderItem={renderSubscriptionItem}
-        // @ts-ignore
+        // @ts-expect-error - estimatedItemSize exists in runtime but missing from FlashList type definitions
         estimatedItemSize={150}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.listContent}

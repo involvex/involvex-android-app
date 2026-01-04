@@ -1,6 +1,6 @@
 {
   "name": "@involvex/database",
-  "version": "0.0.3",
+  "version": "0.0.16",
   "private": true,
   "scripts": {
     "create": "wrangler d1 create involvex-production",

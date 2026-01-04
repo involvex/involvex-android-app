@@ -3,34 +3,34 @@
  * Comprehensive settings with 8 sections and 51 configuration options
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Switch,
-  TextInput,
-  Alert,
   ActivityIndicator,
+  Alert,
   Image,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { HackerTheme } from '../theme/colors';
-import { Typography } from '../theme/typography';
-import { Spacing } from '../theme/spacing';
-import { useSettingsStore } from '../store/settingsStore';
-import { useAuthStore, DiscordUser, GitHubUser } from '../store/authStore';
-import { UserSettings, UserSettingsData } from '../models/UserSettings';
-import pkg from '../../package.json';
 import A from 'react-native-a';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import pkg from '../../package.json';
 import { updateService } from '../api/github/updateService';
 import { Database } from '../database/schema';
+import { UserSettings, UserSettingsData } from '../models/UserSettings';
+import { DiscordUser, GitHubUser, useAuthStore } from '../store/authStore';
+import { useSettingsStore } from '../store/settingsStore';
+import { HackerTheme } from '../theme/colors';
+import { Spacing } from '../theme/spacing';
+import { Typography } from '../theme/typography';
 import {
   getSecureValue,
-  setSecureValue,
   SecureKeys,
+  setSecureValue,
   validateApiKey,
 } from '../utils/secureStorage';
 
@@ -106,7 +106,10 @@ export const SettingsScreen: React.FC = () => {
     setExpandedSections(newExpanded);
   };
 
-  const handleSettingChange = (key: keyof UserSettingsData, value: any) => {
+  const handleSettingChange = (
+    key: keyof UserSettingsData,
+    value: boolean | string | number,
+  ) => {
     setLocalSettings(prev => prev.copyWith({ [key]: value }));
     setHasChanges(true);
   };
@@ -228,21 +231,25 @@ export const SettingsScreen: React.FC = () => {
   };
 
   const handleClearCache = async () => {
-    Alert.alert('Clear Cache', 'Are you sure you want to clear all cached data?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Clear',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await Database.clearCache();
-            Alert.alert('Success', 'Cache cleared successfully');
-          } catch {
-            Alert.alert('Error', 'Failed to clear cache');
-          }
+    Alert.alert(
+      'Clear Cache',
+      'Are you sure you want to clear all cached data?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Clear',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await Database.clearCache();
+              Alert.alert('Success', 'Cache cleared successfully');
+            } catch {
+              Alert.alert('Error', 'Failed to clear cache');
+            }
+          },
         },
-      },
-    ]);
+      ],
+    );
   };
 
   const handleTestConnection = async (testProvider: 'gemini' | 'ollama') => {
@@ -251,11 +258,15 @@ export const SettingsScreen: React.FC = () => {
     try {
       if (testProvider === 'gemini') {
         // Test Gemini connection (placeholder - will implement in aiClient)
-        await new Promise(resolve => setTimeout(() => resolve(undefined), 1000));
+        await new Promise(resolve =>
+          setTimeout(() => resolve(undefined), 1000),
+        );
         Alert.alert('Connection Test', 'Gemini API key is valid! ✓');
       } else {
         // Test Ollama connection (placeholder - will implement in aiClient)
-        await new Promise(resolve => setTimeout(() => resolve(undefined), 1000));
+        await new Promise(resolve =>
+          setTimeout(() => resolve(undefined), 1000),
+        );
         Alert.alert('Connection Test', 'Ollama endpoint is reachable! ✓');
       }
     } catch {
@@ -659,7 +670,11 @@ export const SettingsScreen: React.FC = () => {
               style={styles.clearCacheButton}
               onPress={handleClearCache}
             >
-              <Icon name="database-remove" size={20} color={HackerTheme.warningOrange} />
+              <Icon
+                name="database-remove"
+                size={20}
+                color={HackerTheme.warningOrange}
+              />
               <Text style={styles.clearCacheButtonText}>Clear Local Cache</Text>
             </TouchableOpacity>
           </View>
@@ -845,7 +860,11 @@ export const SettingsScreen: React.FC = () => {
             {/* OpenRouter Configuration */}
             <View style={styles.aiProviderCard}>
               <View style={styles.aiProviderHeader}>
-                <Icon name="router-wireless" size={20} color={HackerTheme.accent} />
+                <Icon
+                  name="router-wireless"
+                  size={20}
+                  color={HackerTheme.accent}
+                />
                 <Text style={styles.aiProviderTitle}>OpenRouter</Text>
               </View>
               <View style={styles.settingRow}>
@@ -905,32 +924,37 @@ export const SettingsScreen: React.FC = () => {
           </View>
         )}
         <View style={styles.container}>
-        
-        <View style={styles.container}>
-          <View style={styles.authorContainer}>
-            <Text style={styles.author}>Author: {pkg.author.name}</Text>
-            <A style={styles.authorLink} href="https://involvex.github.io/Involvex/">
-              https://involvex.github.io/Involvex/
-            </A>
-          
+          <View style={styles.container}>
+            <View style={styles.authorContainer}>
+              <Text style={styles.author}>Author: {pkg.author.name}</Text>
+              <A
+                style={styles.authorLink}
+                href="https://involvex.github.io/Involvex/"
+              >
+                https://involvex.github.io/Involvex/
+              </A>
 
-          <View style={styles.repositoryContainer}>
-            <Text style={styles.versionInfo}>App version: {pkg.version}</Text>
-            <A style={styles.repository} href={pkg.homepage}>
-              {pkg.homepage}
-            </A>
+              <View style={styles.repositoryContainer}>
+                <Text style={styles.versionInfo}>
+                  App version: {pkg.version}
+                </Text>
+                <A style={styles.repository} href={pkg.homepage}>
+                  {pkg.homepage}
+                </A>
+              </View>
+            </View>
+
+            <View style={styles.resetContainer}>
+              <TouchableOpacity
+                style={styles.resetButton}
+                onPress={handleReset}
+              >
+                <Icon name="restore" size={20} color={HackerTheme.errorRed} />
+                <Text style={styles.resetButtonText}>Reset to Defaults</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-          </View>
-          
-        <View style={styles.resetContainer}>
-                  
-                  <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
-                    <Icon name="restore" size={20} color={HackerTheme.errorRed} />
-                    <Text style={styles.resetButtonText}>Reset to Defaults</Text>
-                  </TouchableOpacity>
-                </View>
         </View>
-</View>
         <View style={styles.bottomPadding} />
       </ScrollView>
 

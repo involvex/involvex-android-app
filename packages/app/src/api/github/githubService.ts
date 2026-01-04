@@ -4,8 +4,8 @@
  * Ported from Flutter app: lib/data/services/github_service.dart
  */
 
-import { githubClient, TimeframeType } from './githubClient';
 import { GitHubRepository } from '../../models/GitHubRepository';
+import { githubClient, TimeframeType } from './githubClient';
 
 export interface SearchOptions {
   language?: string;
@@ -51,7 +51,7 @@ class GitHubService {
         });
 
       // Parse and return repositories
-      const repos = response.data.items.map((item: any) => {
+      const repos = response.data.items.map((item: Record<string, unknown>) => {
         const repo = GitHubRepository.fromJSON(item);
         repo.trendingPeriod = timeframe;
         return repo;
@@ -100,7 +100,7 @@ class GitHubService {
         });
 
       // Parse and return repositories
-      return response.data.items.map((item: any) =>
+      return response.data.items.map((item: Record<string, unknown>) =>
         GitHubRepository.fromJSON(item),
       );
     } catch (error) {

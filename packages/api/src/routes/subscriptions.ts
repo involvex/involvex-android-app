@@ -2,7 +2,7 @@
  * Subscriptions routes - User subscriptions to repos and packages
  */
 
-import type { Env } from '../index';
+import type { Env } from "../index";
 
 export async function handleSubscriptions(
   request: Request,
@@ -13,10 +13,10 @@ export async function handleSubscriptions(
   const method = request.method;
 
   // GET /api/subscriptions - List subscriptions
-  if (method === 'GET') {
+  if (method === "GET") {
     try {
       const result = await env.DB.prepare(
-        'SELECT * FROM subscriptions WHERE is_active = 1 ORDER BY created_at DESC'
+        "SELECT * FROM subscriptions WHERE is_active = 1 ORDER BY created_at DESC"
       ).all();
 
       return new Response(
@@ -25,70 +25,83 @@ export async function handleSubscriptions(
       );
     } catch (_error) {
       return new Response(
-        JSON.stringify({ success: false, error: 'Database error' }),
+        JSON.stringify({ success: false, error: "Database error" }),
         { status: 500, headers }
       );
     }
   }
 
   // POST /api/subscriptions - Create subscription
-  if (method === 'POST') {
+  if (method === "POST") {
     try {
-      const body = await request.json() as Record<string, any>;
+      const body = (await request.json()) as {
+        type: string;
+        item_id: string;
+        name: string;
+        full_name?: string;
+        data: Record<string, unknown>;
+      };
       const id = crypto.randomUUID();
       const now = Date.now();
 
-      await env.DB.prepare(`
+      await env.DB.prepare(
+        `
         INSERT INTO subscriptions (id, type, item_id, name, full_name, data, subscribed_at, created_at, updated_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `).bind(
-        id,
-        body.type,
-        body.item_id,
-        body.name,
-        body.full_name || null,
-        JSON.stringify(body.data),
-        now,
-        now,
-        now
-      ).run();
+      `
+      )
+        .bind(
+          id,
+          body.type,
+          body.item_id,
+          body.name,
+          body.full_name || null,
+          JSON.stringify(body.data),
+          now,
+          now,
+          now
+        )
+        .run();
 
-      return new Response(
-        JSON.stringify({ success: true, data: { id } }),
-        { status: 201, headers }
-      );
+      return new Response(JSON.stringify({ success: true, data: { id } }), {
+        status: 201,
+        headers,
+      });
     } catch (_error) {
       return new Response(
-        JSON.stringify({ success: false, error: 'Failed to create subscription' }),
+        JSON.stringify({
+          success: false,
+          error: "Failed to create subscription",
+        }),
         { status: 500, headers }
       );
     }
   }
 
   // DELETE /api/subscriptions/:id - Delete subscription
-  if (method === 'DELETE') {
-    const pathParts = url.pathname.split('/');
+  if (method === "DELETE") {
+    const pathParts = url.pathname.split("/");
     const id = pathParts[pathParts.length - 1];
 
     try {
-      await env.DB.prepare(
-        'DELETE FROM subscriptions WHERE id = ?'
-      ).bind(id).run();
+      await env.DB.prepare("DELETE FROM subscriptions WHERE id = ?")
+        .bind(id)
+        .run();
 
-      return new Response(
-        JSON.stringify({ success: true }),
-        { headers }
-      );
+      return new Response(JSON.stringify({ success: true }), { headers });
     } catch (_error) {
       return new Response(
-        JSON.stringify({ success: false, error: 'Failed to delete subscription' }),
+        JSON.stringify({
+          success: false,
+          error: "Failed to delete subscription",
+        }),
         { status: 500, headers }
       );
     }
   }
 
-  return new Response(
-    JSON.stringify({ error: 'Method not allowed' }),
-    { status: 405, headers }
-  );
+  return new Response(JSON.stringify({ error: "Method not allowed" }), {
+    status: 405,
+    headers,
+  });
 }

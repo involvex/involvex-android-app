@@ -3,19 +3,25 @@
  * React Native app for discovering trending GitHub repos and npm packages
  */
 
-import React, { useEffect, useState } from 'react';
-import { StatusBar, View, ActivityIndicator, StyleSheet, Alert } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import React, { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  StatusBar,
+  StyleSheet,
+  View,
+} from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import RootNavigator from './src/navigation/RootNavigator';
-import { Database } from './src/database/schema';
-import { useAuthStore } from './src/store/authStore';
-import { useSettingsStore } from './src/store/settingsStore';
-import { HackerTheme } from './src/theme/colors';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { updateService } from './src/api/github/updateService';
 import AIChatBottomSheet from './src/components/AIChat/AIChatBottomSheet';
 import { InfoCardModal } from './src/components/InfoCard';
+import { Database } from './src/database/schema';
+import RootNavigator from './src/navigation/RootNavigator';
+import { useAuthStore } from './src/store/authStore';
+import { useSettingsStore } from './src/store/settingsStore';
+import { HackerTheme } from './src/theme/colors';
 
 function App() {
   const [isInitialized, setIsInitialized] = useState(false);
@@ -25,19 +31,14 @@ function App() {
   useEffect(() => {
     const initializeApp = async () => {
       try {
-        console.log('Initializing app...');
-
         // Initialize database
         await Database.init();
-        console.log('Database initialized');
 
         // Initialize auth state
         await initializeAuth();
-        console.log('Auth initialized');
 
         // Load user settings
         await loadSettings();
-        console.log('Settings loaded');
 
         // Check for updates if enabled
         const settings = useSettingsStore.getState().settings;
@@ -47,10 +48,8 @@ function App() {
 
         // Clean expired cache
         await Database.cleanExpiredCache();
-        console.log('Cache cleaned');
 
         setIsInitialized(true);
-        console.log('App initialization complete');
       } catch (error) {
         console.error('App initialization error:', error);
         // Show alert but allow app to start (UI will handle missing DB)

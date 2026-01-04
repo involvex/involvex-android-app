@@ -1,6 +1,6 @@
 {
   "name": "@involvex/web",
-  "version": "0.0.3",
+  "version": "0.0.16",
   "private": true,
   "sideEffects": false,
   "type": "module",

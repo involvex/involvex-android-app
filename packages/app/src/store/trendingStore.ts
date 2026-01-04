@@ -6,11 +6,11 @@
 
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-import { GitHubRepository } from '../models/GitHubRepository';
-import { NpmPackage } from '../models/NpmPackage';
+import { TimeframeType } from '../api/github/githubClient';
 import { githubService } from '../api/github/githubService';
 import { npmService } from '../api/npm/npmService';
-import { TimeframeType } from '../api/github/githubClient';
+import { GitHubRepository } from '../models/GitHubRepository';
+import { NpmPackage } from '../models/NpmPackage';
 
 interface TrendingState {
   // State
@@ -103,8 +103,6 @@ export const useTrendingStore = create<TrendingState>()(
           state.loading = false;
           state.lastFetch = new Date();
         });
-
-        console.log(`Fetched ${repos.length} GitHub repositories`);
       } catch (error) {
         const message =
           error instanceof Error
@@ -140,8 +138,6 @@ export const useTrendingStore = create<TrendingState>()(
           state.loading = false;
           state.lastFetch = new Date();
         });
-
-        console.log(`Fetched ${packages.length} npm packages`);
       } catch (error) {
         const message =
           error instanceof Error ? error.message : 'Failed to fetch packages';

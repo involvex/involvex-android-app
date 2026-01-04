@@ -3,6 +3,13 @@
  * Represents an AI chat message with context
  */
 
+import {
+  getString,
+  getStringOrNull,
+  getNumberOrNull,
+  getDate,
+} from '../utils/typeGuards';
+
 export type MessageRole = 'user' | 'assistant' | 'system';
 export type ContextType = 'repo' | 'package' | null;
 export type AIProvider = 'gemini' | 'ollama' | 'openrouter';
@@ -45,24 +52,28 @@ export class ChatMessage implements ChatMessageData {
   /**
    * Create from database row
    */
-  static fromDB(row: any): ChatMessage {
+  static fromDB(row: Record<string, unknown>): ChatMessage {
+    const role = getString(row, 'role', 'user');
+    const contextType = getStringOrNull(row, 'context_type');
+    const provider = getString(row, 'provider', 'gemini');
+
     return new ChatMessage({
-      id: row.id,
-      role: row.role as MessageRole,
-      content: row.content,
-      contextType: row.context_type as ContextType,
-      contextId: row.context_id,
-      provider: row.provider as AIProvider,
-      model: row.model,
-      tokenCount: row.token_count,
-      createdAt: new Date(row.created_at),
+      id: getString(row, 'id'),
+      role: role as MessageRole,
+      content: getString(row, 'content'),
+      contextType: contextType as ContextType,
+      contextId: getStringOrNull(row, 'context_id'),
+      provider: provider as AIProvider,
+      model: getString(row, 'model'),
+      tokenCount: getNumberOrNull(row, 'token_count'),
+      createdAt: getDate(row, 'created_at'),
     });
   }
 
   /**
    * Convert to database row format
    */
-  toDB(): any {
+  toDB(): Record<string, unknown> {
     return {
       id: this.id,
       role: this.role,
@@ -79,24 +90,28 @@ export class ChatMessage implements ChatMessageData {
   /**
    * Create from JSON
    */
-  static fromJSON(json: Record<string, any>): ChatMessage {
+  static fromJSON(json: Record<string, unknown>): ChatMessage {
+    const role = getString(json, 'role', 'user');
+    const contextType = json.contextType;
+    const provider = getString(json, 'provider', 'gemini');
+
     return new ChatMessage({
-      id: json.id,
-      role: json.role,
-      content: json.content,
-      contextType: json.contextType,
-      contextId: json.contextId,
-      provider: json.provider,
-      model: json.model,
-      tokenCount: json.tokenCount,
-      createdAt: new Date(json.createdAt),
+      id: getString(json, 'id'),
+      role: role as MessageRole,
+      content: getString(json, 'content'),
+      contextType: contextType as ContextType,
+      contextId: getStringOrNull(json, 'contextId'),
+      provider: provider as AIProvider,
+      model: getString(json, 'model'),
+      tokenCount: getNumberOrNull(json, 'tokenCount'),
+      createdAt: getDate(json, 'createdAt'),
     });
   }
 
   /**
    * Convert to JSON
    */
-  toJSON(): Record<string, any> {
+  toJSON(): Record<string, unknown> {
     return {
       id: this.id,
       role: this.role,

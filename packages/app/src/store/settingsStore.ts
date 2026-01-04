@@ -4,9 +4,9 @@
  * Uses Zustand for state management
  */
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserSettings } from '../models/UserSettings';
 
 const SETTINGS_KEY = '@settings:user';
@@ -43,8 +43,6 @@ export const useSettingsStore = create<SettingsState>()(
             state.settings = settings;
             state.loaded = true;
           });
-
-          console.log('Settings loaded from storage');
         } else {
           // First time - use defaults
           const defaultSettings = new UserSettings();
@@ -57,8 +55,6 @@ export const useSettingsStore = create<SettingsState>()(
             state.settings = defaultSettings;
             state.loaded = true;
           });
-
-          console.log('Default settings initialized');
         }
       } catch (error) {
         console.error('Error loading settings:', error);
@@ -95,8 +91,6 @@ export const useSettingsStore = create<SettingsState>()(
           state.settings = newSettings;
           state.saving = false;
         });
-
-        console.log('Settings updated and saved');
       } catch (error) {
         console.error('Error updating settings:', error);
 
@@ -121,8 +115,6 @@ export const useSettingsStore = create<SettingsState>()(
         set(state => {
           state.settings = defaultSettings;
         });
-
-        console.log('Settings reset to defaults');
       } catch (error) {
         console.error('Error resetting settings:', error);
         throw error;
@@ -134,7 +126,6 @@ export const useSettingsStore = create<SettingsState>()(
         set(state => {
           state.settings = new UserSettings();
         });
-        console.log('Cache cleared');
       } catch (error) {
         console.error('Error clearing cache:', error);
         throw error;

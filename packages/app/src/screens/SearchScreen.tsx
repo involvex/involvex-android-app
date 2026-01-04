@@ -3,28 +3,32 @@
  * Advanced search for GitHub repos and npm packages with filters
  */
 
-import React, { useState, useCallback, useEffect } from 'react';
+import { FlashList } from '@shopify/flash-list';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
   ActivityIndicator,
   Alert,
   Linking,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { FlashList } from '@shopify/flash-list';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { HackerTheme } from '../theme/colors';
-import { Typography } from '../theme/typography';
-import { Spacing } from '../theme/spacing';
 import { githubService } from '../api/github/githubService';
 import { npmService } from '../api/npm/npmService';
+import { subscriptionsRepository } from '../database/repositories/subscriptionsRepository';
 import { GitHubRepository } from '../models/GitHubRepository';
 import { NpmPackage } from '../models/NpmPackage';
-import { subscriptionsRepository } from '../database/repositories/subscriptionsRepository';
+import { useAIChatStore } from '../store/aiChatStore';
+import { useInfoCard } from '../store/InfoCard';
+import { useSettingsStore } from '../store/settingsStore';
+import { HackerTheme } from '../theme/colors';
+import { Spacing } from '../theme/spacing';
+import { Typography } from '../theme/typography';
 
 type TabType = 'github' | 'npm';
 type SortType = 'stars' | 'forks' | 'updated' | 'downloads';
@@ -42,13 +46,25 @@ const NPM_CATEGORIES = [
   { id: 'frontend', label: 'Front-end', keywords: 'react vue angular svelte' },
   { id: 'backend', label: 'Back-end', keywords: 'express fastify koa nest' },
   { id: 'cli', label: 'CLI', keywords: 'cli command-line terminal' },
-  { id: 'docs', label: 'Documentation', keywords: 'documentation docs markdown' },
+  {
+    id: 'docs',
+    label: 'Documentation',
+    keywords: 'documentation docs markdown',
+  },
   { id: 'css', label: 'CSS', keywords: 'css styles tailwind sass' },
   { id: 'testing', label: 'Testing', keywords: 'test jest mocha vitest' },
   { id: 'iot', label: 'IoT', keywords: 'iot arduino raspberry-pi mqtt' },
   { id: 'coverage', label: 'Coverage', keywords: 'coverage istanbul nyc' },
-  { id: 'mobile', label: 'Mobile', keywords: 'mobile ios android react-native' },
-  { id: 'frameworks', label: 'Frameworks', keywords: 'framework next nuxt remix' },
+  {
+    id: 'mobile',
+    label: 'Mobile',
+    keywords: 'mobile ios android react-native',
+  },
+  {
+    id: 'frameworks',
+    label: 'Frameworks',
+    keywords: 'framework next nuxt remix',
+  },
   { id: 'robotics', label: 'Robotics', keywords: 'robotics robot automation' },
   { id: 'math', label: 'Math', keywords: 'math mathematics algebra' },
 ];
@@ -57,6 +73,7 @@ export const SearchScreen: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('github');
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [githubResults, setGithubResults] = useState<GitHubRepository[]>([]);
   const [npmResults, setNpmResults] = useState<NpmPackage[]>([]);
   const [showFilters, setShowFilters] = useState(false);
@@ -71,6 +88,13 @@ export const SearchScreen: React.FC = () => {
   const [minStars, setMinStars] = useState<number>(0);
   const [sortBy, setSortBy] = useState<SortType>('stars');
 
+  // AI Chat and Info Card integration
+  const openChat = useAIChatStore(state => state.openChat);
+  const openInfoCard = useInfoCard(state => state.openInfoCard);
+  const enableInfoCardPreview = useSettingsStore(
+    state => state.settings.enableInfoCardPreview,
+  );
+
   useEffect(() => {
     loadSubscriptions();
   }, []);
@@ -79,7 +103,7 @@ export const SearchScreen: React.FC = () => {
     if (activeTab === 'npm' && recentlyUpdated.length === 0) {
       loadRecentlyUpdated();
     }
-  }, [activeTab]);
+  }, [activeTab, recentlyUpdated.length]);
 
   const loadSubscriptions = async () => {
     try {
@@ -145,6 +169,7 @@ export const SearchScreen: React.FC = () => {
     if (!searchQuery.trim()) return;
 
     setLoading(true);
+    setError(null);
     try {
       if (activeTab === 'github') {
         const results = await githubService.search(searchQuery, {
@@ -162,18 +187,50 @@ export const SearchScreen: React.FC = () => {
         });
         setNpmResults(results);
       }
-    } catch (error) {
-      console.error('Search error:', error);
+    } catch (err) {
+      console.error('Search error:', err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Failed to search. Please check your connection and try again.',
+      );
     } finally {
       setLoading(false);
     }
   }, [searchQuery, activeTab, selectedLanguage, minStars, sortBy]);
+
+  const handleRefresh = () => {
+    if (searchQuery.trim()) {
+      void handleSearch();
+    }
+    void loadSubscriptions();
+    if (activeTab === 'npm') {
+      void loadRecentlyUpdated();
+    }
+  };
 
   const handleQuickFilter = (filter: string) => {
     setSelectedLanguage(filter);
     setSearchQuery(filter);
     setTimeout(handleSearch, 100);
   };
+
+  const clearAllFilters = () => {
+    setSelectedLanguage('');
+    setMinStars(0);
+    setSortBy('stars');
+    setSelectedCategory(null);
+  };
+
+  const getActiveFilterCount = (): number => {
+    let count = 0;
+    if (selectedLanguage) count++;
+    if (minStars > 0) count++;
+    if (sortBy !== 'stars') count++;
+    return count;
+  };
+
+  const hasActiveFilters = getActiveFilterCount() > 0;
 
   const renderTabSelector = () => (
     <View style={styles.tabContainer}>
@@ -237,9 +294,63 @@ export const SearchScreen: React.FC = () => {
           size={20}
           color={showFilters ? HackerTheme.primary : HackerTheme.lightGrey}
         />
+        {hasActiveFilters && !showFilters && (
+          <View style={styles.filterBadge}>
+            <Text style={styles.filterBadgeText}>{getActiveFilterCount()}</Text>
+          </View>
+        )}
       </TouchableOpacity>
     </View>
   );
+
+  const renderActiveFilters = () => {
+    if (!hasActiveFilters) return null;
+
+    return (
+      <View style={styles.activeFiltersContainer}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.activeFiltersContent}
+        >
+          {selectedLanguage && (
+            <View style={styles.activeFilterChip}>
+              <Text style={styles.activeFilterText}>
+                Language: {selectedLanguage}
+              </Text>
+              <TouchableOpacity onPress={() => setSelectedLanguage('')}>
+                <Icon name="close" size={16} color={HackerTheme.primary} />
+              </TouchableOpacity>
+            </View>
+          )}
+          {minStars > 0 && (
+            <View style={styles.activeFilterChip}>
+              <Text style={styles.activeFilterText}>⭐ {minStars}+</Text>
+              <TouchableOpacity onPress={() => setMinStars(0)}>
+                <Icon name="close" size={16} color={HackerTheme.primary} />
+              </TouchableOpacity>
+            </View>
+          )}
+          {sortBy !== 'stars' && (
+            <View style={styles.activeFilterChip}>
+              <Text style={styles.activeFilterText}>
+                Sort: {sortBy.charAt(0).toUpperCase() + sortBy.slice(1)}
+              </Text>
+              <TouchableOpacity onPress={() => setSortBy('stars')}>
+                <Icon name="close" size={16} color={HackerTheme.primary} />
+              </TouchableOpacity>
+            </View>
+          )}
+        </ScrollView>
+        <TouchableOpacity
+          style={styles.clearAllButton}
+          onPress={clearAllFilters}
+        >
+          <Text style={styles.clearAllText}>Clear all</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
   const renderQuickFilters = () => (
     <ScrollView
@@ -290,7 +401,7 @@ export const SearchScreen: React.FC = () => {
               ]}
               onPress={() => {
                 setSelectedCategory(
-                  selectedCategory === category.id ? null : category.id
+                  selectedCategory === category.id ? null : category.id,
                 );
                 const selected = NPM_CATEGORIES.find(c => c.id === category.id);
                 if (selected) {
@@ -333,14 +444,25 @@ export const SearchScreen: React.FC = () => {
               key={pkg.name}
               style={styles.recentlyUpdatedCard}
               onPress={() => pkg.npmUrl && Linking.openURL(pkg.npmUrl)}
+              activeOpacity={0.8}
             >
-              <Icon name="npm" size={24} color={HackerTheme.primary} />
-              <Text style={styles.recentlyUpdatedName} numberOfLines={1}>
+              <View style={styles.recentlyUpdatedIconContainer}>
+                <Icon name="npm" size={32} color={HackerTheme.primary} />
+              </View>
+              <Text style={styles.recentlyUpdatedName} numberOfLines={2}>
                 {pkg.name}
               </Text>
-              <Text style={styles.recentlyUpdatedVersion}>v{pkg.version}</Text>
+              <View style={styles.recentlyUpdatedVersionBadge}>
+                <Text style={styles.recentlyUpdatedVersion}>v{pkg.version}</Text>
+              </View>
               <Text style={styles.recentlyUpdatedDownloads}>
-                {pkg.formattedDownloads}
+                📦 {pkg.formattedDownloads}
+              </Text>
+              <Text style={styles.recentlyUpdatedDate}>
+                {new Date(pkg.lastPublish).toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                })}
               </Text>
             </TouchableOpacity>
           ))}
@@ -409,99 +531,138 @@ export const SearchScreen: React.FC = () => {
 
   const renderGitHubItem = ({ item }: { item: GitHubRepository }) => {
     const isSubscribed = subscribedItems.has(String(item.id));
+
+    const handleItemPress = () => {
+      if (enableInfoCardPreview) {
+        openInfoCard(item);
+      } else if (item.htmlUrl) {
+        Linking.openURL(item.htmlUrl);
+      }
+    };
+
     return (
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <TouchableOpacity
-            style={styles.cardHeaderTitle}
-            onPress={() => item.htmlUrl && Linking.openURL(item.htmlUrl)}
-          >
-            <Text style={styles.cardTitle}>{item.name}</Text>
-            <Text style={styles.cardSubtitle}>{item.fullName}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => handleToggleSubscription(item, 'github')}
-          >
-            <Icon
-              name={isSubscribed ? 'star' : 'star-outline'}
-              size={28}
-              color={
-                isSubscribed ? HackerTheme.secondary : HackerTheme.lightGrey
-              }
-            />
-          </TouchableOpacity>
-        </View>
-        {item.description && (
-          <Text style={styles.cardDescription} numberOfLines={2}>
-            {item.description}
-          </Text>
-        )}
-        <View style={styles.statsRow}>
-          <Text style={styles.statText}>⭐ {item.formattedStars}</Text>
-          <Text style={styles.statText}>🍴 {item.formattedForks}</Text>
-          {item.language && (
-            <View style={styles.languageBadge}>
-              <View
-                style={[
-                  styles.languageDot,
-                  { backgroundColor: item.languageColor },
-                ]}
-              />
-              <Text style={styles.languageText}>{item.language}</Text>
+      <TouchableOpacity
+        onPress={handleItemPress}
+        onLongPress={() => openChat(item)}
+        activeOpacity={0.9}
+      >
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <View style={styles.cardHeaderTitle}>
+              <Text style={styles.cardTitle}>{item.name}</Text>
+              <Text style={styles.cardSubtitle}>{item.fullName}</Text>
             </View>
+            <TouchableOpacity
+              onPress={() => handleToggleSubscription(item, 'github')}
+            >
+              <Icon
+                name={isSubscribed ? 'star' : 'star-outline'}
+                size={28}
+                color={
+                  isSubscribed ? HackerTheme.secondary : HackerTheme.lightGrey
+                }
+              />
+            </TouchableOpacity>
+          </View>
+          {item.description && (
+            <Text style={styles.cardDescription} numberOfLines={2}>
+              {item.description}
+            </Text>
           )}
+          <View style={styles.statsRow}>
+            <Text style={styles.statText}>⭐ {item.formattedStars}</Text>
+            <Text style={styles.statText}>🍴 {item.formattedForks}</Text>
+            {item.language && (
+              <View style={styles.languageBadge}>
+                <View
+                  style={[
+                    styles.languageDot,
+                    { backgroundColor: item.languageColor },
+                  ]}
+                />
+                <Text style={styles.languageText}>{item.language}</Text>
+              </View>
+            )}
+          </View>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
   const renderNpmItem = ({ item }: { item: NpmPackage }) => {
     const isSubscribed = subscribedItems.has(item.name);
+
+    const handleItemPress = () => {
+      if (enableInfoCardPreview) {
+        openInfoCard(item);
+      } else if (item.npmUrl) {
+        Linking.openURL(item.npmUrl);
+      }
+    };
+
     return (
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <TouchableOpacity
-            style={styles.cardHeaderTitle}
-            onPress={() => item.npmUrl && Linking.openURL(item.npmUrl)}
-          >
-            <Text style={styles.cardTitle}>{item.name}</Text>
-            <Text style={styles.cardSubtitle}>v{item.version}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => handleToggleSubscription(item, 'npm')}
-          >
-            <Icon
-              name={isSubscribed ? 'star' : 'star-outline'}
-              size={28}
-              color={
-                isSubscribed ? HackerTheme.secondary : HackerTheme.lightGrey
-              }
-            />
-          </TouchableOpacity>
-        </View>
-        {item.description && (
-          <Text style={styles.cardDescription} numberOfLines={2}>
-            {item.description}
-          </Text>
-        )}
-        <View style={styles.statsRow}>
-          <Text style={styles.statText}>📦 {item.formattedDownloads}</Text>
-          {item.stars > 0 && (
-            <Text style={styles.statText}>⭐ {item.stars}</Text>
+      <TouchableOpacity
+        onPress={handleItemPress}
+        onLongPress={() => openChat(item)}
+        activeOpacity={0.9}
+      >
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <View style={styles.cardHeaderTitle}>
+              <Text style={styles.cardTitle}>{item.name}</Text>
+              <Text style={styles.cardSubtitle}>v{item.version}</Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => handleToggleSubscription(item, 'npm')}
+            >
+              <Icon
+                name={isSubscribed ? 'star' : 'star-outline'}
+                size={28}
+                color={
+                  isSubscribed ? HackerTheme.secondary : HackerTheme.lightGrey
+                }
+              />
+            </TouchableOpacity>
+          </View>
+          {item.description && (
+            <Text style={styles.cardDescription} numberOfLines={2}>
+              {item.description}
+            </Text>
           )}
+          <View style={styles.statsRow}>
+            <Text style={styles.statText}>📦 {item.formattedDownloads}</Text>
+            {item.stars > 0 && (
+              <Text style={styles.statText}>⭐ {item.stars}</Text>
+            )}
+          </View>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
       <Icon name="magnify" size={64} color={HackerTheme.darkGreen} />
-      <Text style={styles.emptyText}>
-        {searchQuery.trim()
-          ? 'No results found'
-          : 'Search for repositories and packages'}
+      <Text style={styles.emptyTitle}>
+        {searchQuery.trim() ? 'No results found' : 'Start searching'}
       </Text>
+      <Text style={styles.emptySubtitle}>
+        {searchQuery.trim()
+          ? 'Try different keywords or filters'
+          : 'Search for GitHub repos and npm packages'}
+      </Text>
+    </View>
+  );
+
+  const renderErrorState = () => (
+    <View style={styles.errorContainer}>
+      <Icon name="alert-circle" size={64} color={HackerTheme.error} />
+      <Text style={styles.errorTitle}>Search Failed</Text>
+      <Text style={styles.errorText}>{error}</Text>
+      <TouchableOpacity style={styles.retryButton} onPress={handleSearch}>
+        <Icon name="refresh" size={20} color={HackerTheme.background} />
+        <Text style={styles.retryText}>Retry Search</Text>
+      </TouchableOpacity>
     </View>
   );
 
@@ -511,7 +672,7 @@ export const SearchScreen: React.FC = () => {
     <View style={styles.container}>
       {renderTabSelector()}
       {renderSearchBar()}
-      {renderQuickFilters()}
+      {renderActiveFilters()}
       {renderNpmCategoryFilters()}
       {renderRecentlyUpdated()}
       {renderAdvancedFilters()}
@@ -521,21 +682,48 @@ export const SearchScreen: React.FC = () => {
           <ActivityIndicator size="large" color={HackerTheme.primary} />
           <Text style={styles.loadingText}>Searching...</Text>
         </View>
+      ) : error ? (
+        renderErrorState()
       ) : (
         <FlashList
-          data={results as any}
+          data={results}
           renderItem={
             activeTab === 'github'
-              ? (renderGitHubItem as any)
-              : (renderNpmItem as any)
+              ? (renderGitHubItem as unknown as import('@shopify/flash-list').ListRenderItem<
+                  GitHubRepository | NpmPackage
+                >)
+              : (renderNpmItem as unknown as import('@shopify/flash-list').ListRenderItem<
+                  GitHubRepository | NpmPackage
+                >)
           }
-          // @ts-ignore
+          // @ts-expect-error - estimatedItemSize exists in runtime but missing from FlashList type definitions
           estimatedItemSize={150}
-          keyExtractor={(item: any) => item.id || item.name}
+          keyExtractor={item =>
+            activeTab === 'github'
+              ? String((item as GitHubRepository).id)
+              : (item as NpmPackage).name
+          }
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={renderEmptyState}
+          refreshControl={
+            <RefreshControl
+              refreshing={loading}
+              onRefresh={handleRefresh}
+              tintColor={HackerTheme.primary}
+              colors={[HackerTheme.primary]}
+            />
+          }
         />
       )}
+
+      {/* Floating Action Button for AI Chat */}
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => openChat(null)}
+        activeOpacity={0.9}
+      >
+        <Icon name="robot" size={28} color={HackerTheme.background} />
+      </TouchableOpacity>
     </View>
   );
 };
@@ -608,6 +796,65 @@ const styles = StyleSheet.create({
     borderColor: HackerTheme.primary + '20',
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'relative',
+  },
+  filterBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: HackerTheme.error,
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  filterBadgeText: {
+    ...Typography.captionText,
+    color: HackerTheme.background,
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  activeFiltersContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    backgroundColor: HackerTheme.darkerGreen,
+    borderBottomWidth: 1,
+    borderBottomColor: HackerTheme.primary + '20',
+    gap: Spacing.sm,
+  },
+  activeFiltersContent: {
+    gap: Spacing.sm,
+    paddingRight: Spacing.sm,
+  },
+  activeFilterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    backgroundColor: HackerTheme.primary + '20',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: HackerTheme.primary,
+  },
+  activeFilterText: {
+    ...Typography.captionText,
+    color: HackerTheme.primary,
+    fontWeight: '600',
+  },
+  clearAllButton: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+  },
+  clearAllText: {
+    ...Typography.captionText,
+    color: HackerTheme.error,
+    fontWeight: '600',
+    textDecorationLine: 'underline',
   },
   quickFiltersContainer: {
     paddingVertical: Spacing.md,
@@ -748,8 +995,10 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   statText: {
-    ...Typography.captionText,
-    color: HackerTheme.lightGrey,
+    fontSize: 14,
+    color: HackerTheme.primary,
+    fontFamily: 'monospace',
+    fontWeight: '600',
   },
   languageBadge: {
     flexDirection: 'row',
@@ -780,12 +1029,54 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: Spacing.xl * 2,
+    paddingHorizontal: Spacing.xl,
   },
-  emptyText: {
+  emptyTitle: {
+    ...Typography.heading2,
+    color: HackerTheme.primary,
+    marginTop: Spacing.lg,
+    textAlign: 'center',
+  },
+  emptySubtitle: {
     ...Typography.bodyText,
     color: HackerTheme.lightGrey,
-    marginTop: Spacing.md,
+    marginTop: Spacing.sm,
     textAlign: 'center',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: Spacing.xl * 2,
+    paddingHorizontal: Spacing.xl,
+  },
+  errorTitle: {
+    ...Typography.heading2,
+    color: HackerTheme.error,
+    marginTop: Spacing.lg,
+    textAlign: 'center',
+  },
+  errorText: {
+    ...Typography.bodyText,
+    color: HackerTheme.lightGrey,
+    marginTop: Spacing.sm,
+    marginBottom: Spacing.xl,
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  retryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    backgroundColor: HackerTheme.primary,
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.md,
+    borderRadius: 8,
+  },
+  retryText: {
+    ...Typography.buttonText,
+    color: HackerTheme.background,
+    fontWeight: '600',
   },
   categoryFiltersContainer: {
     paddingVertical: Spacing.md,
@@ -848,28 +1139,71 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
   },
   recentlyUpdatedCard: {
-    width: 140,
+    width: 180,
     backgroundColor: HackerTheme.darkGreen,
     borderRadius: 12,
-    padding: Spacing.md,
+    padding: Spacing.lg,
     borderWidth: 1,
     borderColor: HackerTheme.primary + '40',
     alignItems: 'center',
-    gap: Spacing.xs,
+    gap: Spacing.sm,
+  },
+  recentlyUpdatedIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: HackerTheme.primary + '15',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: Spacing.xs,
   },
   recentlyUpdatedName: {
     ...Typography.bodyText,
     color: HackerTheme.primary,
     fontWeight: '600',
     textAlign: 'center',
+    minHeight: 40,
+  },
+  recentlyUpdatedVersionBadge: {
+    backgroundColor: HackerTheme.accent + '20',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: HackerTheme.accent + '40',
   },
   recentlyUpdatedVersion: {
     ...Typography.captionText,
     color: HackerTheme.accent,
+    fontWeight: '600',
+    fontSize: 11,
   },
   recentlyUpdatedDownloads: {
     ...Typography.captionText,
     color: HackerTheme.lightGrey,
+    fontWeight: '500',
+  },
+  recentlyUpdatedDate: {
+    ...Typography.captionText,
+    color: HackerTheme.lightGrey + 'CC',
+    fontSize: 10,
+    fontStyle: 'italic',
+  },
+  fab: {
+    position: 'absolute',
+    bottom: Spacing.xl,
+    right: Spacing.xl,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: HackerTheme.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 8,
+    shadowColor: HackerTheme.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
   },
 });
 
