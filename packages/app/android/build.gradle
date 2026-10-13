@@ -6,6 +6,8 @@ buildscript {
         targetSdkVersion = 36
         ndkVersion = "27.1.12297006"
         kotlinVersion = "2.1.20"
+        // Provide react-native location as absolute path to avoid node execution at configure time
+        REACT_NATIVE_NODE_MODULES_DIR = rootProject.file("../node_modules/react-native").absolutePath
     }
     repositories {
         google()
