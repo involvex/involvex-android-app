@@ -26,7 +26,12 @@ const linking = {
     screens: {
       MainTabs: {
         path: "main",
-        parse: () => ({}),
+        screens: {
+          Home: "home",
+          Search: "search",
+          Subscriptions: "subs",
+          Settings: "settings",
+        },
       },
     },
   },

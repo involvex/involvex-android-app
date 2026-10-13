@@ -26,6 +26,22 @@ const patches = [
     target: "react-native-screens",
   },
   {
+    file: "react-native-screens-codegen-fix.patch",
+    target: "react-native-screens",
+  },
+  {
+    file: "react-native-screens-codegen-fix2.patch",
+    target: "react-native-screens",
+  },
+  {
+    file: "react-native-screens-codegen-fix3.patch",
+    target: "react-native-screens",
+  },
+  {
+    file: "react-native-screens-codegen-fix4.patch",
+    target: "react-native-screens",
+  },
+  {
     file: "react-native-worklets@0.7.1.patch",
     target: "react-native-worklets",
   },

@@ -1,0 +1,20 @@
+diff --git a/src/fabric/gamma/stack/StackHeaderConfigIOSNativeComponent.ts b/src/fabric/gamma/stack/StackHeaderConfigIOSNativeComponent.ts
+index 1234567..abcdefg 100644
+--- a/src/fabric/gamma/stack/StackHeaderConfigIOSNativeComponent.ts
++++ b/src/fabric/gamma/stack/StackHeaderConfigIOSNativeComponent.ts
+@@ -48,13 +48,13 @@ export interface NativeMenuElementOptionsIOS {
+ 
+ export interface NativeCommands {
+   setMenuItemOptions: (
+-    viewRef: React.ComponentRef<ComponentType>,
++    viewRef: React.ElementRef<ComponentType>,
+     menuElementId: string,
+     // Array wrapper due to codegen limitation — only the first element is used.
+     options: NativeMenuElementOptionsIOS[],
+   ) => void;
+   setMenuOptions: (
+-    viewRef: React.ComponentRef<ComponentType>,
++    viewRef: React.ElementRef<ComponentType>,
+     menuElementId: string,
+     // Array wrapper due to codegen limitation — only the first element is used.
+     options: NativeMenuElementOptionsIOS[],

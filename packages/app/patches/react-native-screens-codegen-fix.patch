@@ -1,0 +1,13 @@
+diff --git a/src/fabric/gamma/split/SplitHostNativeComponent.ts b/src/fabric/gamma/split/SplitHostNativeComponent.ts
+index 1234567..abcdefg 100644
+--- a/src/fabric/gamma/split/SplitHostNativeComponent.ts
++++ b/src/fabric/gamma/split/SplitHostNativeComponent.ts
+@@ -112,7 +112,7 @@ type ComponentType = HostComponent<NativeProps>;
+ 
+ interface NativeCommands {
+   showColumn: (
+-    viewRef: React.ComponentRef<ComponentType>,
++    viewRef: React.ElementRef<ComponentType>,
+     column: string,
+   ) => void;
+ }

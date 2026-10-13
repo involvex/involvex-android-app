@@ -1,0 +1,13 @@
+diff --git a/src/fabric/gamma/stack/StackHeaderConfigAndroidNativeComponent.ts b/src/fabric/gamma/stack/StackHeaderConfigAndroidNativeComponent.ts
+index 1234567..abcdefg 100644
+--- a/src/fabric/gamma/stack/StackHeaderConfigAndroidNativeComponent.ts
++++ b/src/fabric/gamma/stack/StackHeaderConfigAndroidNativeComponent.ts
+@@ -127,7 +127,7 @@ type StackHeaderToolbarMenuElementUpdateNativeAndroid =
+ 
+ export interface NativeCommands {
+   updateToolbarMenuElements: (
+-    viewRef: React.ComponentRef<ComponentType>,
++    viewRef: React.ElementRef<ComponentType>,
+     updates: StackHeaderToolbarMenuElementUpdateNativeAndroid[],
+   ) => void;
+ }
