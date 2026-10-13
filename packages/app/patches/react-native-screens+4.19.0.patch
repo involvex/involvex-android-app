@@ -19,7 +19,7 @@ index 1234567..abcdefg 100644
  
  android {
 -    compileSdkVersion safeExtGet('compileSdkVersion', rnsDefaultCompileSdkVersion)
-+    compileSdk safeExtGet('compileSdk', rnsDefaultCompileSdkVersion)
++    compileSdk safeExtGet('compileSdkVersion', rnsDefaultCompileSdkVersion)
      namespace "com.swmansion.rnscreens"
  
      // Used to override the NDK path/version on internal CI or by allowing
