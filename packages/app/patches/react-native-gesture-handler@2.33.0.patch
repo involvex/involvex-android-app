@@ -1,8 +1,8 @@
 diff --git a/android/build.gradle b/android/build.gradle
-index 1234567..abcdefg 100644
+index da35fc8..69596b9 100755
 --- a/android/build.gradle
 +++ b/android/build.gradle
-@@ -40,10 +40,11 @@
+@@ -40,10 +40,11 @@ def resolveReactNativeDirectory() {
      }
  
      // Fallback to node resolver for custom directory structures like monorepos.
@@ -14,3 +14,6 @@ index 1234567..abcdefg 100644
 +            commandLine(nodeExecutable, "--print", "require.resolve('react-native/package.json')")
          }.standardOutput.asText.get().trim()
      )
+ 
+
+
