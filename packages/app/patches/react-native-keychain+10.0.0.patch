@@ -1,0 +1,14 @@
+diff --git a/android/react-native-helpers.gradle b/android/react-native-helpers.gradle
+index 1234567..abcdefg 100644
+--- a/android/react-native-helpers.gradle
++++ b/android/react-native-helpers.gradle
+@@ -21,7 +21,8 @@
+   }
+ 
+   // Fallback to node resolver for custom directory structures like monorepos.
+-  def reactNativePackage = file(["node", "--print", "require.resolve('react-native/package.json')"].execute(null, rootDir).text.trim())
++  def nodeExecutable = "C:/Users/lukas/AppData/Local/.nodejs/node.exe"
++  def reactNativePackage = file([nodeExecutable, "--print", "require.resolve('react-native/package.json')"].execute(null, rootDir).text.trim())
+   if(reactNativePackage.exists()) {
+       return reactNativePackage.parentFile
+   }

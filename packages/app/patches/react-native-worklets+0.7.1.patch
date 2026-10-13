@@ -1,0 +1,23 @@
+diff --git a/android/build.gradle b/android/build.gradle
+index 1234567..abcdefg 100644
+--- a/android/build.gradle
++++ b/android/build.gradle
+@@ -154,7 +154,7 @@
+ 
+ 
+ android {
+-    compileSdkVersion safeExtGet("compileSdkVersion", 34)
++    compileSdk safeExtGet("compileSdk", 34)
+ 
+     namespace "com.swmansion.worklets"
+ 
+@@ -178,8 +178,8 @@
+     }
+ 
+     defaultConfig {
+-        minSdkVersion safeExtGet("minSdkVersion", 23)
+-        targetSdkVersion safeExtGet("targetSdkVersion", 34)
++        minSdk safeExtGet("minSdk", 23)
++        targetSdk safeExtGet("targetSdk", 34)
+         versionCode 1
+         versionName WORKLETS_VERSION

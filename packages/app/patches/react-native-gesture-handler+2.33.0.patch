@@ -1,0 +1,16 @@
+diff --git a/android/build.gradle b/android/build.gradle
+index 1234567..abcdefg 100644
+--- a/android/build.gradle
++++ b/android/build.gradle
+@@ -40,10 +40,11 @@
+     }
+ 
+     // Fallback to node resolver for custom directory structures like monorepos.
++    def nodeExecutable = "C:/Users/lukas/AppData/Local/.nodejs/node.exe"
+     def reactNativePackage = file(
+         providers.exec {
+             workingDir(rootDir)
+-            commandLine("node", "--print", "require.resolve('react-native/package.json')")
++            commandLine(nodeExecutable, "--print", "require.resolve('react-native/package.json')")
+         }.standardOutput.asText.get().trim()
+     )
