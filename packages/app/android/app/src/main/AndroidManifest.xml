@@ -22,6 +22,20 @@
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
+        <!-- Discord OAuth redirect -->
+        <intent-filter>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.DEFAULT" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="involvex" android:host="discord-oauth-redirect" />
+        </intent-filter>
+        <!-- GitHub OAuth redirect -->
+        <intent-filter>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.DEFAULT" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="involvex" android:host="github-oauth-redirect" />
+        </intent-filter>
       </activity>
     </application>
 </manifest>

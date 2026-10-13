@@ -3,7 +3,7 @@
  * Displays trending GitHub repos and npm packages with dual tabs
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -11,20 +11,22 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
-} from 'react-native';
-import { FlashList } from '@shopify/flash-list';
-import { HackerTheme } from '../theme/colors';
-import { Typography } from '../theme/typography';
-import { Spacing } from '../theme/spacing';
-import { useTrendingStore } from '../store/trendingStore';
-import { TimeframeType } from '../api/github/githubClient';
-import { GitHubRepository } from '../models/GitHubRepository';
-import { NpmPackage } from '../models/NpmPackage';
+  Linking,
+  Alert,
+} from "react-native";
+import { FlashList } from "@shopify/flash-list";
+import { HackerTheme } from "../theme/colors";
+import { Typography } from "../theme/typography";
+import { Spacing } from "../theme/spacing";
+import { useTrendingStore } from "../store/trendingStore";
+import { TimeframeType } from "../api/github/githubClient";
+import { GitHubRepository } from "../models/GitHubRepository";
+import { NpmPackage } from "../models/NpmPackage";
 
-type TabType = 'github' | 'npm';
+type TabType = "github" | "npm";
 
 export const HomeScreen: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<TabType>('github');
+  const [activeTab, setActiveTab] = useState<TabType>("github");
   const {
     timeframe,
     githubRepos,
@@ -50,7 +52,7 @@ export const HomeScreen: React.FC = () => {
 
   const renderTimeframeSelector = () => (
     <View style={styles.timeframeContainer}>
-      {(['daily', 'weekly', 'monthly'] as TimeframeType[]).map(tf => (
+      {(["daily", "weekly", "monthly"] as TimeframeType[]).map((tf) => (
         <TouchableOpacity
           key={tf}
           style={[
@@ -77,14 +79,14 @@ export const HomeScreen: React.FC = () => {
       <TouchableOpacity
         style={[
           styles.tabButton,
-          activeTab === 'github' && styles.tabButtonActive,
+          activeTab === "github" && styles.tabButtonActive,
         ]}
-        onPress={() => setActiveTab('github')}
+        onPress={() => setActiveTab("github")}
       >
         <Text
           style={[
             styles.tabText,
-            activeTab === 'github' && styles.tabTextActive,
+            activeTab === "github" && styles.tabTextActive,
           ]}
         >
           GitHub ({githubRepos.length})
@@ -93,12 +95,12 @@ export const HomeScreen: React.FC = () => {
       <TouchableOpacity
         style={[
           styles.tabButton,
-          activeTab === 'npm' && styles.tabButtonActive,
+          activeTab === "npm" && styles.tabButtonActive,
         ]}
-        onPress={() => setActiveTab('npm')}
+        onPress={() => setActiveTab("npm")}
       >
         <Text
-          style={[styles.tabText, activeTab === 'npm' && styles.tabTextActive]}
+          style={[styles.tabText, activeTab === "npm" && styles.tabTextActive]}
         >
           npm ({npmPackages.length})
         </Text>
@@ -106,8 +108,19 @@ export const HomeScreen: React.FC = () => {
     </View>
   );
 
+  const handleOpenUrl = (url: string) => {
+    if (url) {
+      Linking.openURL(url).catch(() => {
+        Alert.alert("Error", "Could not open link");
+      });
+    }
+  };
+
   const renderGitHubItem = ({ item }: { item: GitHubRepository }) => (
-    <View style={styles.card}>
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() => handleOpenUrl(item.htmlUrl)}
+    >
       <Text style={styles.cardTitle}>{item.name}</Text>
       <Text style={styles.cardSubtitle}>{item.fullName}</Text>
       {item.description && (
@@ -130,11 +143,14 @@ export const HomeScreen: React.FC = () => {
           </View>
         )}
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   const renderNpmItem = ({ item }: { item: NpmPackage }) => (
-    <View style={styles.card}>
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() => handleOpenUrl(item.npmUrl)}
+    >
       <Text style={styles.cardTitle}>{item.name}</Text>
       <Text style={styles.cardSubtitle}>v{item.version}</Text>
       {item.description && (
@@ -146,19 +162,19 @@ export const HomeScreen: React.FC = () => {
         <Text style={styles.statText}>📦 {item.formattedDownloads}</Text>
         {item.stars > 0 && <Text style={styles.statText}>⭐ {item.stars}</Text>}
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
       <Text style={styles.emptyText}>
-        {loading ? 'Loading...' : 'No data available'}
+        {loading ? "Loading..." : "No data available"}
       </Text>
       {error && <Text style={styles.errorText}>{error}</Text>}
     </View>
   );
 
-  const data = activeTab === 'github' ? githubRepos : npmPackages;
+  const data = activeTab === "github" ? githubRepos : npmPackages;
 
   return (
     <View style={styles.container}>
@@ -176,7 +192,7 @@ export const HomeScreen: React.FC = () => {
         <FlashList
           data={data as any}
           renderItem={
-            activeTab === 'github'
+            activeTab === "github"
               ? (renderGitHubItem as any)
               : (renderNpmItem as any)
           }
@@ -205,7 +221,7 @@ const styles = StyleSheet.create({
     backgroundColor: HackerTheme.darkerGreen,
   },
   timeframeContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: Spacing.md,
     gap: Spacing.sm,
   },
@@ -217,7 +233,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: HackerTheme.darkGreen,
     backgroundColor: HackerTheme.darkerGreen,
-    alignItems: 'center',
+    alignItems: "center",
   },
   timeframeButtonActive: {
     backgroundColor: HackerTheme.darkGreen,
@@ -229,10 +245,10 @@ const styles = StyleSheet.create({
   },
   timeframeTextActive: {
     color: HackerTheme.primary,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   tabContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingHorizontal: Spacing.md,
     paddingBottom: Spacing.md,
     gap: Spacing.sm,
@@ -244,7 +260,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: HackerTheme.darkGreen,
     backgroundColor: HackerTheme.darkerGreen,
-    alignItems: 'center',
+    alignItems: "center",
   },
   tabButtonActive: {
     backgroundColor: HackerTheme.darkGreen,
@@ -256,7 +272,7 @@ const styles = StyleSheet.create({
   },
   tabTextActive: {
     color: HackerTheme.primary,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   listContent: {
     padding: Spacing.md,
@@ -267,7 +283,7 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     marginBottom: Spacing.md,
     borderWidth: 1,
-    borderColor: HackerTheme.primary + '20',
+    borderColor: HackerTheme.primary + "20",
   },
   cardTitle: {
     ...Typography.heading3,
@@ -286,18 +302,18 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   statsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: Spacing.md,
-    flexWrap: 'wrap',
+    flexWrap: "wrap",
   },
   statText: {
     ...Typography.captionText,
     color: HackerTheme.lightGrey,
   },
   languageBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: Spacing.xs,
   },
   languageDot: {
@@ -311,8 +327,8 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   loadingText: {
     ...Typography.bodyText,
@@ -321,20 +337,20 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: Spacing.xl,
   },
   emptyText: {
     ...Typography.bodyText,
     color: HackerTheme.lightGrey,
-    textAlign: 'center',
+    textAlign: "center",
   },
   errorText: {
     ...Typography.captionText,
     color: HackerTheme.errorRed,
     marginTop: Spacing.sm,
-    textAlign: 'center',
+    textAlign: "center",
   },
 });
 
