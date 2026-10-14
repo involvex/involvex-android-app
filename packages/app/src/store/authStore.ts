@@ -83,6 +83,7 @@ const githubConfig = {
   scopes: ["read:user", "user:email"],
   responseType: "code",
   usePKCE: false,
+  additionalHeaders: { Accept: "application/json" },
   serviceConfiguration: {
     authorizationEndpoint: "https://github.com/login/oauth/authorize",
     tokenEndpoint: "https://github.com/login/oauth/access_token",
