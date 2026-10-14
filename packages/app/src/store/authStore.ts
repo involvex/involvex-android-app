@@ -4,18 +4,18 @@
  * Uses Zustand for state management
  */
 
-import { create } from 'zustand';
-import { immer } from 'zustand/middleware/immer';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { authorize } from 'react-native-app-auth';
-import { ENV } from '../config/env';
+import { create } from "zustand";
+import { immer } from "zustand/middleware/immer";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { authorize } from "react-native-app-auth";
+import { ENV } from "../config/env";
 
-const AUTH_ACTIVE_USER_KEY = '@auth:active_user';
-const AUTH_DISCORD_USER_KEY = '@auth:discord_user';
-const AUTH_GITHUB_USER_KEY = '@auth:github_user';
-const GUEST_MODE_KEY = '@auth:guest';
-const AUTH_PROVIDER_KEY = '@auth:provider'; // Stores the provider of the activeUser
-const AUTH_TOKEN_KEY = '@auth:token';
+const AUTH_ACTIVE_USER_KEY = "@auth:active_user";
+const AUTH_DISCORD_USER_KEY = "@auth:discord_user";
+const AUTH_GITHUB_USER_KEY = "@auth:github_user";
+const GUEST_MODE_KEY = "@auth:guest";
+const AUTH_PROVIDER_KEY = "@auth:provider"; // Stores the provider of the activeUser
+const AUTH_TOKEN_KEY = "@auth:token";
 
 export interface DiscordUser {
   id: string;
@@ -33,7 +33,7 @@ export interface GitHubUser {
   email: string | null;
 }
 
-export type AuthProvider = 'discord' | 'github';
+export type AuthProvider = "discord" | "github";
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -53,7 +53,11 @@ interface AuthState {
   linkGitHubAccount: () => Promise<void>;
   signOut: () => Promise<void>;
   enableGuestMode: () => Promise<void>;
-  setActiveUser: (user: DiscordUser | GitHubUser, token: string, provider: AuthProvider) => Promise<void>;
+  setActiveUser: (
+    user: DiscordUser | GitHubUser,
+    token: string,
+    provider: AuthProvider,
+  ) => Promise<void>;
   setDiscordUser: (user: DiscordUser | null) => Promise<void>;
   setGitHubUser: (user: GitHubUser | null) => Promise<void>;
 }
@@ -62,11 +66,13 @@ const discordConfig = {
   clientId: ENV.DISCORD_CLIENT_ID,
   clientSecret: ENV.DISCORD_CLIENT_SECRET,
   redirectUrl: ENV.DISCORD_OAUTH_CALLBACK,
-  scopes: ['identify', 'email'],
+  scopes: ["identify", "email"],
+  responseType: "code",
+  usePKCE: false,
   serviceConfiguration: {
-    authorizationEndpoint: 'https://discord.com/api/oauth2/authorize',
-    tokenEndpoint: 'https://discord.com/api/oauth2/token',
-    revocationEndpoint: 'https://discord.com/api/oauth2/token/revoke',
+    authorizationEndpoint: "https://discord.com/api/oauth2/authorize",
+    tokenEndpoint: "https://discord.com/api/oauth2/token",
+    revocationEndpoint: "https://discord.com/api/oauth2/token/revoke",
   },
 };
 
@@ -74,16 +80,20 @@ const githubConfig = {
   clientId: ENV.GITHUB_OAUTH_CLIENT_ID,
   clientSecret: ENV.GITHUB_OAUTH_CLIENT_SECRET,
   redirectUrl: ENV.GITHUB_OAUTH_CALLBACK,
-  scopes: ['read:user', 'user:email'],
+  scopes: ["read:user", "user:email"],
+  responseType: "code",
+  usePKCE: false,
   serviceConfiguration: {
-    authorizationEndpoint: 'https://github.com/login/oauth/authorize',
-    tokenEndpoint: 'https://github.com/login/oauth/access_token',
-    revocationEndpoint: 'https://github.com/settings/connections/applications/' + ENV.GITHUB_OAUTH_CLIENT_ID,
+    authorizationEndpoint: "https://github.com/login/oauth/authorize",
+    tokenEndpoint: "https://github.com/login/oauth/access_token",
+    revocationEndpoint:
+      "https://github.com/settings/connections/applications/" +
+      ENV.GITHUB_OAUTH_CLIENT_ID,
   },
 };
 
 export const useAuthStore = create<AuthState>()(
-  immer(set => ({
+  immer((set) => ({
     // Initial State
     isAuthenticated: false,
     isGuest: false,
@@ -97,11 +107,18 @@ export const useAuthStore = create<AuthState>()(
     // Initialize auth state from storage
     initialize: async () => {
       try {
-        set(state => {
+        set((state) => {
           state.loading = true;
         });
 
-        const [activeUserJson, discordUserJson, githubUserJson, isGuest, provider, accessToken] = await Promise.all([
+        const [
+          activeUserJson,
+          discordUserJson,
+          githubUserJson,
+          isGuest,
+          provider,
+          accessToken,
+        ] = await Promise.all([
           AsyncStorage.getItem(AUTH_ACTIVE_USER_KEY),
           AsyncStorage.getItem(AUTH_DISCORD_USER_KEY),
           AsyncStorage.getItem(AUTH_GITHUB_USER_KEY),
@@ -110,17 +127,19 @@ export const useAuthStore = create<AuthState>()(
           AsyncStorage.getItem(AUTH_TOKEN_KEY),
         ]);
 
-        if (isGuest === 'true') {
-          set(state => {
+        if (isGuest === "true") {
+          set((state) => {
             state.isGuest = true;
             state.loading = false;
           });
         } else if (activeUserJson && provider && accessToken) {
           const activeUser = JSON.parse(activeUserJson);
-          const discordUser = discordUserJson ? JSON.parse(discordUserJson) : null;
+          const discordUser = discordUserJson
+            ? JSON.parse(discordUserJson)
+            : null;
           const githubUser = githubUserJson ? JSON.parse(githubUserJson) : null;
 
-          set(state => {
+          set((state) => {
             state.isAuthenticated = true;
             state.activeUser = activeUser;
             state.discordUser = discordUser;
@@ -130,16 +149,19 @@ export const useAuthStore = create<AuthState>()(
             state.loading = false;
           });
 
-          console.log('Active user authenticated:', 'username' in activeUser ? activeUser.username : activeUser.login);
+          console.log(
+            "Active user authenticated:",
+            "username" in activeUser ? activeUser.username : activeUser.login,
+          );
         } else {
-          set(state => {
+          set((state) => {
             state.loading = false;
           });
         }
       } catch (error) {
-        console.error('Error initializing auth:', error);
+        console.error("Error initializing auth:", error);
 
-        set(state => {
+        set((state) => {
           state.loading = false;
         });
       }
@@ -148,12 +170,12 @@ export const useAuthStore = create<AuthState>()(
     // Sign in with Discord OAuth
     signInWithDiscord: async () => {
       try {
-        set(state => {
+        set((state) => {
           state.loading = true;
         });
 
         const result = await authorize(discordConfig);
-        const userResponse = await fetch('https://discord.com/api/users/@me', {
+        const userResponse = await fetch("https://discord.com/api/users/@me", {
           headers: { Authorization: `Bearer ${result.accessToken}` },
         });
         const discordUser = await userResponse.json();
@@ -162,18 +184,21 @@ export const useAuthStore = create<AuthState>()(
           id: discordUser.id,
           username: discordUser.username,
           discriminator: discordUser.discriminator,
-          avatar: discordUser.avatar 
+          avatar: discordUser.avatar
             ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png`
             : null,
           email: discordUser.email,
         };
 
-        await useAuthStore.getState().setActiveUser(user, result.accessToken, 'discord');
+        await useAuthStore
+          .getState()
+          .setActiveUser(user, result.accessToken, "discord");
         await useAuthStore.getState().setDiscordUser(user);
-        
       } catch (error) {
-        console.error('Error signing in with Discord:', error);
-        set(state => { state.loading = false; });
+        console.error("Error signing in with Discord:", error);
+        set((state) => {
+          state.loading = false;
+        });
         throw error;
       }
     },
@@ -181,12 +206,12 @@ export const useAuthStore = create<AuthState>()(
     // Sign in with GitHub OAuth
     signInWithGitHub: async () => {
       try {
-        set(state => {
+        set((state) => {
           state.loading = true;
         });
 
         const result = await authorize(githubConfig);
-        const userResponse = await fetch('https://api.github.com/user', {
+        const userResponse = await fetch("https://api.github.com/user", {
           headers: { Authorization: `Bearer ${result.accessToken}` },
         });
         const githubUser = await userResponse.json();
@@ -199,12 +224,15 @@ export const useAuthStore = create<AuthState>()(
           email: githubUser.email,
         };
 
-        await useAuthStore.getState().setActiveUser(user, result.accessToken, 'github');
+        await useAuthStore
+          .getState()
+          .setActiveUser(user, result.accessToken, "github");
         await useAuthStore.getState().setGitHubUser(user);
-
       } catch (error) {
-        console.error('Error signing in with GitHub:', error);
-        set(state => { state.loading = false; });
+        console.error("Error signing in with GitHub:", error);
+        set((state) => {
+          state.loading = false;
+        });
         throw error;
       }
     },
@@ -212,8 +240,11 @@ export const useAuthStore = create<AuthState>()(
     // Link Discord Account
     linkDiscordAccount: async () => {
       try {
+        set((state) => {
+          state.loading = true;
+        });
         const result = await authorize(discordConfig);
-        const userResponse = await fetch('https://discord.com/api/users/@me', {
+        const userResponse = await fetch("https://discord.com/api/users/@me", {
           headers: { Authorization: `Bearer ${result.accessToken}` },
         });
         const discordUser = await userResponse.json();
@@ -222,16 +253,21 @@ export const useAuthStore = create<AuthState>()(
           id: discordUser.id,
           username: discordUser.username,
           discriminator: discordUser.discriminator,
-          avatar: discordUser.avatar 
+          avatar: discordUser.avatar
             ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png`
             : null,
           email: discordUser.email,
         };
-        
-        await useAuthStore.getState().setDiscordUser(user);
 
+        await useAuthStore.getState().setDiscordUser(user);
+        set((state) => {
+          state.loading = false;
+        });
       } catch (error) {
-        console.error('Error linking Discord account:', error);
+        console.error("Error linking Discord account:", error);
+        set((state) => {
+          state.loading = false;
+        });
         throw error;
       }
     },
@@ -239,8 +275,11 @@ export const useAuthStore = create<AuthState>()(
     // Link GitHub Account
     linkGitHubAccount: async () => {
       try {
+        set((state) => {
+          state.loading = true;
+        });
         const result = await authorize(githubConfig);
-        const userResponse = await fetch('https://api.github.com/user', {
+        const userResponse = await fetch("https://api.github.com/user", {
           headers: { Authorization: `Bearer ${result.accessToken}` },
         });
         const githubUser = await userResponse.json();
@@ -252,11 +291,16 @@ export const useAuthStore = create<AuthState>()(
           avatar_url: githubUser.avatar_url,
           email: githubUser.email,
         };
-        
-        await useAuthStore.getState().setGitHubUser(user);
 
+        await useAuthStore.getState().setGitHubUser(user);
+        set((state) => {
+          state.loading = false;
+        });
       } catch (error) {
-        console.error('Error linking GitHub account:', error);
+        console.error("Error linking GitHub account:", error);
+        set((state) => {
+          state.loading = false;
+        });
         throw error;
       }
     },
@@ -273,7 +317,7 @@ export const useAuthStore = create<AuthState>()(
           AsyncStorage.removeItem(AUTH_TOKEN_KEY),
         ]);
 
-        set(state => {
+        set((state) => {
           state.isAuthenticated = false;
           state.isGuest = false;
           state.activeUser = null;
@@ -283,9 +327,9 @@ export const useAuthStore = create<AuthState>()(
           state.accessToken = null;
         });
 
-        console.log('User signed out');
+        console.log("User signed out");
       } catch (error) {
-        console.error('Error signing out:', error);
+        console.error("Error signing out:", error);
         throw error;
       }
     },
@@ -293,9 +337,9 @@ export const useAuthStore = create<AuthState>()(
     // Enable guest mode (no auth)
     enableGuestMode: async () => {
       try {
-        await AsyncStorage.setItem(GUEST_MODE_KEY, 'true');
+        await AsyncStorage.setItem(GUEST_MODE_KEY, "true");
 
-        set(state => {
+        set((state) => {
           state.isGuest = true;
           state.isAuthenticated = false;
           state.activeUser = null;
@@ -305,15 +349,19 @@ export const useAuthStore = create<AuthState>()(
           state.accessToken = null;
         });
 
-        console.log('Guest mode enabled');
+        console.log("Guest mode enabled");
       } catch (error) {
-        console.error('Error enabling guest mode:', error);
+        console.error("Error enabling guest mode:", error);
         throw error;
       }
     },
 
     // Set active user (for initial login)
-    setActiveUser: async (user: DiscordUser | GitHubUser, token: string, provider: AuthProvider) => {
+    setActiveUser: async (
+      user: DiscordUser | GitHubUser,
+      token: string,
+      provider: AuthProvider,
+    ) => {
       try {
         await Promise.all([
           AsyncStorage.setItem(AUTH_ACTIVE_USER_KEY, JSON.stringify(user)),
@@ -322,7 +370,7 @@ export const useAuthStore = create<AuthState>()(
           AsyncStorage.removeItem(GUEST_MODE_KEY),
         ]);
 
-        set(state => {
+        set((state) => {
           state.isAuthenticated = true;
           state.isGuest = false;
           state.activeUser = user;
@@ -331,41 +379,54 @@ export const useAuthStore = create<AuthState>()(
           state.loading = false;
         });
 
-        console.log('Active user set:', 'username' in user ? user.username : user.login);
+        console.log(
+          "Active user set:",
+          "username" in user ? user.username : user.login,
+        );
       } catch (error) {
-        console.error('Error setting active user:', error);
+        console.error("Error setting active user:", error);
         throw error;
       }
     },
 
     // Set Discord user (for linking)
     setDiscordUser: async (user: DiscordUser | null) => {
-        try {
-            if (user) {
-                await AsyncStorage.setItem(AUTH_DISCORD_USER_KEY, JSON.stringify(user));
-            } else {
-                await AsyncStorage.removeItem(AUTH_DISCORD_USER_KEY);
-            }
-            set(state => { state.discordUser = user; });
-        } catch (error) {
-            console.error('Error setting Discord user:', error);
-            throw error;
+      try {
+        if (user) {
+          await AsyncStorage.setItem(
+            AUTH_DISCORD_USER_KEY,
+            JSON.stringify(user),
+          );
+        } else {
+          await AsyncStorage.removeItem(AUTH_DISCORD_USER_KEY);
         }
+        set((state) => {
+          state.discordUser = user;
+        });
+      } catch (error) {
+        console.error("Error setting Discord user:", error);
+        throw error;
+      }
     },
 
     // Set GitHub user (for linking)
     setGitHubUser: async (user: GitHubUser | null) => {
-        try {
-            if (user) {
-                await AsyncStorage.setItem(AUTH_GITHUB_USER_KEY, JSON.stringify(user));
-            } else {
-                await AsyncStorage.removeItem(AUTH_GITHUB_USER_KEY);
-            }
-            set(state => { state.githubUser = user; });
-        } catch (error) {
-            console.error('Error setting GitHub user:', error);
-            throw error;
+      try {
+        if (user) {
+          await AsyncStorage.setItem(
+            AUTH_GITHUB_USER_KEY,
+            JSON.stringify(user),
+          );
+        } else {
+          await AsyncStorage.removeItem(AUTH_GITHUB_USER_KEY);
         }
+        set((state) => {
+          state.githubUser = user;
+        });
+      } catch (error) {
+        console.error("Error setting GitHub user:", error);
+        throw error;
+      }
     },
   })),
 );

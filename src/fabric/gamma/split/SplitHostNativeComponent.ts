@@ -112,7 +112,7 @@ type ComponentType = HostComponent<NativeProps>;
 
 interface NativeCommands {
   showColumn: (
-    viewRef: React.ComponentRef<ComponentType>,
+    viewRef: React.ElementRef<ComponentType>,
     column: string,
   ) => void;
 }

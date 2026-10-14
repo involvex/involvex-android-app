@@ -3,7 +3,7 @@
  * Advanced search for GitHub repos and npm packages with filters
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -12,52 +12,56 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
-} from 'react-native';
-import { FlashList } from '@shopify/flash-list';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { HackerTheme } from '../theme/colors';
-import { Typography } from '../theme/typography';
-import { Spacing } from '../theme/spacing';
-import { githubService } from '../api/github/githubService';
-import { npmService } from '../api/npm/npmService';
-import { GitHubRepository } from '../models/GitHubRepository';
-import { NpmPackage } from '../models/NpmPackage';
+  Keyboard,
+  Alert,
+  Linking,
+  TouchableWithoutFeedback,
+} from "react-native";
+import { FlashList } from "@shopify/flash-list";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import { HackerTheme } from "../theme/colors";
+import { Typography } from "../theme/typography";
+import { Spacing } from "../theme/spacing";
+import { githubService } from "../api/github/githubService";
+import { npmService } from "../api/npm/npmService";
+import { GitHubRepository } from "../models/GitHubRepository";
+import { NpmPackage } from "../models/NpmPackage";
 
-type TabType = 'github' | 'npm';
-type SortType = 'stars' | 'forks' | 'updated' | 'downloads';
+type TabType = "github" | "npm";
+type SortType = "stars" | "forks" | "updated" | "downloads";
 
 const QUICK_FILTERS = [
-  'JavaScript',
-  'TypeScript',
-  'Python',
-  'React',
-  'Node.js',
-  'Vue',
+  "JavaScript",
+  "TypeScript",
+  "Python",
+  "React",
+  "Node.js",
+  "Vue",
 ];
 
 export const SearchScreen: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<TabType>('github');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState<TabType>("github");
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [githubResults, setGithubResults] = useState<GitHubRepository[]>([]);
   const [npmResults, setNpmResults] = useState<NpmPackage[]>([]);
   const [showFilters, setShowFilters] = useState(false);
 
   // Filters
-  const [selectedLanguage, setSelectedLanguage] = useState<string>('');
+  const [selectedLanguage, setSelectedLanguage] = useState<string>("");
   const [minStars, setMinStars] = useState<number>(0);
-  const [sortBy, setSortBy] = useState<SortType>('stars');
+  const [sortBy, setSortBy] = useState<SortType>("stars");
 
   const handleSearch = useCallback(async () => {
     if (!searchQuery.trim()) return;
 
     setLoading(true);
     try {
-      if (activeTab === 'github') {
+      if (activeTab === "github") {
         const results = await githubService.search(searchQuery, {
           language: selectedLanguage || undefined,
           minStars,
-          sort: sortBy === 'downloads' ? 'stars' : sortBy,
+          sort: sortBy === "downloads" ? "stars" : sortBy,
           perPage: 50,
         });
         setGithubResults(results);
@@ -70,7 +74,7 @@ export const SearchScreen: React.FC = () => {
         setNpmResults(results);
       }
     } catch (error) {
-      console.error('Search error:', error);
+      console.error("Search error:", error);
     } finally {
       setLoading(false);
     }
@@ -82,19 +86,27 @@ export const SearchScreen: React.FC = () => {
     setTimeout(handleSearch, 100);
   };
 
+  const handleOpenUrl = (url: string) => {
+    if (url) {
+      Linking.openURL(url).catch(() => {
+        Alert.alert("Error", "Could not open link");
+      });
+    }
+  };
+
   const renderTabSelector = () => (
     <View style={styles.tabContainer}>
       <TouchableOpacity
         style={[
           styles.tabButton,
-          activeTab === 'github' && styles.tabButtonActive,
+          activeTab === "github" && styles.tabButtonActive,
         ]}
-        onPress={() => setActiveTab('github')}
+        onPress={() => setActiveTab("github")}
       >
         <Text
           style={[
             styles.tabText,
-            activeTab === 'github' && styles.tabTextActive,
+            activeTab === "github" && styles.tabTextActive,
           ]}
         >
           GitHub ({githubResults.length})
@@ -103,12 +115,12 @@ export const SearchScreen: React.FC = () => {
       <TouchableOpacity
         style={[
           styles.tabButton,
-          activeTab === 'npm' && styles.tabButtonActive,
+          activeTab === "npm" && styles.tabButtonActive,
         ]}
-        onPress={() => setActiveTab('npm')}
+        onPress={() => setActiveTab("npm")}
       >
         <Text
-          style={[styles.tabText, activeTab === 'npm' && styles.tabTextActive]}
+          style={[styles.tabText, activeTab === "npm" && styles.tabTextActive]}
         >
           npm ({npmResults.length})
         </Text>
@@ -119,7 +131,7 @@ export const SearchScreen: React.FC = () => {
   const renderSearchBar = () => (
     <View style={styles.searchContainer}>
       <View style={styles.searchInputContainer}>
-        <Icon name="magnify" size={20} color={HackerTheme.lightGrey} />
+        <Icon name="magnify" size={18} color={HackerTheme.lightGrey} />
         <TextInput
           style={styles.searchInput}
           value={searchQuery}
@@ -128,10 +140,12 @@ export const SearchScreen: React.FC = () => {
           placeholderTextColor={HackerTheme.lightGrey}
           onSubmitEditing={handleSearch}
           returnKeyType="search"
+          autoCapitalize="none"
+          autoCorrect={false}
         />
         {searchQuery.length > 0 && (
-          <TouchableOpacity onPress={() => setSearchQuery('')}>
-            <Icon name="close-circle" size={20} color={HackerTheme.lightGrey} />
+          <TouchableOpacity onPress={() => setSearchQuery("")}>
+            <Icon name="close-circle" size={18} color={HackerTheme.lightGrey} />
           </TouchableOpacity>
         )}
       </View>
@@ -140,7 +154,7 @@ export const SearchScreen: React.FC = () => {
         onPress={() => setShowFilters(!showFilters)}
       >
         <Icon
-          name={showFilters ? 'filter-off' : 'filter'}
+          name={showFilters ? "filter-off" : "filter"}
           size={20}
           color={showFilters ? HackerTheme.primary : HackerTheme.lightGrey}
         />
@@ -155,7 +169,7 @@ export const SearchScreen: React.FC = () => {
       style={styles.quickFiltersContainer}
       contentContainerStyle={styles.quickFiltersContent}
     >
-      {QUICK_FILTERS.map(filter => (
+      {QUICK_FILTERS.map((filter) => (
         <TouchableOpacity
           key={filter}
           style={[
@@ -191,13 +205,13 @@ export const SearchScreen: React.FC = () => {
           placeholderTextColor={HackerTheme.lightGrey}
         />
 
-        {activeTab === 'github' && (
+        {activeTab === "github" && (
           <>
             <Text style={styles.filterLabel}>Minimum Stars</Text>
             <TextInput
               style={styles.filterInput}
               value={minStars.toString()}
-              onChangeText={text => setMinStars(parseInt(text, 10) || 0)}
+              onChangeText={(text) => setMinStars(parseInt(text, 10) || 0)}
               placeholder="0"
               placeholderTextColor={HackerTheme.lightGrey}
               keyboardType="numeric"
@@ -205,7 +219,7 @@ export const SearchScreen: React.FC = () => {
 
             <Text style={styles.filterLabel}>Sort By</Text>
             <View style={styles.sortButtons}>
-              {(['stars', 'forks', 'updated'] as SortType[]).map(sort => (
+              {(["stars", "forks", "updated"] as SortType[]).map((sort) => (
                 <TouchableOpacity
                   key={sort}
                   style={[
@@ -236,7 +250,10 @@ export const SearchScreen: React.FC = () => {
   };
 
   const renderGitHubItem = ({ item }: { item: GitHubRepository }) => (
-    <View style={styles.card}>
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() => handleOpenUrl(item.htmlUrl)}
+    >
       <Text style={styles.cardTitle}>{item.name}</Text>
       <Text style={styles.cardSubtitle}>{item.fullName}</Text>
       {item.description && (
@@ -259,11 +276,14 @@ export const SearchScreen: React.FC = () => {
           </View>
         )}
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   const renderNpmItem = ({ item }: { item: NpmPackage }) => (
-    <View style={styles.card}>
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() => handleOpenUrl(item.npmUrl)}
+    >
       <Text style={styles.cardTitle}>{item.name}</Text>
       <Text style={styles.cardSubtitle}>v{item.version}</Text>
       {item.description && (
@@ -275,7 +295,7 @@ export const SearchScreen: React.FC = () => {
         <Text style={styles.statText}>📦 {item.formattedDownloads}</Text>
         {item.stars > 0 && <Text style={styles.statText}>⭐ {item.stars}</Text>}
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   const renderEmptyState = () => (
@@ -283,42 +303,44 @@ export const SearchScreen: React.FC = () => {
       <Icon name="magnify" size={64} color={HackerTheme.darkGreen} />
       <Text style={styles.emptyText}>
         {searchQuery.trim()
-          ? 'No results found'
-          : 'Search for repositories and packages'}
+          ? "No results found"
+          : "Search for repositories and packages"}
       </Text>
     </View>
   );
 
-  const results = activeTab === 'github' ? githubResults : npmResults;
+  const results = activeTab === "github" ? githubResults : npmResults;
 
   return (
-    <View style={styles.container}>
-      {renderTabSelector()}
-      {renderSearchBar()}
-      {renderQuickFilters()}
-      {renderAdvancedFilters()}
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={styles.container}>
+        {renderTabSelector()}
+        {renderSearchBar()}
+        {renderQuickFilters()}
+        {renderAdvancedFilters()}
 
-      {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={HackerTheme.primary} />
-          <Text style={styles.loadingText}>Searching...</Text>
-        </View>
-      ) : (
-        <FlashList
-          data={results as any}
-          renderItem={
-            activeTab === 'github'
-              ? (renderGitHubItem as any)
-              : (renderNpmItem as any)
-          }
-          // @ts-ignore
-          estimatedItemSize={150}
-          keyExtractor={(item: any) => item.id || item.name}
-          contentContainerStyle={styles.listContent}
-          ListEmptyComponent={renderEmptyState}
-        />
-      )}
-    </View>
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={HackerTheme.primary} />
+            <Text style={styles.loadingText}>Searching...</Text>
+          </View>
+        ) : (
+          <FlashList
+            data={results as any}
+            renderItem={
+              activeTab === "github"
+                ? (renderGitHubItem as any)
+                : (renderNpmItem as any)
+            }
+            // @ts-ignore
+            estimatedItemSize={150}
+            keyExtractor={(item: any) => item.id || item.name}
+            contentContainerStyle={styles.listContent}
+            ListEmptyComponent={renderEmptyState}
+          />
+        )}
+      </View>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -328,18 +350,19 @@ const styles = StyleSheet.create({
     backgroundColor: HackerTheme.darkerGreen,
   },
   tabContainer: {
-    flexDirection: 'row',
-    padding: Spacing.md,
+    flexDirection: "row",
+    paddingHorizontal: Spacing.md,
+    paddingTop: Spacing.md,
     gap: Spacing.sm,
   },
   tabButton: {
     flex: 1,
-    paddingVertical: Spacing.md,
+    paddingVertical: Spacing.sm,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: HackerTheme.darkGreen,
     backgroundColor: HackerTheme.darkerGreen,
-    alignItems: 'center',
+    alignItems: "center",
   },
   tabButtonActive: {
     backgroundColor: HackerTheme.darkGreen,
@@ -351,29 +374,31 @@ const styles = StyleSheet.create({
   },
   tabTextActive: {
     color: HackerTheme.primary,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   searchContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingHorizontal: Spacing.md,
     gap: Spacing.sm,
   },
   searchInputContainer: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: HackerTheme.darkGreen,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: HackerTheme.primary + '20',
-    paddingHorizontal: Spacing.md,
-    gap: Spacing.sm,
+    borderColor: HackerTheme.primary + "20",
+    paddingHorizontal: Spacing.sm,
+    gap: Spacing.xs,
+    height: 40,
   },
   searchInput: {
     flex: 1,
     ...Typography.bodyText,
+    fontSize: 14,
+    paddingVertical: 0,
     color: HackerTheme.lightOnPrimary,
-    paddingVertical: Spacing.sm,
   },
   filterButton: {
     width: 44,
@@ -381,9 +406,9 @@ const styles = StyleSheet.create({
     backgroundColor: HackerTheme.darkGreen,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: HackerTheme.primary + '20',
-    justifyContent: 'center',
-    alignItems: 'center',
+    borderColor: HackerTheme.primary + "20",
+    justifyContent: "center",
+    alignItems: "center",
   },
   quickFiltersContainer: {
     marginTop: Spacing.md,
@@ -411,7 +436,7 @@ const styles = StyleSheet.create({
   },
   quickFilterTextActive: {
     color: HackerTheme.primary,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   filtersPanel: {
     backgroundColor: HackerTheme.darkGreen,
@@ -419,7 +444,7 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: HackerTheme.primary + '20',
+    borderColor: HackerTheme.primary + "20",
   },
   filterLabel: {
     ...Typography.bodyText,
@@ -433,12 +458,12 @@ const styles = StyleSheet.create({
     backgroundColor: HackerTheme.darkerGreen,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: HackerTheme.primary + '20',
+    borderColor: HackerTheme.primary + "20",
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
   },
   sortButtons: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: Spacing.sm,
     marginTop: Spacing.xs,
   },
@@ -449,10 +474,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: HackerTheme.darkGreen,
     backgroundColor: HackerTheme.darkerGreen,
-    alignItems: 'center',
+    alignItems: "center",
   },
   sortButtonActive: {
-    backgroundColor: HackerTheme.primary + '20',
+    backgroundColor: HackerTheme.primary + "20",
     borderColor: HackerTheme.primary,
   },
   sortButtonText: {
@@ -461,13 +486,13 @@ const styles = StyleSheet.create({
   },
   sortButtonTextActive: {
     color: HackerTheme.primary,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   applyButton: {
     backgroundColor: HackerTheme.primary,
     borderRadius: 8,
     paddingVertical: Spacing.md,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: Spacing.md,
   },
   applyButtonText: {
@@ -483,7 +508,7 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     marginBottom: Spacing.md,
     borderWidth: 1,
-    borderColor: HackerTheme.primary + '20',
+    borderColor: HackerTheme.primary + "20",
   },
   cardTitle: {
     ...Typography.heading3,
@@ -502,18 +527,18 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   statsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: Spacing.md,
-    flexWrap: 'wrap',
+    flexWrap: "wrap",
   },
   statText: {
     ...Typography.captionText,
     color: HackerTheme.lightGrey,
   },
   languageBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: Spacing.xs,
   },
   languageDot: {
@@ -527,8 +552,8 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   loadingText: {
     ...Typography.bodyText,
@@ -537,15 +562,15 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingVertical: Spacing.xl * 2,
   },
   emptyText: {
     ...Typography.bodyText,
     color: HackerTheme.lightGrey,
     marginTop: Spacing.md,
-    textAlign: 'center',
+    textAlign: "center",
   },
 });
 
