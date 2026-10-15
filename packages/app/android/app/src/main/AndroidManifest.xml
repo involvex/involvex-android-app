@@ -11,6 +11,28 @@
       android:theme="@style/AppTheme"
       android:usesCleartextTraffic="${usesCleartextTraffic}"
       android:supportsRtl="true">
+      <!-- react-native-app-auth captures the OAuth redirect here.
+           The library only auto-registers a default scheme derived from
+           applicationId (involvexapp), so our custom scheme must be added here.
+           Without these filters authorize() fails with "Data intent is null". -->
+      <activity
+        android:name="net.openid.appauth.RedirectUriReceiverActivity"
+        android:exported="true"
+        android:theme="@style/Theme.AppCompat.Translucent.NoTitleBar">
+        <intent-filter>
+          <action android:name="android.intent.action.VIEW" />
+          <category android:name="android.intent.category.DEFAULT" />
+          <category android:name="android.intent.category.BROWSABLE" />
+          <data android:scheme="involvex" android:host="discord-oauth-redirect" />
+        </intent-filter>
+        <intent-filter>
+          <action android:name="android.intent.action.VIEW" />
+          <category android:name="android.intent.category.DEFAULT" />
+          <category android:name="android.intent.category.BROWSABLE" />
+          <data android:scheme="involvex" android:host="github-oauth-redirect" />
+        </intent-filter>
+      </activity>
+
       <activity
         android:name=".MainActivity"
         android:label="@string/app_name"
@@ -21,20 +43,6 @@
         <intent-filter>
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
-        </intent-filter>
-        <!-- Discord OAuth redirect -->
-        <intent-filter>
-            <action android:name="android.intent.action.VIEW" />
-            <category android:name="android.intent.category.DEFAULT" />
-            <category android:name="android.intent.category.BROWSABLE" />
-            <data android:scheme="involvex" android:host="discord-oauth-redirect" />
-        </intent-filter>
-        <!-- GitHub OAuth redirect -->
-        <intent-filter>
-            <action android:name="android.intent.action.VIEW" />
-            <category android:name="android.intent.category.DEFAULT" />
-            <category android:name="android.intent.category.BROWSABLE" />
-            <data android:scheme="involvex" android:host="github-oauth-redirect" />
         </intent-filter>
       </activity>
     </application>

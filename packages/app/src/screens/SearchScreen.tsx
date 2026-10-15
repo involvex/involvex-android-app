@@ -325,19 +325,21 @@ export const SearchScreen: React.FC = () => {
             <Text style={styles.loadingText}>Searching...</Text>
           </View>
         ) : (
-          <FlashList
-            data={results as any}
-            renderItem={
-              activeTab === "github"
-                ? (renderGitHubItem as any)
-                : (renderNpmItem as any)
-            }
-            // @ts-ignore
-            estimatedItemSize={150}
-            keyExtractor={(item: any) => item.id || item.name}
-            contentContainerStyle={styles.listContent}
-            ListEmptyComponent={renderEmptyState}
-          />
+          <View style={styles.listWrapper}>
+            <FlashList
+              data={results as any}
+              renderItem={
+                activeTab === "github"
+                  ? (renderGitHubItem as any)
+                  : (renderNpmItem as any)
+              }
+              // @ts-ignore
+              estimatedItemSize={150}
+              keyExtractor={(item: any) => item.id || item.name}
+              contentContainerStyle={styles.listContent}
+              ListEmptyComponent={renderEmptyState}
+            />
+          </View>
         )}
       </View>
     </TouchableWithoutFeedback>
@@ -391,18 +393,23 @@ const styles = StyleSheet.create({
     borderColor: HackerTheme.primary + "20",
     paddingHorizontal: Spacing.sm,
     gap: Spacing.xs,
-    height: 40,
+    // minHeight instead of height: honours OS font scaling without clipping
+    minHeight: 40,
   },
   searchInput: {
     flex: 1,
     ...Typography.bodyText,
     fontSize: 14,
+    // lineHeight must be removed so the OS font scale can grow the row
+    lineHeight: undefined,
     paddingVertical: 0,
+    margin: 0,
     color: HackerTheme.lightOnPrimary,
   },
   filterButton: {
-    width: 44,
-    height: 44,
+    flexShrink: 0,
+    width: 40,
+    height: 40,
     backgroundColor: HackerTheme.darkGreen,
     borderRadius: 8,
     borderWidth: 1,
@@ -411,20 +418,25 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   quickFiltersContainer: {
-    marginTop: Spacing.md,
+    marginTop: Spacing.sm,
+    // A horizontal ScrollView defaults to flexGrow:1, which makes it soak up
+    // all leftover vertical space in this column and stretch its chips.
+    flexGrow: 0,
+    flexShrink: 0,
   },
   quickFiltersContent: {
     paddingHorizontal: Spacing.md,
     gap: Spacing.sm,
+    // stops chips stretching to the full height of the row
+    alignItems: "center",
   },
   quickFilterChip: {
     paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
+    paddingVertical: 6,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: HackerTheme.darkGreen,
     backgroundColor: HackerTheme.darkerGreen,
-    marginRight: Spacing.sm,
   },
   quickFilterChipActive: {
     backgroundColor: HackerTheme.darkGreen,
@@ -498,6 +510,9 @@ const styles = StyleSheet.create({
   applyButtonText: {
     ...Typography.buttonText,
     color: HackerTheme.darkerGreen,
+  },
+  listWrapper: {
+    flex: 1,
   },
   listContent: {
     padding: Spacing.md,

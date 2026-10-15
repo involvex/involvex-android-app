@@ -10,6 +10,8 @@ import {
   ActivityIndicator,
   StyleSheet,
   Linking,
+  Text,
+  TextInput,
 } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -19,6 +21,20 @@ import { Database } from "./src/database/schema";
 import { useAuthStore } from "./src/store/authStore";
 import { useSettingsStore } from "./src/store/settingsStore";
 import { HackerTheme } from "./src/theme/colors";
+
+// The terminal/monospace layout uses fixed-height rows (chips, inputs, tab
+// buttons). A very large OS font scale blows those rows out of shape and makes
+// the UI unusable, so cap the multiplier globally.
+const MAX_FONT_SCALE = 1.3;
+
+(Text as any).defaultProps = {
+  ...((Text as any).defaultProps || {}),
+  maxFontSizeMultiplier: MAX_FONT_SCALE,
+};
+(TextInput as any).defaultProps = {
+  ...((TextInput as any).defaultProps || {}),
+  maxFontSizeMultiplier: MAX_FONT_SCALE,
+};
 
 const linking = {
   prefixes: ["involvex://"],

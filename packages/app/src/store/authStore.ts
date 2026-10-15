@@ -62,6 +62,51 @@ interface AuthState {
   setGitHubUser: (user: GitHubUser | null) => Promise<void>;
 }
 
+/**
+ * OAuth failures are usually *not* code bugs - they are dashboard
+ * misconfigurations. Validate up-front so the user gets an actionable message
+ * instead of the provider's "redirect URI is not supported by client" page.
+ */
+function assertOAuthConfig(
+  provider: "Discord" | "GitHub",
+  clientId: string,
+  clientSecret: string,
+  redirectUrl: string,
+) {
+  if (!clientId || !clientSecret || !redirectUrl) {
+    throw new Error(
+      `${provider} OAuth is not configured. Add DISCORD_*/GITHUB_* values to packages/app/.env (see .env.example) and rebuild.`,
+    );
+  }
+
+  if (clientId.startsWith("your_") || clientSecret.startsWith("your_")) {
+    throw new Error(
+      `${provider} OAuth still has placeholder credentials from .env.example. Fill in the real client id/secret and rebuild.`,
+    );
+  }
+
+  if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(redirectUrl)) {
+    throw new Error(
+      `${provider} OAuth redirect URL "${redirectUrl}" is not a valid URL.`,
+    );
+  }
+}
+
+function assertRedirectRegistered(
+  provider: "Discord" | "GitHub",
+  redirectUrl: string,
+) {
+  throw new Error(
+    `${provider} rejected the redirect URL.\n\n` +
+      `You must register this exact URL in the provider dashboard:\n` +
+      `  ${redirectUrl}\n\n` +
+      (provider === "Discord"
+        ? "Discord: Developer Portal > your app > OAuth2 > Redirects > Add"
+        : "GitHub: Settings > Developer settings > OAuth Apps > your app > Authorization callback URL") +
+      `\n\nIt must match character for character, including the "${redirectUrl.split("://")[0]}" scheme.`,
+  );
+}
+
 const discordConfig = {
   clientId: ENV.DISCORD_CLIENT_ID,
   clientSecret: ENV.DISCORD_CLIENT_SECRET,
@@ -175,11 +220,24 @@ export const useAuthStore = create<AuthState>()(
           state.loading = true;
         });
 
+        assertOAuthConfig(
+          "Discord",
+          discordConfig.clientId,
+          discordConfig.clientSecret,
+          discordConfig.redirectUrl,
+        );
+
         const result = await authorize(discordConfig);
         const userResponse = await fetch("https://discord.com/api/users/@me", {
           headers: { Authorization: `Bearer ${result.accessToken}` },
         });
         const discordUser = await userResponse.json();
+
+        if (!discordUser?.id) {
+          throw new Error(
+            `Discord did not return a user profile (HTTP ${userResponse.status}). The access token may have been rejected.`,
+          );
+        }
 
         const user: DiscordUser = {
           id: discordUser.id,
@@ -211,11 +269,27 @@ export const useAuthStore = create<AuthState>()(
           state.loading = true;
         });
 
+        assertOAuthConfig(
+          "GitHub",
+          githubConfig.clientId,
+          githubConfig.clientSecret,
+          githubConfig.redirectUrl,
+        );
+
         const result = await authorize(githubConfig);
         const userResponse = await fetch("https://api.github.com/user", {
-          headers: { Authorization: `Bearer ${result.accessToken}` },
+          headers: {
+            Authorization: `Bearer ${result.accessToken}`,
+            Accept: "application/json",
+          },
         });
         const githubUser = await userResponse.json();
+
+        if (!githubUser?.id) {
+          throw new Error(
+            `GitHub did not return a user profile (HTTP ${userResponse.status}). The access token may have been rejected.`,
+          );
+        }
 
         const user: GitHubUser = {
           id: githubUser.id,

@@ -111,12 +111,44 @@ export const SettingsScreen: React.FC = () => {
     );
   };
 
+  /** Turn low-level AppAuth/native failures into something actionable. */
+  const describeAuthError = (error: any): string => {
+    const raw = String(error?.message || error || "Unknown error");
+
+    if (/data intent is null/i.test(raw)) {
+      return (
+        "The app never received the redirect from the browser.\n\n" +
+        "This means the redirect URL is not registered for this app. " +
+        "Add the exact callback URL from packages/app/.env to your provider's dashboard, " +
+        "then rebuild the app so the manifest picks up the intent filter."
+      );
+    }
+
+    if (
+      /not supported by client|redirect_uri_mismatch|invalid_redirect/i.test(
+        raw,
+      )
+    ) {
+      return (
+        "The provider rejected the redirect URL.\n\n" +
+        "The callback URL in packages/app/.env must be registered verbatim in the provider dashboard:\n" +
+        "  Discord: Developer Portal > app > OAuth2 > Redirects\n" +
+        "  GitHub: Settings > Developer settings > OAuth Apps > Authorization callback URL"
+      );
+    }
+
+    if (/user canceled|cancell?ed/i.test(raw)) {
+      return "Sign-in was cancelled.";
+    }
+
+    return raw;
+  };
+
   const handleDiscordLogin = async () => {
     try {
       await signInWithDiscord();
     } catch (error: any) {
-      const message = error?.message || error?.toString() || "Unknown error";
-      Alert.alert("Login Error", `Failed to sign in with Discord:\n${message}`);
+      Alert.alert("Discord login failed", describeAuthError(error));
     }
   };
 
@@ -124,8 +156,7 @@ export const SettingsScreen: React.FC = () => {
     try {
       await signInWithGitHub();
     } catch (error: any) {
-      const message = error?.message || error?.toString() || "Unknown error";
-      Alert.alert("Login Error", `Failed to sign in with GitHub:\n${message}`);
+      Alert.alert("GitHub login failed", describeAuthError(error));
     }
   };
 
@@ -134,8 +165,7 @@ export const SettingsScreen: React.FC = () => {
       await linkDiscordAccount();
       Alert.alert("Success", "Discord account linked successfully!");
     } catch (error: any) {
-      const message = error?.message || error?.toString() || "Unknown error";
-      Alert.alert("Link Error", `Failed to link Discord account:\n${message}`);
+      Alert.alert("Link failed", describeAuthError(error));
     }
   };
 
@@ -144,8 +174,7 @@ export const SettingsScreen: React.FC = () => {
       await linkGitHubAccount();
       Alert.alert("Success", "GitHub account linked successfully!");
     } catch (error: any) {
-      const message = error?.message || error?.toString() || "Unknown error";
-      Alert.alert("Link Error", `Failed to link GitHub account:\n${message}`);
+      Alert.alert("Link failed", describeAuthError(error));
     }
   };
 
