@@ -13,12 +13,15 @@ import {
   RefreshControl,
   Linking,
   Alert,
+  ToastAndroid,
 } from "react-native";
 import { FlashList } from "@shopify/flash-list";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { HackerTheme } from "../theme/colors";
 import { Typography } from "../theme/typography";
 import { Spacing } from "../theme/spacing";
 import { useTrendingStore } from "../store/trendingStore";
+import { useSubscriptionsStore } from "../store/subscriptionsStore";
 import { TimeframeType } from "../api/github/githubClient";
 import { GitHubRepository } from "../models/GitHubRepository";
 import { NpmPackage } from "../models/NpmPackage";
@@ -36,6 +39,24 @@ export const HomeScreen: React.FC = () => {
     setTimeframe,
     refreshAll,
   } = useTrendingStore();
+
+  const starredIds = useSubscriptionsStore((state) => state.starredIds);
+  const toggleStar = useSubscriptionsStore((state) => state.toggle);
+
+  const handleToggleStar = async (
+    item: GitHubRepository | NpmPackage,
+    type: "repository" | "package",
+  ) => {
+    try {
+      const nowStarred = await toggleStar(item, type);
+      ToastAndroid.show(
+        nowStarred ? "Added to Subs" : "Removed from Subs",
+        ToastAndroid.SHORT,
+      );
+    } catch {
+      Alert.alert("Error", "Could not update subscription");
+    }
+  };
 
   useEffect(() => {
     // Initial data fetch
@@ -116,54 +137,114 @@ export const HomeScreen: React.FC = () => {
     }
   };
 
-  const renderGitHubItem = ({ item }: { item: GitHubRepository }) => (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={() => handleOpenUrl(item.htmlUrl)}
-    >
-      <Text style={styles.cardTitle}>{item.name}</Text>
-      <Text style={styles.cardSubtitle}>{item.fullName}</Text>
-      {item.description && (
-        <Text style={styles.cardDescription} numberOfLines={2}>
-          {item.description}
-        </Text>
-      )}
-      <View style={styles.statsRow}>
-        <Text style={styles.statText}>⭐ {item.formattedStars}</Text>
-        <Text style={styles.statText}>🍴 {item.formattedForks}</Text>
-        {item.language && (
-          <View style={styles.languageBadge}>
-            <View
-              style={[
-                styles.languageDot,
-                { backgroundColor: item.languageColor },
-              ]}
-            />
-            <Text style={styles.languageText}>{item.language}</Text>
-          </View>
-        )}
-      </View>
-    </TouchableOpacity>
-  );
+  const renderGitHubItem = ({ item }: { item: GitHubRepository }) => {
+    const starred = starredIds.has(`repository:${item.id}`);
+    return (
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <TouchableOpacity
+            style={styles.cardHeaderMain}
+            onPress={() => handleOpenUrl(item.htmlUrl)}
+          >
+            <Text style={styles.cardTitle}>{item.name}</Text>
+            <Text style={styles.cardSubtitle}>{item.fullName}</Text>
+          </TouchableOpacity>
 
-  const renderNpmItem = ({ item }: { item: NpmPackage }) => (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={() => handleOpenUrl(item.npmUrl)}
-    >
-      <Text style={styles.cardTitle}>{item.name}</Text>
-      <Text style={styles.cardSubtitle}>v{item.version}</Text>
-      {item.description && (
-        <Text style={styles.cardDescription} numberOfLines={2}>
-          {item.description}
-        </Text>
-      )}
-      <View style={styles.statsRow}>
-        <Text style={styles.statText}>📦 {item.formattedDownloads}</Text>
-        {item.stars > 0 && <Text style={styles.statText}>⭐ {item.stars}</Text>}
+          <TouchableOpacity
+            style={[styles.starButton, starred && styles.starButtonActive]}
+            onPress={() => handleToggleStar(item, "repository")}
+            hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
+            accessibilityRole="button"
+            accessibilityLabel={
+              starred ? `Unstar ${item.fullName}` : `Star ${item.fullName}`
+            }
+          >
+            <Icon
+              name={starred ? "star" : "star-outline"}
+              size={20}
+              color={
+                starred ? HackerTheme.warningOrange : HackerTheme.lightGrey
+              }
+            />
+          </TouchableOpacity>
+        </View>
+
+        {item.description && (
+          <TouchableOpacity onPress={() => handleOpenUrl(item.htmlUrl)}>
+            <Text style={styles.cardDescription} numberOfLines={2}>
+              {item.description}
+            </Text>
+          </TouchableOpacity>
+        )}
+
+        <View style={styles.statsRow}>
+          <Text style={styles.statText}>⭐ {item.formattedStars}</Text>
+          <Text style={styles.statText}>🍴 {item.formattedForks}</Text>
+          {item.language && (
+            <View style={styles.languageBadge}>
+              <View
+                style={[
+                  styles.languageDot,
+                  { backgroundColor: item.languageColor },
+                ]}
+              />
+              <Text style={styles.languageText}>{item.language}</Text>
+            </View>
+          )}
+        </View>
       </View>
-    </TouchableOpacity>
-  );
+    );
+  };
+
+  const renderNpmItem = ({ item }: { item: NpmPackage }) => {
+    const starred = starredIds.has(`package:${item.name}`);
+    return (
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <TouchableOpacity
+            style={styles.cardHeaderMain}
+            onPress={() => handleOpenUrl(item.npmUrl)}
+          >
+            <Text style={styles.cardTitle}>{item.name}</Text>
+            <Text style={styles.cardSubtitle}>v{item.version}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.starButton, starred && styles.starButtonActive]}
+            onPress={() => handleToggleStar(item, "package")}
+            hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
+            accessibilityRole="button"
+            accessibilityLabel={
+              starred ? `Unstar ${item.name}` : `Star ${item.name}`
+            }
+          >
+            <Icon
+              name={starred ? "star" : "star-outline"}
+              size={20}
+              color={
+                starred ? HackerTheme.warningOrange : HackerTheme.lightGrey
+              }
+            />
+          </TouchableOpacity>
+        </View>
+
+        {item.description && (
+          <TouchableOpacity onPress={() => handleOpenUrl(item.npmUrl)}>
+            <Text style={styles.cardDescription} numberOfLines={2}>
+              {item.description}
+            </Text>
+          </TouchableOpacity>
+        )}
+
+        <View style={styles.statsRow}>
+          <Text style={styles.statText}>📦 {item.formattedDownloads}</Text>
+          {item.stars > 0 && (
+            <Text style={styles.statText}>⭐ {item.stars}</Text>
+          )}
+        </View>
+      </View>
+    );
+  };
 
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
@@ -283,7 +364,30 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     marginBottom: Spacing.md,
     borderWidth: 1,
-    borderColor: HackerTheme.primary + "20",
+    borderColor: HackerTheme.mediumGrey,
+  },
+  cardHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: Spacing.sm,
+  },
+  cardHeaderMain: {
+    flex: 1,
+  },
+  starButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: HackerTheme.darkerGreen,
+    borderWidth: 1,
+    borderColor: HackerTheme.mediumGrey,
+  },
+  starButtonActive: {
+    backgroundColor: HackerTheme.darkGrey,
+    borderColor: HackerTheme.warningOrange,
   },
   cardTitle: {
     ...Typography.heading3,

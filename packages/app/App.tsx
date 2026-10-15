@@ -20,7 +20,9 @@ import RootNavigator from "./src/navigation/RootNavigator";
 import { Database } from "./src/database/schema";
 import { useAuthStore } from "./src/store/authStore";
 import { useSettingsStore } from "./src/store/settingsStore";
+import { useSubscriptionsStore } from "./src/store/subscriptionsStore";
 import { HackerTheme } from "./src/theme/colors";
+import { createNotificationChannels } from "./src/utils/permissions";
 
 // The terminal/monospace layout uses fixed-height rows (chips, inputs, tab
 // buttons). A very large OS font scale blows those rows out of shape and makes
@@ -81,12 +83,21 @@ function App() {
         await Database.cleanExpiredCache();
         console.log("Cache cleaned");
 
+        // Load starred subscriptions so card star icons render correctly
+        await useSubscriptionsStore.getState().load();
+        console.log("Subscriptions loaded");
+
         // Get initial URL if app was opened via deep link
         const url = await Linking.getInitialURL();
         if (url) {
           console.log("Initial URL:", url);
           setInitialUrl(url);
         }
+
+        // Notification channels must exist before any notification is shown.
+        // The POST_NOTIFICATIONS prompt is triggered from Settings when the
+        // user opts in, so we never nag on first launch.
+        createNotificationChannels();
 
         setIsInitialized(true);
         isReadyRef.current = true;
@@ -139,7 +150,12 @@ function App() {
 
   return (
     <GestureHandlerRootView style={styles.container}>
-      <SafeAreaProvider>
+      <SafeAreaProvider
+        initialMetrics={{
+          frame: { x: 0, y: 0, width: 0, height: 0 },
+          insets: { top: 0, left: 0, right: 0, bottom: 0 },
+        }}
+      >
         <StatusBar
           barStyle="light-content"
           backgroundColor={HackerTheme.darkerGreen}

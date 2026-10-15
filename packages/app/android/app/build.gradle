@@ -2,6 +2,11 @@ apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 
+// Bundle the MaterialCommunityIcons (and any other icon set) TTF files into the
+// APK. Without this the glyphs resolve to nothing at runtime and every <Icon />
+// renders blank - including the bottom tab bar icons.
+apply from: file("../../node_modules/react-native-vector-icons/fonts.gradle")
+
 /**
  * This is the configuration block to customize your React Native Android app.
  * By default you don't need to apply any configuration, just uncomment the lines you need.

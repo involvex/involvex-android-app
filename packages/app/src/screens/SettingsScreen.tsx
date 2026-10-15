@@ -20,6 +20,7 @@ import {
   Linking,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { requestNotificationPermission } from "../utils/permissions";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { HackerTheme } from "../theme/colors";
 import { Typography } from "../theme/typography";
@@ -49,7 +50,6 @@ export const SettingsScreen: React.FC = () => {
     linkDiscordAccount,
     linkGitHubAccount,
     signOut,
-    isAuthenticated,
     activeUser,
     discordUser,
     githubUser,
@@ -78,6 +78,22 @@ export const SettingsScreen: React.FC = () => {
   };
 
   const handleSettingChange = (key: keyof UserSettingsData, value: any) => {
+    // Turning notifications on requires the Android 13+ runtime grant. Ask now
+    // and roll the toggle back if the user declines, so the UI stays truthful.
+    if (key === "enablePushNotifications" && value === true) {
+      requestNotificationPermission().then((granted) => {
+        if (!granted) {
+          setLocalSettings((prev) =>
+            prev.copyWith({ enablePushNotifications: false }),
+          );
+          Alert.alert(
+            "Notifications blocked",
+            "Android did not grant notification permission. Enable it in system Settings > Apps > Involvex > Notifications.",
+          );
+        }
+      });
+    }
+
     setLocalSettings((prev) => prev.copyWith({ [key]: value }));
     setHasChanges(true);
   };
@@ -259,7 +275,10 @@ export const SettingsScreen: React.FC = () => {
       );
     }
 
-    if (!isAuthenticated) {
+    // Derive from activeUser rather than isAuthenticated alone. If a profile is
+    // present we are signed in, even if a stale flag says otherwise - otherwise
+    // the login buttons and the account details render at the same time.
+    if (!activeUser) {
       return (
         <View style={styles.accountButtons}>
           <TouchableOpacity
@@ -284,18 +303,19 @@ export const SettingsScreen: React.FC = () => {
     // User is authenticated
     return (
       <View style={styles.accountContainer}>
-        {activeUser && (
-          <View style={styles.activeUserSection}>
-            <Text style={styles.sectionSubTitle}>Currently Logged In</Text>
-            {renderAccountInfo(
-              activeUser,
-              provider === "discord" ? "Discord" : "GitHub",
-            )}
-            <TouchableOpacity style={styles.signOutButton} onPress={signOut}>
-              <Text style={styles.signOutText}>Sign Out All Accounts</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+        <View style={styles.activeUserSection}>
+          <Text style={styles.sectionSubTitle}>
+            Logged in as{" "}
+            {"username" in activeUser ? activeUser.username : activeUser.login}
+          </Text>
+          {renderAccountInfo(
+            activeUser,
+            provider === "discord" ? "Discord" : "GitHub",
+          )}
+          <TouchableOpacity style={styles.signOutButton} onPress={signOut}>
+            <Text style={styles.signOutText}>Sign Out All Accounts</Text>
+          </TouchableOpacity>
+        </View>
 
         <View style={styles.linkedAccountsSection}>
           <Text style={styles.sectionSubTitle}>Linked Accounts</Text>

@@ -3,7 +3,7 @@
  * Manages user subscriptions with SQLite persistence
  */
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -11,21 +11,22 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-} from 'react-native';
-import { FlashList } from '@shopify/flash-list';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import Share from 'react-native-share';
-import { encode } from 'base-64';
-import { HackerTheme } from '../theme/colors';
-import { Typography } from '../theme/typography';
-import { Spacing } from '../theme/spacing';
-import { subscriptionsRepository } from '../database/repositories/subscriptionsRepository';
-import { Subscription } from '../models';
+} from "react-native";
+import { FlashList } from "@shopify/flash-list";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import Share from "react-native-share";
+import { encode } from "base-64";
+import { HackerTheme } from "../theme/colors";
+import { Typography } from "../theme/typography";
+import { Spacing } from "../theme/spacing";
+import { subscriptionsRepository } from "../database/repositories/subscriptionsRepository";
+import { useSubscriptionsStore } from "../store/subscriptionsStore";
+import { Subscription } from "../models";
 
-type TabType = 'repository' | 'package';
+type TabType = "repository" | "package";
 
 export const SubscriptionsScreen: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<TabType>('repository');
+  const [activeTab, setActiveTab] = useState<TabType>("repository");
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -34,8 +35,11 @@ export const SubscriptionsScreen: React.FC = () => {
     try {
       const subs = await subscriptionsRepository.getByType(activeTab);
       setSubscriptions(subs);
+      // Keep the shared store in sync so star icons on Home/Search cards
+      // reflect the current Subs list.
+      await useSubscriptionsStore.getState().load();
     } catch (error) {
-      console.error('Error loading subscriptions:', error);
+      console.error("Error loading subscriptions:", error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -53,20 +57,23 @@ export const SubscriptionsScreen: React.FC = () => {
 
   const handleUnsubscribe = async (subscription: Subscription) => {
     Alert.alert(
-      'Unsubscribe',
+      "Unsubscribe",
       `Remove ${subscription.name} from subscriptions?`,
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: "Cancel", style: "cancel" },
         {
-          text: 'Remove',
-          style: 'destructive',
+          text: "Remove",
+          style: "destructive",
           onPress: async () => {
             try {
-              await subscriptionsRepository.remove(subscription.id);
+              // unstar keeps the shared store + star icons consistent
+              await useSubscriptionsStore
+                .getState()
+                .unstar(subscription.itemId);
               await loadSubscriptions();
             } catch (error) {
-              console.error('Error removing subscription:', error);
-              Alert.alert('Error', 'Failed to remove subscription');
+              console.error("Error removing subscription:", error);
+              Alert.alert("Error", "Failed to remove subscription");
             }
           },
         },
@@ -80,36 +87,36 @@ export const SubscriptionsScreen: React.FC = () => {
       const count = await subscriptionsRepository.getCount();
 
       await Share.open({
-        title: 'Export Subscriptions',
+        title: "Export Subscriptions",
         message: `Trending Hub Subscriptions (${count} items)`,
         url: `data:application/json;base64,${encode(json)}`,
         filename: `trending-hub-subscriptions-${Date.now()}.json`,
-        type: 'application/json',
+        type: "application/json",
       });
     } catch (error) {
-      if (error instanceof Error && error.message !== 'User did not share') {
-        console.error('Export error:', error);
-        Alert.alert('Error', 'Failed to export subscriptions');
+      if (error instanceof Error && error.message !== "User did not share") {
+        console.error("Export error:", error);
+        Alert.alert("Error", "Failed to export subscriptions");
       }
     }
   };
 
   const handleClearAll = () => {
     Alert.alert(
-      'Clear All Subscriptions',
+      "Clear All Subscriptions",
       `Remove all ${subscriptions.length} subscriptions? This cannot be undone.`,
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: "Cancel", style: "cancel" },
         {
-          text: 'Clear All',
-          style: 'destructive',
+          text: "Clear All",
+          style: "destructive",
           onPress: async () => {
             try {
               await subscriptionsRepository.clearAll();
               await loadSubscriptions();
             } catch (error) {
-              console.error('Error clearing subscriptions:', error);
-              Alert.alert('Error', 'Failed to clear subscriptions');
+              console.error("Error clearing subscriptions:", error);
+              Alert.alert("Error", "Failed to clear subscriptions");
             }
           },
         },
@@ -122,14 +129,14 @@ export const SubscriptionsScreen: React.FC = () => {
       <TouchableOpacity
         style={[
           styles.tabButton,
-          activeTab === 'repository' && styles.tabButtonActive,
+          activeTab === "repository" && styles.tabButtonActive,
         ]}
-        onPress={() => setActiveTab('repository')}
+        onPress={() => setActiveTab("repository")}
       >
         <Text
           style={[
             styles.tabText,
-            activeTab === 'repository' && styles.tabTextActive,
+            activeTab === "repository" && styles.tabTextActive,
           ]}
         >
           Repositories ({subscriptions.length})
@@ -138,14 +145,14 @@ export const SubscriptionsScreen: React.FC = () => {
       <TouchableOpacity
         style={[
           styles.tabButton,
-          activeTab === 'package' && styles.tabButtonActive,
+          activeTab === "package" && styles.tabButtonActive,
         ]}
-        onPress={() => setActiveTab('package')}
+        onPress={() => setActiveTab("package")}
       >
         <Text
           style={[
             styles.tabText,
-            activeTab === 'package' && styles.tabTextActive,
+            activeTab === "package" && styles.tabTextActive,
           ]}
         >
           Packages ({subscriptions.length})
@@ -190,7 +197,7 @@ export const SubscriptionsScreen: React.FC = () => {
 
   const renderSubscriptionItem = ({ item }: { item: Subscription }) => {
     const data = JSON.parse(item.data);
-    const isRepository = item.type === 'repository';
+    const isRepository = item.type === "repository";
 
     return (
       <View style={styles.card}>
@@ -226,7 +233,7 @@ export const SubscriptionsScreen: React.FC = () => {
           ) : (
             <>
               <Text style={styles.statText}>📦 {data.downloads || 0}</Text>
-              <Text style={styles.statText}>v{data.version || '1.0.0'}</Text>
+              <Text style={styles.statText}>v{data.version || "1.0.0"}</Text>
             </>
           )}
         </View>
@@ -270,7 +277,7 @@ export const SubscriptionsScreen: React.FC = () => {
         renderItem={renderSubscriptionItem}
         // @ts-ignore
         estimatedItemSize={150}
-        keyExtractor={item => item.id}
+        keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={renderEmptyState}
         onRefresh={handleRefresh}
@@ -286,7 +293,7 @@ const styles = StyleSheet.create({
     backgroundColor: HackerTheme.darkerGreen,
   },
   tabContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: Spacing.md,
     gap: Spacing.sm,
   },
@@ -297,7 +304,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: HackerTheme.darkGreen,
     backgroundColor: HackerTheme.darkerGreen,
-    alignItems: 'center',
+    alignItems: "center",
   },
   tabButtonActive: {
     backgroundColor: HackerTheme.darkGreen,
@@ -309,19 +316,19 @@ const styles = StyleSheet.create({
   },
   tabTextActive: {
     color: HackerTheme.primary,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   actionContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingHorizontal: Spacing.md,
     paddingBottom: Spacing.md,
     gap: Spacing.sm,
   },
   actionButton: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: Spacing.xs,
     paddingVertical: Spacing.sm,
     borderRadius: 8,
@@ -345,12 +352,12 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     marginBottom: Spacing.md,
     borderWidth: 1,
-    borderColor: HackerTheme.primary + '20',
+    borderColor: HackerTheme.primary + "20",
   },
   cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
     marginBottom: Spacing.sm,
   },
   cardTitleContainer: {
@@ -372,10 +379,10 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   statsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: Spacing.md,
-    flexWrap: 'wrap',
+    flexWrap: "wrap",
     marginBottom: Spacing.sm,
   },
   statText: {
@@ -386,7 +393,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.sm,
     paddingVertical: Spacing.xs,
     borderRadius: 4,
-    backgroundColor: HackerTheme.primary + '20',
+    backgroundColor: HackerTheme.primary + "20",
   },
   languageText: {
     ...Typography.captionText,
@@ -394,7 +401,7 @@ const styles = StyleSheet.create({
   },
   cardFooter: {
     borderTopWidth: 1,
-    borderTopColor: HackerTheme.primary + '10',
+    borderTopColor: HackerTheme.primary + "10",
     paddingTop: Spacing.sm,
   },
   footerText: {
@@ -405,8 +412,8 @@ const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,
     backgroundColor: HackerTheme.darkerGreen,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   loadingText: {
     ...Typography.bodyText,
@@ -415,8 +422,8 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingVertical: Spacing.xl * 2,
     paddingHorizontal: Spacing.xl,
   },
@@ -429,7 +436,7 @@ const styles = StyleSheet.create({
   emptyText: {
     ...Typography.bodyText,
     color: HackerTheme.lightGrey,
-    textAlign: 'center',
+    textAlign: "center",
     lineHeight: 22,
   },
 });

@@ -16,9 +16,11 @@ import {
   Alert,
   Linking,
   TouchableWithoutFeedback,
+  ToastAndroid,
 } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import { useSubscriptionsStore } from "../store/subscriptionsStore";
 import { HackerTheme } from "../theme/colors";
 import { Typography } from "../theme/typography";
 import { Spacing } from "../theme/spacing";
@@ -39,6 +41,31 @@ const QUICK_FILTERS = [
   "Vue",
 ];
 
+/**
+ * npm ecosystem categories. Each maps to npm search qualifiers so results are
+ * actually scoped to the category rather than just matching free text.
+ */
+const NPM_CATEGORIES: { label: string; query: string }[] = [
+  { label: "All", query: "" },
+  { label: "Front-end", query: "keywords:frontend" },
+  { label: "Back-end", query: "keywords:backend" },
+  { label: "CLI", query: "keywords:cli" },
+  { label: "Docs", query: "keywords:documentation" },
+  { label: "CSS", query: "keywords:css" },
+  { label: "Testing", query: "keywords:testing" },
+  { label: "IoT", query: "keywords:iot" },
+  { label: "Coverage", query: "keywords:coverage" },
+  { label: "Mobile", query: "keywords:mobile" },
+  { label: "Frameworks", query: "keywords:framework" },
+  { label: "Robotics", query: "keywords:robotics" },
+  { label: "Math", query: "keywords:math" },
+  { label: "Agents", query: "keywords:agent" },
+  { label: "Create", query: "keywords:create" },
+  { label: "Build", query: "keywords:build" },
+  { label: "Parser", query: "keywords:parser" },
+  { label: "Lint", query: "keywords:lint" },
+];
+
 export const SearchScreen: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>("github");
   const [searchQuery, setSearchQuery] = useState("");
@@ -51,6 +78,13 @@ export const SearchScreen: React.FC = () => {
   const [selectedLanguage, setSelectedLanguage] = useState<string>("");
   const [minStars, setMinStars] = useState<number>(0);
   const [sortBy, setSortBy] = useState<SortType>("stars");
+  const [npmCategory, setNpmCategory] = useState<string>("");
+
+  const starredIds = useSubscriptionsStore((state) => state.starredIds);
+  const toggleStar = useSubscriptionsStore((state) => state.toggle);
+
+  const isStarred = (itemId: string, type: "repository" | "package") =>
+    starredIds.has(`${type}:${itemId}`);
 
   const handleSearch = useCallback(async () => {
     if (!searchQuery.trim()) return;
@@ -66,7 +100,13 @@ export const SearchScreen: React.FC = () => {
         });
         setGithubResults(results);
       } else {
-        const results = await npmService.search(searchQuery, {
+        const category = NPM_CATEGORIES.find((c) => c.label === npmCategory);
+        // Combine the user's text with the category qualifier so both apply.
+        const text = [npmCategory === "All" ? "" : category?.query, searchQuery]
+          .filter(Boolean)
+          .join(" ");
+
+        const results = await npmService.search(text, {
           quality: 0.8,
           popularity: 0.9,
           maintenance: 0.5,
@@ -78,12 +118,20 @@ export const SearchScreen: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, activeTab, selectedLanguage, minStars, sortBy]);
+  }, [searchQuery, activeTab, selectedLanguage, minStars, sortBy, npmCategory]);
 
   const handleQuickFilter = (filter: string) => {
     setSelectedLanguage(filter);
     setSearchQuery(filter);
-    setTimeout(handleSearch, 100);
+    setTimeout(() => handleSearch(), 100);
+  };
+
+  const handleNpmCategory = (label: string) => {
+    setNpmCategory(label);
+    // Categories are a browsing aid, so re-run using the current query if any.
+    if (searchQuery.trim()) {
+      setTimeout(() => handleSearch(), 100);
+    }
   };
 
   const handleOpenUrl = (url: string) => {
@@ -91,6 +139,21 @@ export const SearchScreen: React.FC = () => {
       Linking.openURL(url).catch(() => {
         Alert.alert("Error", "Could not open link");
       });
+    }
+  };
+
+  const handleToggleStar = async (
+    item: GitHubRepository | NpmPackage,
+    type: "repository" | "package",
+  ) => {
+    try {
+      const nowStarred = await toggleStar(item, type);
+      ToastAndroid.show(
+        nowStarred ? "Added to Subs" : "Removed from Subs",
+        ToastAndroid.SHORT,
+      );
+    } catch {
+      Alert.alert("Error", "Could not update subscription");
     }
   };
 
@@ -162,34 +225,72 @@ export const SearchScreen: React.FC = () => {
     </View>
   );
 
-  const renderQuickFilters = () => (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      style={styles.quickFiltersContainer}
-      contentContainerStyle={styles.quickFiltersContent}
-    >
-      {QUICK_FILTERS.map((filter) => (
-        <TouchableOpacity
-          key={filter}
-          style={[
-            styles.quickFilterChip,
-            selectedLanguage === filter && styles.quickFilterChipActive,
-          ]}
-          onPress={() => handleQuickFilter(filter)}
+  const renderQuickFilters = () => {
+    // The npm tab has no "language" concept, so show the ecosystem category
+    // picker there instead of the GitHub language chips.
+    const isNpm = activeTab === "npm";
+
+    if (isNpm) {
+      return (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.quickFiltersContainer}
+          contentContainerStyle={styles.quickFiltersContent}
         >
-          <Text
+          {NPM_CATEGORIES.map((category) => (
+            <TouchableOpacity
+              key={category.label}
+              style={[
+                styles.quickFilterChip,
+                npmCategory === category.label && styles.quickFilterChipActive,
+              ]}
+              onPress={() => handleNpmCategory(category.label)}
+            >
+              <Text
+                style={[
+                  styles.quickFilterText,
+                  npmCategory === category.label &&
+                    styles.quickFilterTextActive,
+                ]}
+              >
+                {category.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      );
+    }
+
+    return (
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.quickFiltersContainer}
+        contentContainerStyle={styles.quickFiltersContent}
+      >
+        {QUICK_FILTERS.map((filter) => (
+          <TouchableOpacity
+            key={filter}
             style={[
-              styles.quickFilterText,
-              selectedLanguage === filter && styles.quickFilterTextActive,
+              styles.quickFilterChip,
+              selectedLanguage === filter && styles.quickFilterChipActive,
             ]}
+            onPress={() => handleQuickFilter(filter)}
           >
-            {filter}
-          </Text>
-        </TouchableOpacity>
-      ))}
-    </ScrollView>
-  );
+            <Text
+              style={[
+                styles.quickFilterText,
+                selectedLanguage === filter && styles.quickFilterTextActive,
+              ]}
+            >
+              {filter}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+    );
+  };
 
   const renderAdvancedFilters = () => {
     if (!showFilters) return null;
@@ -249,54 +350,114 @@ export const SearchScreen: React.FC = () => {
     );
   };
 
-  const renderGitHubItem = ({ item }: { item: GitHubRepository }) => (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={() => handleOpenUrl(item.htmlUrl)}
-    >
-      <Text style={styles.cardTitle}>{item.name}</Text>
-      <Text style={styles.cardSubtitle}>{item.fullName}</Text>
-      {item.description && (
-        <Text style={styles.cardDescription} numberOfLines={2}>
-          {item.description}
-        </Text>
-      )}
-      <View style={styles.statsRow}>
-        <Text style={styles.statText}>⭐ {item.formattedStars}</Text>
-        <Text style={styles.statText}>🍴 {item.formattedForks}</Text>
-        {item.language && (
-          <View style={styles.languageBadge}>
-            <View
-              style={[
-                styles.languageDot,
-                { backgroundColor: item.languageColor },
-              ]}
-            />
-            <Text style={styles.languageText}>{item.language}</Text>
-          </View>
-        )}
-      </View>
-    </TouchableOpacity>
-  );
+  const renderGitHubItem = ({ item }: { item: GitHubRepository }) => {
+    const starred = isStarred(String(item.id), "repository");
+    return (
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <TouchableOpacity
+            style={styles.cardHeaderMain}
+            onPress={() => handleOpenUrl(item.htmlUrl)}
+          >
+            <Text style={styles.cardTitle}>{item.name}</Text>
+            <Text style={styles.cardSubtitle}>{item.fullName}</Text>
+          </TouchableOpacity>
 
-  const renderNpmItem = ({ item }: { item: NpmPackage }) => (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={() => handleOpenUrl(item.npmUrl)}
-    >
-      <Text style={styles.cardTitle}>{item.name}</Text>
-      <Text style={styles.cardSubtitle}>v{item.version}</Text>
-      {item.description && (
-        <Text style={styles.cardDescription} numberOfLines={2}>
-          {item.description}
-        </Text>
-      )}
-      <View style={styles.statsRow}>
-        <Text style={styles.statText}>📦 {item.formattedDownloads}</Text>
-        {item.stars > 0 && <Text style={styles.statText}>⭐ {item.stars}</Text>}
+          <TouchableOpacity
+            style={[styles.starButton, starred && styles.starButtonActive]}
+            onPress={() => handleToggleStar(item, "repository")}
+            hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
+            accessibilityRole="button"
+            accessibilityLabel={
+              starred ? `Unstar ${item.fullName}` : `Star ${item.fullName}`
+            }
+          >
+            <Icon
+              name={starred ? "star" : "star-outline"}
+              size={20}
+              color={
+                starred ? HackerTheme.warningOrange : HackerTheme.lightGrey
+              }
+            />
+          </TouchableOpacity>
+        </View>
+
+        {item.description && (
+          <TouchableOpacity onPress={() => handleOpenUrl(item.htmlUrl)}>
+            <Text style={styles.cardDescription} numberOfLines={2}>
+              {item.description}
+            </Text>
+          </TouchableOpacity>
+        )}
+
+        <View style={styles.statsRow}>
+          <Text style={styles.statText}>⭐ {item.formattedStars}</Text>
+          <Text style={styles.statText}>🍴 {item.formattedForks}</Text>
+          {item.language && (
+            <View style={styles.languageBadge}>
+              <View
+                style={[
+                  styles.languageDot,
+                  { backgroundColor: item.languageColor },
+                ]}
+              />
+              <Text style={styles.languageText}>{item.language}</Text>
+            </View>
+          )}
+        </View>
       </View>
-    </TouchableOpacity>
-  );
+    );
+  };
+
+  const renderNpmItem = ({ item }: { item: NpmPackage }) => {
+    const starred = isStarred(String(item.name), "package");
+    return (
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <TouchableOpacity
+            style={styles.cardHeaderMain}
+            onPress={() => handleOpenUrl(item.npmUrl)}
+          >
+            <Text style={styles.cardTitle}>{item.name}</Text>
+            <Text style={styles.cardSubtitle}>v{item.version}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.starButton, starred && styles.starButtonActive]}
+            onPress={() => handleToggleStar(item, "package")}
+            hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
+            accessibilityRole="button"
+            accessibilityLabel={
+              starred ? `Unstar ${item.name}` : `Star ${item.name}`
+            }
+          >
+            <Icon
+              name={starred ? "star" : "star-outline"}
+              size={20}
+              color={
+                starred ? HackerTheme.warningOrange : HackerTheme.lightGrey
+              }
+            />
+          </TouchableOpacity>
+        </View>
+
+        {item.description && (
+          <TouchableOpacity onPress={() => handleOpenUrl(item.npmUrl)}>
+            <Text style={styles.cardDescription} numberOfLines={2}>
+              {item.description}
+            </Text>
+          </TouchableOpacity>
+        )}
+
+        <View style={styles.statsRow}>
+          <Text style={styles.statText}>📦 {item.formattedDownloads}</Text>
+          {item.stars > 0 && (
+            <Text style={styles.statText}>⭐ {item.stars}</Text>
+          )}
+        </View>
+      </View>
+    );
+  };
 
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
@@ -513,6 +674,29 @@ const styles = StyleSheet.create({
   },
   listWrapper: {
     flex: 1,
+  },
+  cardHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: Spacing.sm,
+  },
+  cardHeaderMain: {
+    flex: 1,
+  },
+  starButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: HackerTheme.darkerGreen,
+    borderWidth: 1,
+    borderColor: HackerTheme.mediumGrey,
+  },
+  starButtonActive: {
+    backgroundColor: HackerTheme.darkGrey,
+    borderColor: HackerTheme.warningOrange,
   },
   listContent: {
     padding: Spacing.md,
